@@ -10,18 +10,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log('Starting server setup...');
-console.log(`Port configured as: ${port}`);
-
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Log all requests
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
 
 // Basic test route
 app.get('/', (req, res) => {
@@ -47,6 +38,4 @@ app.get('/test-supabase', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+app.listen(port);

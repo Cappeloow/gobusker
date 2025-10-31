@@ -100,11 +100,80 @@ export const eventService = {
     const { data, error } = await supabase
       .from('event_collaborations')
       .update({ status })
-      .match({ event_id: eventId, profile_id: profileId })
+      .eq('event_id', eventId)
+      .eq('profile_id', profileId)
       .select()
       .single();
 
     if (error) throw error;
     return data;
+  },
+
+  async getAllEvents() {
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        profile:profiles(
+          id,
+          name,
+          profile_type,
+          avatar_url
+        )
+      `)
+      .order('start_time', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getEventsByLocation(latitude: number, longitude: number, radiusKm: number) {
+    // This assumes your events table has location stored as a PostGIS point or similar
+    // You might need to adjust the query based on your actual database schema
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        profile:profiles(
+          id,
+          name,
+          profile_type,
+          avatar_url
+        )
+      `)
+      .order('start_time', { ascending: true });
+      // For now, we'll fetch all events and filter client-side
+      // TODO: Implement proper geospatial queries once database schema is updated
+
+    if (error) throw error;
+    
+    // Simple client-side distance filtering
+    return data.filter(event => {
+      if (!event.location) return false;
+      const distance = calculateDistance(
+        latitude,
+        longitude,
+        event.location.latitude,
+        event.location.longitude
+      );
+      return distance <= radiusKm;
+    });
   }
 };
+
+// Haversine formula to calculate distance between two points
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRad(value: number): number {
+  return (value * Math.PI) / 180;
+}

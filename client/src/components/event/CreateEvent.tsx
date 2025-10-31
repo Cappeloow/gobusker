@@ -4,6 +4,7 @@ import { eventService } from '../../services/eventService';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/useAuth';
 import type { Profile } from '../../types/models';
+import { LocationSelectMap } from '../map/LocationSelectMap';
 
 interface Collaborator {
   profile: Profile;
@@ -38,42 +39,20 @@ export function CreateEvent() {
 
   if (!profileId) {
     return (
-      <div style={{
-        maxWidth: '600px',
-        margin: '40px auto',
-        padding: '20px',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        textAlign: 'center'
-      }}>
+      <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
         <h2 style={{ color: '#f44336', marginBottom: '20px' }}>Error</h2>
-        <p>No profile selected for creating an event.</p>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#4285f4',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
-        >
-          Go Back
+        <p>No profile selected. Please select a profile first.</p>
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          style={{ marginTop: '20px', padding: '8px 16px', backgroundColor: '#4285f4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Go to Dashboard
         </button>
       </div>
     );
   }
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      setError('You must be logged in to create an event');
-      return;
-    }
-    
     setIsLoading(true);
     setError('');
 
@@ -86,7 +65,6 @@ export function CreateEvent() {
         throw new Error('End time must be after start time');
       }
 
-      // Create the event first
       const event = await eventService.createEvent({
         ...form,
         profile_id: profileId,
@@ -94,16 +72,14 @@ export function CreateEvent() {
         end_time: endTime.toISOString()
       });
 
-      // Then create collaborations separately
       if (selectedCollaborators.length > 0) {
         await Promise.all(
-          selectedCollaborators.map(({ profile }) => 
+          selectedCollaborators.map(({ profile }) =>
             eventService.inviteCollaborator(event.id, profile.id)
           )
         );
       }
 
-      // Navigate to the event detail page
       navigate(`/event/${event.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create event');
@@ -142,7 +118,7 @@ export function CreateEvent() {
   };
 
   const removeCollaborator = (profileId: string) => {
-    setSelectedCollaborators(prev => 
+    setSelectedCollaborators(prev =>
       prev.filter(c => c.profile.id !== profileId)
     );
   };
@@ -157,14 +133,14 @@ export function CreateEvent() {
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
     }}>
       <h2 style={{ marginBottom: '20px' }}>Create New Event</h2>
-      
+
       {error && (
-        <div style={{ 
-          padding: '10px', 
-          backgroundColor: '#fee', 
+        <div style={{
+          padding: '10px',
+          backgroundColor: '#fee',
           color: '#c00',
           borderRadius: '4px',
-          marginBottom: '20px' 
+          marginBottom: '20px'
         }}>
           {error}
         </div>
@@ -172,9 +148,7 @@ export function CreateEvent() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
-            Event Title
-          </label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Title</label>
           <input
             type="text"
             value={form.title}
@@ -190,9 +164,7 @@ export function CreateEvent() {
         </div>
 
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
-            Description
-          </label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Description</label>
           <textarea
             value={form.description}
             onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
@@ -209,9 +181,7 @@ export function CreateEvent() {
 
         <div style={{ marginBottom: '15px', display: 'flex', gap: '15px' }}>
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>
-              Start Time
-            </label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>Start Time</label>
             <input
               type="datetime-local"
               value={form.start_time}
@@ -227,9 +197,7 @@ export function CreateEvent() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>
-              End Time
-            </label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>End Time</label>
             <input
               type="datetime-local"
               value={form.end_time}
@@ -246,14 +214,12 @@ export function CreateEvent() {
         </div>
 
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
-            Location
-          </label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Location</label>
           <input
             type="text"
             value={form.location.place_name}
-            onChange={e => setForm(prev => ({ 
-              ...prev, 
+            onChange={e => setForm(prev => ({
+              ...prev,
               location: { ...prev.location, place_name: e.target.value }
             }))}
             placeholder="Enter location name"
@@ -265,12 +231,32 @@ export function CreateEvent() {
             }}
             required
           />
+          <LocationSelectMap
+            onLocationSelect={(location) => {
+              setForm(prev => ({
+                ...prev,
+                location: {
+                  ...prev.location,
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  place_name: location.place_name || prev.location.place_name
+                }
+              }));
+            }}
+            initialLocation={form.location.latitude !== 0 ? {
+              latitude: form.location.latitude,
+              longitude: form.location.longitude
+            } : undefined}
+          />
+          {form.location.latitude !== 0 && (
+            <p style={{ marginTop: '8px', fontSize: '0.9em', color: '#666' }}>
+              Selected location: {form.location.latitude.toFixed(6)}, {form.location.longitude.toFixed(6)}
+            </p>
+          )}
         </div>
 
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
-            Collaborators
-          </label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Collaborators</label>
           <input
             type="text"
             value={searchTerm}
@@ -312,7 +298,7 @@ export function CreateEvent() {
                 >
                   <div style={{ fontWeight: 'bold' }}>{profile.name}</div>
                   <div style={{ fontSize: '0.9em', color: '#666' }}>
-                    {profile.profile_type === 'band' ? '🎸 Band' : '🎵 Artist'}
+                    {profile.profile_type === 'band' ? '��� Band' : '��� Artist'}
                   </div>
                 </div>
               ))}

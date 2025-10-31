@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Profile } from '../../types/models';
 import { profileService } from '../../services/profileService';
+import { ProfileQRCode } from './ProfileQRCode';
 
 export function ProfileDetail() {
   const { id } = useParams<{ id: string }>();
@@ -83,7 +84,7 @@ export function ProfileDetail() {
         padding: '30px',
         marginBottom: '20px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '20px' }}>
           <div>
             <h1 style={{ marginBottom: '10px' }}>{profile.name}</h1>
             <p style={{ 
@@ -93,24 +94,29 @@ export function ProfileDetail() {
               borderRadius: '20px',
               fontSize: '0.9em',
               color: profile.profile_type === 'band' ? '#1565c0' : '#8e24aa',
-              marginBottom: '20px'
             }}>
               {profile.profile_type === 'band' ? '🎸 Band' : '🎵 Artist'}
             </p>
           </div>
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f5f5f5',
-              color: '#333',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Back
-          </button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <ProfileQRCode
+              profileUrl={window.location.href}
+              profileName={profile.name}
+            />
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#f5f5f5',
+                color: '#333',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Back
+            </button>
+          </div>
         </div>
 
         {profile.bio && (

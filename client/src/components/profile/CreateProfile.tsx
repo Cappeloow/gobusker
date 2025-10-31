@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { profileService } from '../../services/profileService';
 import type { Profile } from '../../types/models';
 
+type ProfileType = 'individual' | 'band';
+
 const INITIAL_FORM_STATE = {
-  username: '',
-  full_name: '',
+  name: '',
   bio: '',
-  profile_type: 'individual' as const,
+  profile_type: 'individual' as ProfileType,
   genres: [] as string[],
   instruments: [] as string[],
+  avatar_url: '',
   social_links: {
     instagram: '',
     youtube: '',
@@ -31,11 +33,24 @@ export function CreateProfile() {
     setError('');
 
     try {
+      // Create the profile first
       const profile = await profileService.createProfile({
         ...form,
         genres: form.genres.filter(Boolean),
         instruments: form.instruments.filter(Boolean)
       });
+
+      // If we have an avatar that was uploaded with a temporary ID,
+      // we need to re-upload it with the correct profile ID
+      if (form.avatar_url && profile.id) {
+        const avatarFile = await fetch(form.avatar_url).then(res => res.blob());
+        const newAvatarUrl = await profileService.uploadAvatar(
+          new File([avatarFile], 'avatar.jpg', { type: 'image/jpeg' }), 
+          profile.id
+        );
+        await profileService.updateProfile(profile.id, { avatar_url: newAvatarUrl });
+      }
+
       // After successful profile creation, navigate to dashboard
       navigate('/dashboard');
     } catch (err) {
@@ -111,30 +126,55 @@ export function CreateProfile() {
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>
-            Username
+            Profile Picture
           </label>
           <input
-            type="text"
-            value={form.username}
-            onChange={e => setForm(prev => ({ ...prev, username: e.target.value }))}
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setIsLoading(true);
+                try {
+                  const url = await profileService.uploadAvatar(file, 'temp'); // We'll update this ID after profile creation
+                  setForm(prev => ({ ...prev, avatar_url: url }));
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Failed to upload avatar');
+                } finally {
+                  setIsLoading(false);
+                }
+              }
+            }}
             style={{
               width: '100%',
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #ddd'
             }}
-            required
           />
+          {form.avatar_url && (
+            <img 
+              src={form.avatar_url} 
+              alt="Profile preview" 
+              style={{
+                width: '100px',
+                height: '100px',
+                objectFit: 'cover',
+                borderRadius: '50%',
+                marginTop: '10px'
+              }}
+            />
+          )}
         </div>
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>
-            Full Name
+            Name
           </label>
           <input
             type="text"
-            value={form.full_name}
-            onChange={e => setForm(prev => ({ ...prev, full_name: e.target.value }))}
+            value={form.name}
+            onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
             style={{
               width: '100%',
               padding: '8px',

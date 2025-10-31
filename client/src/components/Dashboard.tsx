@@ -111,34 +111,57 @@ export function Dashboard() {
               {userProfiles.map(profile => (
                 <div 
                   key={profile.id}
+                  onClick={() => navigate(`/profile/${profile.id}`)}
                   style={{
                     padding: '15px',
                     backgroundColor: '#f5f5f5',
                     borderRadius: '4px',
-                    marginBottom: '10px'
+                    marginBottom: '10px',
+                    cursor: 'pointer',
+                    transition: 'transform 0.1s, box-shadow 0.1s',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                  }}
+                  onMouseEnter={e => {
+                    const target = e.currentTarget;
+                    target.style.transform = 'translateY(-2px)';
+                    target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseLeave={e => {
+                    const target = e.currentTarget;
+                    target.style.transform = 'none';
+                    target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
                   }}
                 >
-                  <h3>{profile.full_name}</h3>
-                  <p>@{profile.username}</p>
-                  <p>{profile.profile_type}</p>
+                  <h3>{profile.name}</h3>
+                  <p>{profile.profile_type === 'band' ? '🎸 Band' : '🎵 Artist'}</p>
                   {profile.bio && <p>{profile.bio}</p>}
+                  {profile.genres && profile.genres.length > 0 && (
+                    <p style={{ fontSize: '0.9em', color: '#666' }}>
+                      {profile.genres.join(' • ')}
+                    </p>
+                  )}
                 </div>
               ))}
-              <button
-                onClick={() => navigate('/create-profile')}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#4285f4',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginTop: '20px',
-                  marginRight: '10px'
-                }}
-              >
-                Create Another Profile
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <button
+                  onClick={() => navigate('/create-profile')}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#4285f4',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>👤</span>
+                  Create Another Profile
+                </button>
+              </div>
             </div>
           )}
         </div>

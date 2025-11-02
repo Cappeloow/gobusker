@@ -75,80 +75,35 @@ export function LandingPage() {
   }, [filters.timeRange, filters.customDate, events]);
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="h-screen flex flex-col">
       {/* Hero Section */}
-      <div style={{
-        backgroundColor: '#1a1a1a',
-        color: 'white',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ 
-          fontSize: '2.5rem',
-          marginBottom: '10px',
-          background: 'linear-gradient(45deg, #ff4b1f, #ff9068)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
+      <div className="bg-gray-800 text-white p-5 text-center">
+        <h1 className="text-4xl mb-2.5 bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent">
           Discover Street Music Near You
         </h1>
-        <p style={{ fontSize: '1.2rem', color: '#e0e0e0' }}>
+        <p className="text-lg text-gray-300">
           Find local artists, performances, and events in your area
         </p>
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, display: 'flex', height: 'calc(100vh - 150px)' }}>
+      <div className="flex-1 flex h-[calc(100vh-150px)]">
         {/* Map Section */}
-        <div style={{ flex: '1', backgroundColor: '#f5f5f5', position: 'relative' }}>
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            right: '20px',
-            backgroundColor: 'white',
-            padding: '15px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            display: 'flex',
-            gap: '10px'
-          }}>
+        <div className="flex-1 bg-gray-100 relative">
+          <div className="absolute top-5 left-5 right-5 bg-white p-4 rounded-lg shadow-md flex gap-2.5">
             <input
               type="text"
               placeholder="Search location..."
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-base"
               value={filters.location}
               onChange={(e) => setFilters({ ...filters, location: e.target.value })}
             />
-            <button style={{
-              padding: '8px 16px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}>
+            <button className="px-4 py-2 bg-green-500 text-white border-none rounded-md cursor-pointer">
               Search
             </button>
           </div>
           {loading ? (
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              backgroundColor: 'white',
-              padding: '20px',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              zIndex: 1000
-            }}>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-5 rounded-lg shadow-md z-10">
               Loading events...
             </div>
           ) : (
@@ -168,19 +123,13 @@ export function LandingPage() {
         </div>
 
         {/* Filters & Results Panel */}
-        <div style={{
-          width: '400px',
-          backgroundColor: 'white',
-          boxShadow: '-2px 0 4px rgba(0,0,0,0.1)',
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          <h2 style={{ marginBottom: '20px', color: '#333' }}>Find Performances</h2>
+        <div className="w-[400px] bg-white shadow-lg p-5 overflow-y-auto">
+          <h2 className="mb-5 text-gray-700">Find Performances</h2>
 
           {/* Time Range Filter */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#666' }}>When</label>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+          <div className="mb-5">
+            <label className="block mb-2 text-gray-500">When</label>
+            <div className="flex gap-2 mb-2">
               {(['today', 'week', 'month', 'custom'] as const).map((range) => (
                 <button
                   key={range}
@@ -190,16 +139,7 @@ export function LandingPage() {
                     // Clear custom date when switching to non-custom range
                     customDate: range !== 'custom' ? undefined : filters.customDate
                   })}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    backgroundColor: filters.timeRange === range ? '#4CAF50' : '#f0f0f0',
-                    color: filters.timeRange === range ? 'white' : '#333',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
+                  className={`flex-1 py-2 ${filters.timeRange === range ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'} border-none rounded-md cursor-pointer transition-all`}
                 >
                   {range.charAt(0).toUpperCase() + range.slice(1)}
                 </button>
@@ -210,34 +150,20 @@ export function LandingPage() {
                 type="date"
                 value={filters.customDate || ''}
                 onChange={(e) => setFilters({ ...filters, customDate: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  marginTop: '8px'
-                }}
+                className="w-full p-2 border border-gray-300 rounded-md mt-2"
               />
             )}
           </div>
 
           {/* Event Type Filter */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#666' }}>Type</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="mb-5">
+            <label className="block mb-2 text-gray-500">Type</label>
+            <div className="flex gap-2">
               {(['all', 'street', 'venue'] as const).map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilters({ ...filters, eventType: type })}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    backgroundColor: filters.eventType === type ? '#4CAF50' : 'white',
-                    color: filters.eventType === type ? 'white' : '#333',
-                    cursor: 'pointer'
-                  }}
+                  className={`flex-1 py-2 border border-gray-300 rounded-md ${filters.eventType === type ? 'bg-green-500 text-white' : 'bg-white text-gray-700'} cursor-pointer`}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </button>
@@ -246,16 +172,10 @@ export function LandingPage() {
           </div>
 
           {/* Genre Filter */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#666' }}>Genre</label>
+          <div className="mb-5">
+            <label className="block mb-2 text-gray-500">Genre</label>
             <select
-              style={{
-                width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                backgroundColor: 'white'
-              }}
+              className="w-full p-2 border border-gray-300 rounded-md bg-white"
               value={filters.genre}
               onChange={(e) => setFilters({ ...filters, genre: e.target.value })}
             >
@@ -271,34 +191,20 @@ export function LandingPage() {
 
           {/* Results Section */}
           <div>
-            <h3 style={{ marginBottom: '15px', color: '#333' }}>Upcoming Events</h3>
-            <div style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
+            <h3 className="mb-4 text-gray-700">Upcoming Events</h3>
+            <div className="text-gray-500 text-center p-5">
               Enter a location to see events near you!
             </div>
 
             {/* Join CTA for non-authenticated users */}
-            <div style={{
-              marginTop: '30px',
-              padding: '20px',
-              backgroundColor: '#f8f8f8',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <h3 style={{ color: '#333', marginBottom: '10px' }}>Are you a performer?</h3>
-              <p style={{ color: '#666', marginBottom: '15px' }}>
+            <div className="mt-8 p-5 bg-gray-100 rounded-lg text-center">
+              <h3 className="text-gray-700 mb-2.5">Are you a performer?</h3>
+              <p className="text-gray-500 mb-4">
                 Join Gobusker to share your events and connect with your audience!
               </p>
               <button
                 onClick={() => navigate('/signup')}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '16px'
-                }}
+                className="px-5 py-2.5 bg-green-500 text-white border-none rounded-md cursor-pointer text-base"
               >
                 Get Started
               </button>

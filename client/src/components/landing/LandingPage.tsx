@@ -8,16 +8,24 @@ interface MapFilters {
   timeRange: 'today' | 'week' | 'month' | 'custom';
   customDate?: string; // ISO date string for custom date selection
   location: string;
-  genre?: string;
-  eventType?: 'all' | 'street' | 'venue';
+  category: string;
+  subcategory: string;
 }
+
+const CATEGORIES: { [key: string]: string[] } = {
+  Music: ['Rock', 'Pop', 'Techno', 'Jazz', 'Classical', 'Folk', 'Hip Hop', 'Electronic'],
+  Comedy: ['Stand-up', 'Improv'],
+  Magic: ['Close-up', 'Stage'],
+  Other: []
+};
 
 export function LandingPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<MapFilters>({
     timeRange: 'week',
     location: '',
-    eventType: 'all'
+    category: '',
+    subcategory: ''
   });
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,8 +51,8 @@ export function LandingPage() {
   useEffect(() => {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const filtered = events.filter(event => {
+
+    let filtered = events.filter(event => {
       const eventDate = new Date(event.start_time);
       
       switch (filters.timeRange) {
@@ -71,8 +79,16 @@ export function LandingPage() {
       }
     });
     
+    if (filters.category) {
+      filtered = filtered.filter(event => event.category === filters.category);
+    }
+
+    if (filters.subcategory) {
+      filtered = filtered.filter(event => event.subcategory === filters.subcategory);
+    }
+
     setFilteredEvents(filtered);
-  }, [filters.timeRange, filters.customDate, events]);
+  }, [filters, events]);
 
   return (
     <div className="h-screen flex flex-col">
@@ -155,39 +171,37 @@ export function LandingPage() {
             )}
           </div>
 
-          {/* Event Type Filter */}
+          {/* Category Filter */}
           <div className="mb-5">
-            <label className="block mb-2 text-gray-500">Type</label>
-            <div className="flex gap-2">
-              {(['all', 'street', 'venue'] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setFilters({ ...filters, eventType: type })}
-                  className={`flex-1 py-2 border border-gray-300 rounded-md ${filters.eventType === type ? 'bg-green-500 text-white' : 'bg-white text-gray-700'} cursor-pointer`}
-                >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Genre Filter */}
-          <div className="mb-5">
-            <label className="block mb-2 text-gray-500">Genre</label>
+            <label className="block mb-2 text-gray-500">Category</label>
             <select
               className="w-full p-2 border border-gray-300 rounded-md bg-white"
-              value={filters.genre}
-              onChange={(e) => setFilters({ ...filters, genre: e.target.value })}
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value, subcategory: '' })}
             >
-              <option value="">All Genres</option>
-              <option value="rock">Rock</option>
-              <option value="jazz">Jazz</option>
-              <option value="classical">Classical</option>
-              <option value="folk">Folk</option>
-              <option value="hiphop">Hip Hop</option>
-              <option value="electronic">Electronic</option>
+              <option value="">All Categories</option>
+              {Object.keys(CATEGORIES).map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
+
+          {/* Subcategory Filter */}
+          {filters.category && CATEGORIES[filters.category]?.length > 0 && (
+            <div className="mb-5">
+              <label className="block mb-2 text-gray-500">Subcategory</label>
+              <select
+                className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                value={filters.subcategory}
+                onChange={(e) => setFilters({ ...filters, subcategory: e.target.value })}
+              >
+                <option value="">All Subcategories</option>
+                {CATEGORIES[filters.category].map(subcat => (
+                  <option key={subcat} value={subcat}>{subcat}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Results Section */}
           <div>

@@ -3,19 +3,11 @@ import type { Event } from '../types/models';
 
 export const eventService = {
   async createEvent(event: Omit<Event, 'id' | 'created_at' | 'updated_at'>) {
-    const eventData = {
-      profile_id: event.profile_id,
-      title: event.title,
-      description: event.description,
-      start_time: event.start_time,
-      end_time: event.end_time,
-      location: event.location,
-      status: event.status
-    };
-
     const { data, error } = await supabase
       .from('events')
-      .insert([eventData])
+      // Pass the entire event object, which now includes category and subcategory.
+      // Supabase will map the properties to the corresponding table columns.
+      .insert([event])
       .select()
       .single();
 

@@ -10,6 +10,13 @@ interface Collaborator {
   profile: Profile;
 }
 
+const CATEGORIES: { [key: string]: string[] } = {
+  Music: ['Rock', 'Pop', 'Techno', 'Jazz', 'Classical', 'Folk', 'Hip Hop', 'Electronic'],
+  Comedy: ['Stand-up', 'Improv'],
+  Magic: ['Close-up', 'Stage'],
+  Other: []
+};
+
 const INITIAL_FORM_STATE = {
   title: '',
   description: '',
@@ -20,7 +27,9 @@ const INITIAL_FORM_STATE = {
     latitude: 0,
     longitude: 0
   },
-  status: 'upcoming' as const
+  status: 'upcoming' as const,
+  category: '',
+  subcategory: ''
 };
 
 export function CreateEvent() {
@@ -65,12 +74,14 @@ export function CreateEvent() {
         throw new Error('End time must be after start time');
       }
 
-      const event = await eventService.createEvent({
+      const eventPayload = {
         ...form,
         profile_id: profileId,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString()
-      });
+      };
+
+      const event = await eventService.createEvent(eventPayload);
 
       if (selectedCollaborators.length > 0) {
         await Promise.all(
@@ -252,6 +263,40 @@ export function CreateEvent() {
             <p style={{ marginTop: '8px', fontSize: '0.9em', color: '#666' }}>
               Selected location: {form.location.latitude.toFixed(6)}, {form.location.longitude.toFixed(6)}
             </p>
+          )}
+        </div>
+
+        <div style={{ marginBottom: '15px', display: 'flex', gap: '15px' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', marginBottom: '5px' }}>Category</label>
+            <select
+              value={form.category}
+              onChange={e => setForm(prev => ({ ...prev, category: e.target.value, subcategory: '' }))}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+              required
+            >
+              <option value="" disabled>Select a category</option>
+              {Object.keys(CATEGORIES).map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          {form.category && CATEGORIES[form.category]?.length > 0 && (
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '5px' }}>Subcategory</label>
+              <select
+                value={form.subcategory}
+                onChange={e => setForm(prev => ({ ...prev, subcategory: e.target.value }))}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                required
+              >
+                <option value="" disabled>Select a subcategory</option>
+                {CATEGORIES[form.category].map(subcat => (
+                  <option key={subcat} value={subcat}>{subcat}</option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 

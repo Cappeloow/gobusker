@@ -19,6 +19,8 @@ interface EventWithCollaborators extends Event {
     };
     status: 'pending' | 'accepted' | 'rejected';
   }>;
+  category?: string;
+  subcategory?: string;
 }
 
 export function EventDetail() {
@@ -143,6 +145,17 @@ export function EventDetail() {
                 color: '#8e24aa'
               }}>
                 By {event.profile.name}
+              </p>
+              <p style={{ 
+                display: 'inline-block',
+                padding: '4px 12px',
+                backgroundColor: '#e0f2f1',
+                borderRadius: '20px',
+                fontSize: '0.9em',
+                color: '#00796b'
+              }}>
+                {event.category}
+                {event.subcategory && ` - ${event.subcategory}`}
               </p>
             </div>
           </div>

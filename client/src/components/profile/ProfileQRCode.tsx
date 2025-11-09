@@ -10,6 +10,12 @@ interface ProfileQRCodeProps {
 
 export const ProfileQRCode = ({ profileUrl, profileName }: ProfileQRCodeProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setIsExpanded(false); // Reset expansion state on close
+  };
 
   return (
     <>
@@ -32,7 +38,7 @@ export const ProfileQRCode = ({ profileUrl, profileName }: ProfileQRCodeProps) =
 
       <Dialog
         open={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={handleClose}
         style={{
           position: 'fixed',
           inset: 0,
@@ -51,27 +57,31 @@ export const ProfileQRCode = ({ profileUrl, profileName }: ProfileQRCodeProps) =
             position: 'fixed',
             inset: 0,
             backgroundColor: 'rgba(0, 0, 0, 0.3)'
-          }} onClick={() => setIsOpen(false)} />
+          }} onClick={handleClose} />
 
           <div style={{
             position: 'relative',
             backgroundColor: 'white',
             borderRadius: '8px',
-            padding: '32px',
-            maxWidth: '400px',
-            width: '100%',
+            padding: isExpanded ? '0' : '32px',
+            maxWidth: isExpanded ? 'none' : '400px',
+            width: isExpanded ? '100vw' : '100%',
+            height: isExpanded ? '100vh' : 'auto',
             margin: '0 auto',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease-in-out',
+            cursor: isExpanded ? 'zoom-out' : 'default'
           }}>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               style={{
                 position: 'absolute',
-                top: '16px',
-                right: '16px',
+                top: isExpanded ? '20px' : '16px',
+                right: isExpanded ? '20px' : '16px',
                 color: '#666',
                 border: 'none',
                 background: 'none',
@@ -85,21 +95,27 @@ export const ProfileQRCode = ({ profileUrl, profileName }: ProfileQRCodeProps) =
               </svg>
             </button>
 
-            <div style={{ 
-              backgroundColor: 'white', 
-              padding: '16px', 
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-            }}>
+            <div 
+              style={{
+                cursor: 'zoom-in',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
               <QRCodeSVG
                 value={profileUrl}
-                size={256}
+                size={isExpanded ? Math.min(window.innerWidth, window.innerHeight) * 0.8 : 256}
                 level="H"
                 includeMargin
-                style={{ width: '100%', height: '100%' }}
+                style={{ 
+                  maxWidth: '100%', 
+                  height: 'auto',
+                  transition: 'width 0.3s ease-in-out, height 0.3s ease-in-out'
+                }}
               />
-            </div>
-
+            
             <h3 style={{
               marginTop: '16px',
               fontSize: '1.25rem',
@@ -116,8 +132,9 @@ export const ProfileQRCode = ({ profileUrl, profileName }: ProfileQRCodeProps) =
               color: '#666',
               textAlign: 'center'
             }}>
-              Scan to view profile
+              {isExpanded ? 'Click to shrink' : 'Scan to view profile'}
             </p>
+            </div>
           </div>
         </div>
       </Dialog>

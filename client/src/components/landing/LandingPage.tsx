@@ -206,23 +206,6 @@ export function LandingPage() {
           {/* Results Section */}
           <div>
             <h3 className="mb-4 text-gray-700">Upcoming Events</h3>
-            <div className="text-gray-500 text-center p-5">
-              Enter a location to see events near you!
-            </div>
-
-            {/* Join CTA for non-authenticated users */}
-            <div className="mt-8 p-5 bg-gray-100 rounded-lg text-center">
-              <h3 className="text-gray-700 mb-2.5">Are you a performer?</h3>
-              <p className="text-gray-500 mb-4">
-                Join Gobusker to share your events and connect with your audience!
-              </p>
-              <button
-                onClick={() => navigate('/signup')}
-                className="px-5 py-2.5 bg-green-500 text-white border-none rounded-md cursor-pointer text-base"
-              >
-                Get Started
-              </button>
-            </div>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import type { Profile } from '../../types/models';
 import { profileService } from '../../services/profileService';
 import { ProfileQRCode } from './ProfileQRCode';
+import { ShoppingBag } from 'lucide-react';
 
 export function ProfileDetail() {
   const { id } = useParams<{ id: string }>();
@@ -103,6 +104,22 @@ export function ProfileDetail() {
               profileUrl={window.location.href}
               profileName={profile.name}
             />
+            <button
+              onClick={() => navigate(`/profile/${id}/shop`)}
+              style={{
+                padding: '8px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                border: 'none',
+                backgroundColor: 'transparent',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="Go to Shop"
+            >
+              <ShoppingBag style={{ width: '24px', height: '24px' }} />
+            </button>
             <button
               onClick={() => navigate('/dashboard')}
               style={{

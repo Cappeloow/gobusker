@@ -1,41 +1,37 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import { supabase } from './lib/supabase';
-
-// Load environment variables first
+// Load environment variables from a .env file at the very top.
 dotenv.config();
 
-// Create Express app
+import express from 'express';
+import { productRouter } from './routes/productRoutes'; // Import the product router
+
+
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+import cors from 'cors'; 
+const corsOptions = {
+  origin: 'http://localhost:5173', 
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+};
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Apply CORS middleware
+app.use(cors(corsOptions));
+// --- Middleware ---
+app.use(express.json()); // For parsing application/json bodies
 
-// Basic test route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to GoBusker API' });
+// --- Routes ---
+// A simple health-check route to confirm the server is running.
+app.get('/health', (req, res) => {
+  res.status(200).send({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-// Test Supabase connection
-app.get('/test-supabase', async (req, res) => {
-  try {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
-    res.json({ 
-      success: true, 
-      message: 'Supabase connection successful',
-      data: data || 'No session (expected for initial test)'
-    });
-  } catch (error: any) {
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to connect to Supabase',
-      error: error.message 
-    });
-  }
-});
+// Register your product routes under the `/api` namespace.
+// All routes in `productRouter` will be prefixed with `/api`.
+// Example: GET /api/products
+app.use('/api', productRouter);
 
-app.listen(port);
+// --- Server Activation ---
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running and listening on http://localhost:${PORT}`);
+});

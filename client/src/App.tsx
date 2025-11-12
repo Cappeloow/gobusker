@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { CreateProfile } from './components/profile/CreateProfile';
 import { ProfileDetail } from './components/profile/ProfileDetail';
 import { CreateEvent } from './components/event/CreateEvent';
+import { ProfileShop } from './components/profile/ProfileShop';
 import { EventDetail } from './components/event/EventDetail';
 import { LandingPage } from './components/landing/LandingPage';
 import './App.css';
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-profile" element={<CreateProfile />} />
           <Route path="/profile/:id" element={<ProfileDetail />} />
+          <Route path="/profile/:id/shop" element={<ProfileShop />} />
           <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/event/:id" element={<EventDetail />} />
         </Routes>

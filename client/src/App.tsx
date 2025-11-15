@@ -8,6 +8,7 @@ import { CreateEvent } from './components/event/CreateEvent';
 import { ProfileShop } from './components/profile/ProfileShop';
 import { EventDetail } from './components/event/EventDetail';
 import { LandingPage } from './components/landing/LandingPage';
+import { Success } from './components/payment/Success';
 import './App.css';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/profile/:id/shop" element={<ProfileShop />} />
           <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/event/:id" element={<EventDetail />} />
+          <Route path="/payment/success" element={<Success />} />
         </Routes>
       </Router>
     </div>

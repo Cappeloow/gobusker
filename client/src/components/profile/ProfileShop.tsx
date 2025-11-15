@@ -9,6 +9,7 @@ export function ProfileShop() {
     description: string | null;
     images: string[];
     default_price: {
+      id: string; // The Price ID is essential for checkout
       unit_amount: number;
       currency: string;
     } | null;
@@ -19,12 +20,12 @@ export function ProfileShop() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState<string | null>(null); // To show feedback
 
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        // Corrected the port from 3000 to 3001 to match your backend server
         const response = await fetch('http://localhost:3000/api/products');
         if (!response.ok) {
           throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -41,6 +42,32 @@ export function ProfileShop() {
 
     fetchProducts();
   }, []);
+
+  const handlePurchase = async (priceId: string) => {
+    setIsRedirecting(priceId); // Set loading state for the specific button
+
+    try {
+      const response = await fetch('http://localhost:3000/api/checkout/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ priceId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session.');
+      }
+
+      const { url } = await response.json();
+      // Redirect the user to the Stripe Checkout page
+      window.location.href = url;
+    } catch (e: any) {
+      console.error('Purchase failed:', e);
+      setError('Could not initiate purchase. Please try again.');
+      setIsRedirecting(null); // Reset loading state on error
+    }
+  };
 
   return (
     <div style={{
@@ -120,8 +147,15 @@ export function ProfileShop() {
                     ) : (
                       <span style={{ fontSize: '1em', color: '#777' }}>Price not set</span>
                     )}
-                    <button style={{ padding: '8px 12px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                      Add to Cart
+                    <button
+                      onClick={() => product.default_price && handlePurchase(product.default_price.id)}
+                      disabled={!product.default_price || isRedirecting === product.id}
+                      style={{
+                        padding: '8px 12px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer',
+                        opacity: !product.default_price || isRedirecting === product.id ? 0.5 : 1,
+                      }}
+                    >
+                      {isRedirecting === product.id ? 'Redirecting...' : 'Buy Now'}
                     </button>
                   </div>
                 </div>

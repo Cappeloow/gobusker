@@ -4,6 +4,7 @@ dotenv.config();
 
 import express from 'express';
 import { productRouter } from './routes/productRoutes'; // Import the product router
+import { checkoutRouter } from './routes/checkoutRoutes'; // Import the new checkout router
 
 
 const app = express();
@@ -30,6 +31,7 @@ app.get('/health', (req, res) => {
 // All routes in `productRouter` will be prefixed with `/api`.
 // Example: GET /api/products
 app.use('/api', productRouter);
+app.use('/api/checkout', checkoutRouter); // Register the checkout routes
 
 // --- Server Activation ---
 app.listen(PORT, () => {

@@ -158,6 +158,8 @@ export function LandingPage() {
             </div>
           ) : (
             <MapView
+              center={userLocation ? [userLocation.longitude, userLocation.latitude] : [18.0649, 59.3293]}
+              zoom={userLocation ? 13 : 11}
               markers={[
                 // User location marker
                 ...(userLocation ? [{

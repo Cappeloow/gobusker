@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { stripe } from '../services/stripe';
+import { supabase } from '../lib/supabase';
 
 export const checkoutRouter = Router();
 
@@ -10,10 +11,18 @@ export const checkoutRouter = Router();
  * On success, returns the session URL for frontend redirection.
  */
 checkoutRouter.post('/create-session', async (req: Request, res: Response) => {
-  const { priceId } = req.body;
+  const { priceId, profileId, email } = req.body;
 
   if (!priceId) {
     return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: priceId' });
+  }
+
+  if (!profileId) {
+    return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: profileId' });
+  }
+
+  if (!email) {
+    return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: email' });
   }
 
   // Use environment variables for frontend URLs to support different environments (dev, prod).
@@ -31,9 +40,13 @@ checkoutRouter.post('/create-session', async (req: Request, res: Response) => {
           quantity: 1,
         },
       ],
-      mode: 'payment', // Use 'subscription' for recurring payments
+      mode: 'payment',
+      customer_email: email, // Capture the customer email
       success_url: successUrl,
       cancel_url: cancelUrl,
+      metadata: {
+        profileId: profileId,
+      },
     });
 
     if (!session.url) {
@@ -51,7 +64,8 @@ checkoutRouter.post('/create-session', async (req: Request, res: Response) => {
  * GET /api/checkout/session-status
  *
  * Retrieves the status of a Stripe Checkout session to verify payment
- * after the user is redirected from Stripe.
+ * after the user is redirected from Stripe. Also fetches order details
+ * and saves the order to the database.
  */
 checkoutRouter.get('/session-status', async (req, res) => {
   const sessionId = req.query.session_id as string;
@@ -62,15 +76,65 @@ checkoutRouter.get('/session-status', async (req, res) => {
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['payment_intent'],
+      expand: ['payment_intent', 'line_items'],
     });
 
     const isPaid = 
       session.payment_status === 'paid' ||
-      session.payment_intent?.status === 'succeeded';
+      (typeof session.payment_intent === 'object' && session.payment_intent?.status === 'succeeded');
 
     if (isPaid) {
-      return res.json({ status: 'complete' });
+      // Fetch full payment intent details to get more information
+      const paymentIntent = session.payment_intent as any;
+      const profileId = session.metadata?.profileId;
+      const customerEmail = session.customer_email || paymentIntent?.receipt_email;
+      
+      console.log('Payment successful - Session details:', {
+        sessionId,
+        customerEmail,
+        profileId,
+        totalAmount: session.amount_total,
+        currency: session.currency
+      });
+      
+      // Prepare order data
+      const orderData = {
+        profile_id: profileId,
+        stripe_session_id: sessionId,
+        stripe_payment_intent_id: paymentIntent?.id,
+        customer_email: customerEmail,
+        customer_name: session.customer_details?.name,
+        total_amount: session.amount_total, // in cents
+        currency: session.currency?.toUpperCase() || 'USD',
+        payment_status: session.payment_status,
+        payment_method: session.payment_method_types?.[0],
+        items: session.line_items?.data?.map((item: any) => ({
+          id: item.id,
+          name: item.description,
+          quantity: item.quantity,
+          price: item.amount_total, // in cents
+          product_id: item.price?.product
+        })) || [],
+        created_at: new Date(session.created * 1000).toISOString(),
+      };
+
+      // Save order to database
+      try {
+        const { error: dbError } = await supabase
+          .from('orders')
+          .insert([orderData]);
+
+        if (dbError) {
+          console.error('Error saving order to database:', dbError);
+        }
+      } catch (dbError) {
+        console.error('Unexpected error saving order:', dbError);
+      }
+
+      return res.json({ 
+        status: 'complete',
+        ...orderData
+      });
     }
 
     return res.json({

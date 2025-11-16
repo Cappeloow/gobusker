@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/useAuth';
 
 export function ProfileShop() {
   // This interface now accurately reflects the Stripe Product object from your API
@@ -17,6 +18,7 @@ export function ProfileShop() {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,19 @@ export function ProfileShop() {
   }, []);
 
   const handlePurchase = async (priceId: string) => {
-    setIsRedirecting(priceId); // Set loading state for the specific button
+    setIsRedirecting(priceId);
+
+    if (!id) {
+      setError('Profile ID is missing. Please try again.');
+      setIsRedirecting(null);
+      return;
+    }
+
+    if (!user?.email) {
+      setError('User email is missing. Please log in again.');
+      setIsRedirecting(null);
+      return;
+    }
 
     try {
       const response = await fetch('http://localhost:3000/api/checkout/create-session', {
@@ -52,7 +66,11 @@ export function ProfileShop() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ 
+          priceId,
+          profileId: id,
+          email: user.email
+        }),
       });
 
       if (!response.ok) {
@@ -60,12 +78,11 @@ export function ProfileShop() {
       }
 
       const { url } = await response.json();
-      // Redirect the user to the Stripe Checkout page
       window.location.href = url;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Purchase failed:', e);
       setError('Could not initiate purchase. Please try again.');
-      setIsRedirecting(null); // Reset loading state on error
+      setIsRedirecting(null);
     }
   };
 

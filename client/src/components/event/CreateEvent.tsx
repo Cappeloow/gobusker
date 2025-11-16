@@ -48,12 +48,12 @@ export function CreateEvent() {
 
   if (!profileId) {
     return (
-      <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-        <h2 style={{ color: '#f44336', marginBottom: '20px' }}>Error</h2>
-        <p>No profile selected. Please select a profile first.</p>
+      <div className="max-w-xl mx-auto my-10 px-5 py-5 bg-white dark:bg-secondary rounded-lg shadow-md">
+        <h2 className="text-red-500 mb-5 text-xl font-bold">Error</h2>
+        <p className="text-gray-900 dark:text-white mb-5">No profile selected. Please select a profile first.</p>
         <button 
           onClick={() => navigate('/dashboard')} 
-          style={{ marginTop: '20px', padding: '8px 16px', backgroundColor: '#4285f4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          className="mt-5 px-4 py-2 bg-primary text-white rounded hover:bg-accent transition-colors">
           Go to Dashboard
         </button>
       </div>
@@ -135,97 +135,63 @@ export function CreateEvent() {
   };
 
   return (
-    <div className="create-event-container" style={{
-      maxWidth: '600px',
-      margin: '0 auto',
-      padding: '20px',
-      backgroundColor: 'white',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h2 style={{ marginBottom: '20px' }}>Create New Event</h2>
+    <div className="max-w-2xl mx-auto my-10 px-5 py-5 bg-white dark:bg-secondary rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5">Create New Event</h2>
 
       {error && (
-        <div style={{
-          padding: '10px',
-          backgroundColor: '#fee',
-          color: '#c00',
-          borderRadius: '4px',
-          marginBottom: '20px'
-        }}>
+        <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 rounded mb-5">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Title</label>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium text-gray-900 dark:text-white">Title</label>
           <input
             type="text"
             value={form.title}
             onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-            style={{
-              width: '100%',
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ddd'
-            }}
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             required
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Description</label>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium text-gray-900 dark:text-white">Description</label>
           <textarea
             value={form.description}
             onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-            style={{
-              width: '100%',
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ddd',
-              minHeight: '100px'
-            }}
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-24"
             required
           />
         </div>
 
-        <div style={{ marginBottom: '15px', display: 'flex', gap: '15px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Start Time</label>
+        <div className="mb-4 flex gap-4">
+          <div className="flex-1">
+            <label className="block mb-1 font-medium text-gray-900 dark:text-white">Start Time</label>
             <input
               type="datetime-local"
               value={form.start_time}
               onChange={e => setForm(prev => ({ ...prev, start_time: e.target.value }))}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ddd'
-              }}
+              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               required
             />
           </div>
 
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>End Time</label>
+          <div className="flex-1">
+            <label className="block mb-1 font-medium text-gray-900 dark:text-white">End Time</label>
             <input
               type="datetime-local"
               value={form.end_time}
               onChange={e => setForm(prev => ({ ...prev, end_time: e.target.value }))}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ddd'
-              }}
+              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               required
             />
           </div>
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Location</label>
+        <div className="mb-4">
+          <label className="block mb-1 font-medium text-gray-900 dark:text-white">Location</label>
           <input
             type="text"
             value={form.location.place_name}
@@ -234,12 +200,7 @@ export function CreateEvent() {
               location: { ...prev.location, place_name: e.target.value }
             }))}
             placeholder="Enter location name"
-            style={{
-              width: '100%',
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ddd'
-            }}
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             required
           />
           <LocationSelectMap
@@ -260,19 +221,19 @@ export function CreateEvent() {
             } : undefined}
           />
           {form.location.latitude !== 0 && (
-            <p style={{ marginTop: '8px', fontSize: '0.9em', color: '#666' }}>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Selected location: {form.location.latitude.toFixed(6)}, {form.location.longitude.toFixed(6)}
             </p>
           )}
         </div>
 
-        <div style={{ marginBottom: '15px', display: 'flex', gap: '15px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Category</label>
+        <div className="mb-4 flex gap-4">
+          <div className="flex-1">
+            <label className="block mb-1 font-medium text-gray-900 dark:text-white">Category</label>
             <select
               value={form.category}
               onChange={e => setForm(prev => ({ ...prev, category: e.target.value, subcategory: '' }))}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               required
             >
               <option value="" disabled>Select a category</option>
@@ -283,12 +244,12 @@ export function CreateEvent() {
           </div>
 
           {form.category && CATEGORIES[form.category]?.length > 0 && (
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Subcategory</label>
+            <div className="flex-1">
+              <label className="block mb-1 font-medium text-gray-900 dark:text-white">Subcategory</label>
               <select
                 value={form.subcategory}
                 onChange={e => setForm(prev => ({ ...prev, subcategory: e.target.value }))}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 required
               >
                 <option value="" disabled>Select a subcategory</option>
@@ -300,49 +261,26 @@ export function CreateEvent() {
           )}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Collaborators</label>
+        <div className="mb-4">
+          <label className="block mb-1">Collaborators</label>
           <input
             type="text"
             value={searchTerm}
             onChange={e => handleSearchCollaborators(e.target.value)}
             placeholder="Search for artists or bands"
-            style={{
-              width: '100%',
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ddd'
-            }}
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
           
           {searchResults.length > 0 && (
-            <div style={{
-              marginTop: '5px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              maxHeight: '200px',
-              overflowY: 'auto'
-            }}>
+            <div className="mt-1 border border-gray-300 dark:border-gray-600 rounded-lg max-h-52 overflow-y-auto dark:bg-secondary">
               {searchResults.map(profile => (
                 <div
                   key={profile.id}
                   onClick={() => addCollaborator(profile)}
-                  style={{
-                    padding: '8px',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #eee',
-                    backgroundColor: 'white',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = '#f5f5f5';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = 'white';
-                  }}
+                  className="px-2 py-2 cursor-pointer border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <div style={{ fontWeight: 'bold' }}>{profile.name}</div>
-                  <div style={{ fontSize: '0.9em', color: '#666' }}>
+                  <div className="font-bold dark:text-white">{profile.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     {profile.profile_type === 'band' ? '��� Band' : '��� Artist'}
                   </div>
                 </div>
@@ -351,33 +289,18 @@ export function CreateEvent() {
           )}
 
           {selectedCollaborators.length > 0 && (
-            <div style={{ marginTop: '10px' }}>
-              <h4>Selected Collaborators:</h4>
+            <div className="mt-3">
+              <h4 className="dark:text-white">Selected Collaborators:</h4>
               {selectedCollaborators.map(({ profile }) => (
                 <div
                   key={profile.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px',
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: '4px',
-                    marginTop: '5px'
-                  }}
+                  className="flex items-center justify-between px-2 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg mt-1"
                 >
-                  <span>{profile.name}</span>
+                  <span className="dark:text-white">{profile.name}</span>
                   <button
                     type="button"
                     onClick={() => removeCollaborator(profile.id)}
-                    style={{
-                      padding: '4px 8px',
-                      backgroundColor: '#ff4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
+                    className="px-2 py-1 bg-red-500 dark:bg-red-600 text-white rounded cursor-pointer hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
                   >
                     Remove
                   </button>
@@ -387,35 +310,18 @@ export function CreateEvent() {
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="flex gap-2">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            style={{
-              padding: '12px',
-              backgroundColor: '#f5f5f5',
-              color: '#333',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              flex: 1
-            }}
+            className="flex-1 px-3 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            style={{
-              padding: '12px',
-              backgroundColor: '#4285f4',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.7 : 1,
-              flex: 2
-            }}
+            className="flex-[2] px-3 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Creating...' : 'Create Event'}
           </button>

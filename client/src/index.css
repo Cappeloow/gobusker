@@ -4,8 +4,6 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -34,8 +32,6 @@ body {
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -78,4 +74,75 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Form inputs styling */
+input, textarea, select {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #c18654;
+  box-shadow: 0 0 0 3px rgba(193, 134, 84, 0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #999;
+}
+
+/* Dark mode form inputs - GLOBAL */
+:root.dark input, 
+:root.dark textarea, 
+:root.dark select {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+  border-color: #666 !important;
+}
+
+:root.dark input::placeholder, 
+:root.dark textarea::placeholder {
+  color: #bbb !important;
+}
+
+:root.dark input:focus, 
+:root.dark textarea:focus, 
+:root.dark select:focus {
+  border-color: #c18654 !important;
+  box-shadow: 0 0 0 3px rgba(193, 134, 84, 0.2) !important;
+}
+
+:root.dark option {
+  background-color: #4b5563;
+  color: #ffffff;
+}
+
+/* Ensure inputs work with Tailwind dark mode too */
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+  border-color: #666 !important;
+}
+
+.dark input::placeholder, 
+.dark textarea::placeholder {
+  color: #bbb !important;
+}
+
+.dark input:focus, 
+.dark textarea:focus, 
+.dark select:focus {
+  border-color: #c18654 !important;
+  box-shadow: 0 0 0 3px rgba(193, 134, 84, 0.2) !important;
+}
+
+.dark option {
+  background-color: #4b5563;
+  color: #ffffff;
 }

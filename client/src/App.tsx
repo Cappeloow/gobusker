@@ -9,12 +9,13 @@ import { ProfileShop } from './components/profile/ProfileShop';
 import { EventDetail } from './components/event/EventDetail';
 import { LandingPage } from './components/landing/LandingPage';
 import { Success } from './components/payment/Success';
+import { Layout } from './components/layout/Layout';
 import './App.css';
 
 export default function App() {
   return (
-    <div className="app-container" style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      <Router>
+    <Router>
+      <Layout>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -27,7 +28,7 @@ export default function App() {
           <Route path="/event/:id" element={<EventDetail />} />
           <Route path="/payment/success" element={<Success />} />
         </Routes>
-      </Router>
-    </div>
+      </Layout>
+    </Router>
   );
 }

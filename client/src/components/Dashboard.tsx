@@ -63,82 +63,53 @@ export function Dashboard() {
 
   if (isLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
+      <div className="flex justify-center items-center h-screen">
         Loading...
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ 
-        maxWidth: '1000px', 
-        margin: '0 auto',
-        padding: '20px',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h1>Welcome to Your Dashboard</h1>
-        <p>Logged in as: {userEmail}</p>
+    <div className="p-5">
+      <div className="max-w-4xl mx-auto p-5 bg-white dark:bg-secondary rounded-lg shadow-md dark:shadow-lg">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to Your Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Logged in as: {userEmail}</p>
         
         {/* Tab Navigation */}
-        <div style={{ marginTop: '30px', marginBottom: '20px', display: 'flex', gap: '10px', borderBottom: '2px solid #e0e0e0' }}>
+        <div className="mt-7 mb-5 flex gap-2 border-b-2 border-gray-300 dark:border-gray-600">
           <button
             onClick={() => setActiveTab('profiles')}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: activeTab === 'profiles' ? '#4285f4' : 'transparent',
-              color: activeTab === 'profiles' ? 'white' : '#666',
-              border: 'none',
-              borderRadius: '4px 4px 0 0',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
+            className={`px-5 py-3 rounded-t-md font-bold transition-colors duration-300 ${
+              activeTab === 'profiles'
+                ? 'bg-primary text-white'
+                : 'bg-transparent text-gray-600 dark:text-gray-400 hover:text-accent'
+            }`}
           >
             Your Profiles
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: activeTab === 'orders' ? '#4285f4' : 'transparent',
-              color: activeTab === 'orders' ? 'white' : '#666',
-              border: 'none',
-              borderRadius: '4px 4px 0 0',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
+            className={`px-5 py-3 rounded-t-md font-bold transition-colors duration-300 ${
+              activeTab === 'orders'
+                ? 'bg-primary text-white'
+                : 'bg-transparent text-gray-600 dark:text-gray-400 hover:text-accent'
+            }`}
           >
             Order History
           </button>
         </div>
 
         {/* Tab Content */}
-        <div style={{ marginTop: '20px' }}>
+        <div className="mt-5">
           {activeTab === 'profiles' ? (
             <div>
-              <h2>Your Profiles</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Your Profiles</h2>
               {userProfiles.length === 0 ? (
-                <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                  <p>You haven't created any profiles yet.</p>
+                <div className="text-center mt-5">
+                  <p className="text-gray-600 dark:text-gray-300 mb-3">You haven't created any profiles yet.</p>
                   <button
                     onClick={() => navigate('/create-profile')}
-                    style={{
-                      padding: '12px 24px',
-                      backgroundColor: '#4285f4',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      marginTop: '10px',
-                      fontSize: '16px'
-                    }}
+                    className="px-6 py-3 bg-primary text-white rounded-md hover:bg-accent transition-colors duration-300 font-medium text-base"
                   >
                     Create Your First Profile
                   </button>
@@ -149,53 +120,24 @@ export function Dashboard() {
                     <div 
                       key={profile.id}
                       onClick={() => navigate(`/profile/${profile.id}`)}
-                      style={{
-                        padding: '15px',
-                        backgroundColor: '#f5f5f5',
-                        borderRadius: '4px',
-                        marginBottom: '10px',
-                        cursor: 'pointer',
-                        transition: 'transform 0.1s, box-shadow 0.1s',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                      }}
-                      onMouseEnter={e => {
-                        const target = e.currentTarget;
-                        target.style.transform = 'translateY(-2px)';
-                        target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-                      }}
-                      onMouseLeave={e => {
-                        const target = e.currentTarget;
-                        target.style.transform = 'none';
-                        target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
-                      }}
+                      className="p-4 bg-gray-100 dark:bg-gray-700 rounded-md mb-3 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-xl"
                     >
-                      <h3>{profile.name}</h3>
-                      <p>{profile.profile_type === 'band' ? '🎸 Band' : '🎵 Artist'}</p>
-                      {profile.bio && <p>{profile.bio}</p>}
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">{profile.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300">{profile.profile_type === 'band' ? '🎸 Band' : '🎵 Artist'}</p>
+                      {profile.bio && <p className="text-gray-600 dark:text-gray-300 mt-1">{profile.bio}</p>}
                       {profile.genres && profile.genres.length > 0 && (
-                        <p style={{ fontSize: '0.9em', color: '#666' }}>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                           {profile.genres.join(' • ')}
                         </p>
                       )}
                     </div>
                   ))}
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                  <div className="flex justify-center mt-5">
                     <button
                       onClick={() => navigate('/create-profile')}
-                      style={{
-                        padding: '12px 24px',
-                        backgroundColor: '#4285f4',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
+                      className="px-6 py-3 bg-primary text-white rounded-md hover:bg-accent transition-colors duration-300 font-medium text-base flex items-center gap-2"
                     >
-                      <span style={{ fontSize: '20px' }}>👤</span>
+                      <span>👤</span>
                       Create Another Profile
                     </button>
                   </div>
@@ -209,15 +151,7 @@ export function Dashboard() {
 
         <button
           onClick={handleSignOut}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#f44336',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
+          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-300 mt-5 font-medium"
         >
           Sign Out
         </button>

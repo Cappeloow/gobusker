@@ -21,21 +21,11 @@ export function Login() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px' }}>
-      <h1 style={{ marginBottom: '20px', textAlign: 'center' }}>Welcome to GoBusker</h1>
+    <div className="max-w-md mx-auto my-10 px-5">
+      <h1 className="text-3xl font-bold text-center mb-5 text-gray-900 dark:text-white">Welcome to GoBusker</h1>
       <button 
         onClick={handleGoogleLogin}
-        style={{
-          display: 'block',
-          width: '100%',
-          padding: '12px',
-          backgroundColor: '#4285f4',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '16px'
-        }}
+        className="w-full py-3 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-300 font-medium text-base"
       >
         Sign in with Google
       </button>

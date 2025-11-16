@@ -77,37 +77,37 @@ export function Success() {
   }, [searchParams]);
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px' }}>
+    <div className="max-w-2xl mx-auto my-10 px-5">
       {sessionStatus === 'loading' && (
-        <div style={{ padding: '40px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-          <div style={{ fontSize: '3em', marginBottom: '20px' }}>⏳</div>
-          <h2>Verifying your payment...</h2>
-          <p>Please wait while we confirm your transaction.</p>
+        <div className="p-10 bg-white dark:bg-secondary rounded-lg shadow-md text-center">
+          <div className="text-5xl mb-5">⏳</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Verifying your payment...</h2>
+          <p className="text-gray-600 dark:text-gray-300">Please wait while we confirm your transaction.</p>
         </div>
       )}
 
       {sessionStatus === 'success' && orderData && (
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <div className="bg-white dark:bg-secondary rounded-lg shadow-md">
           {/* Success Header */}
-          <div style={{ padding: '40px', textAlign: 'center', borderBottom: '1px solid #e0e0e0' }}>
-            <div style={{ fontSize: '3em', marginBottom: '20px' }}>✅</div>
-            <h2 style={{ margin: '0 0 10px 0', color: '#333' }}>Payment Successful!</h2>
-            <p style={{ margin: '0', color: '#666' }}>Thank you for your purchase</p>
+          <div className="p-10 text-center border-b border-gray-300 dark:border-gray-600">
+            <div className="text-5xl mb-5">✅</div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Payment Successful!</h2>
+            <p className="text-gray-600 dark:text-gray-300">Thank you for your purchase</p>
           </div>
 
           {/* Order Summary */}
-          <div style={{ padding: '30px' }}>
+          <div className="p-7">
             {/* Order ID & Date */}
-            <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #f0f0f0' }}>
-              <h3 style={{ margin: '0 0 15px 0', color: '#333', fontSize: '16px' }}>Order Details</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '14px' }}>
+            <div className="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Order Details</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '12px' }}>ORDER ID</p>
-                  <p style={{ margin: '0', color: '#333', fontWeight: '500' }}>{orderData.id}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">ORDER ID</p>
+                  <p className="text-gray-900 dark:text-white font-medium">{orderData.id}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '12px' }}>DATE</p>
-                  <p style={{ margin: '0', color: '#333', fontWeight: '500' }}>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">DATE</p>
+                  <p className="text-gray-900 dark:text-white font-medium">
                     {new Date(orderData.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -115,16 +115,16 @@ export function Success() {
             </div>
 
             {/* Customer Info */}
-            <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #f0f0f0' }}>
-              <h3 style={{ margin: '0 0 15px 0', color: '#333', fontSize: '16px' }}>Customer Information</h3>
-              <div style={{ fontSize: '14px' }}>
-                <p style={{ margin: '0 0 8px 0', color: '#333' }}>
-                  <span style={{ color: '#999', fontSize: '12px', display: 'block', marginBottom: '3px' }}>EMAIL</span>
+            <div className="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Customer Information</h3>
+              <div className="text-sm">
+                <p className="text-gray-900 dark:text-white mb-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">EMAIL</span>
                   {orderData.customer_email}
                 </p>
                 {orderData.customer_name && (
-                  <p style={{ margin: '0', color: '#333' }}>
-                    <span style={{ color: '#999', fontSize: '12px', display: 'block', marginBottom: '3px' }}>NAME</span>
+                  <p className="text-gray-900 dark:text-white">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">NAME</span>
                     {orderData.customer_name}
                   </p>
                 )}
@@ -132,23 +132,23 @@ export function Success() {
             </div>
 
             {/* Items */}
-            <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #f0f0f0' }}>
-              <h3 style={{ margin: '0 0 15px 0', color: '#333', fontSize: '16px' }}>Items Ordered</h3>
+            <div className="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Items Ordered</h3>
               {orderData.items && Array.isArray(orderData.items) && orderData.items.length > 0 ? (
                 <div>
                   {orderData.items.map((item: OrderItem) => (
-                    <div key={item.id} style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #f5f5f5' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <p style={{ margin: '0', color: '#333', fontWeight: '500' }}>{item.name}</p>
-                        <p style={{ margin: '0', color: '#333', fontWeight: '600' }}>
+                    <div key={item.id} className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0">
+                      <div className="flex justify-between mb-2">
+                        <p className="text-gray-900 dark:text-white font-medium">{item.name}</p>
+                        <p className="text-gray-900 dark:text-white font-semibold">
                           {item.price && item.quantity ? ((item.price * item.quantity) / 100).toFixed(2) : 'N/A'} {orderData.currency || 'USD'}
                         </p>
                       </div>
-                      <p style={{ margin: '0 0 5px 0', color: '#999', fontSize: '13px' }}>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                         Qty: {item.quantity || 0} × {item.price ? (item.price / 100).toFixed(2) : 'N/A'} {orderData.currency || 'USD'}
                       </p>
                       {item.description && (
-                        <p style={{ margin: '0', color: '#999', fontSize: '13px', fontStyle: 'italic' }}>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                           {item.description}
                         </p>
                       )}
@@ -156,29 +156,29 @@ export function Success() {
                   ))}
                 </div>
               ) : (
-                <p style={{ margin: '0', color: '#999' }}>No items in this order</p>
+                <p className="text-gray-500 dark:text-gray-400">No items in this order</p>
               )}
             </div>
 
             {/* Total */}
-            <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #f0f0f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: '0', color: '#333', fontSize: '16px' }}>Total Amount</h3>
-                <p style={{ margin: '0', color: '#182632', fontWeight: '700', fontSize: '20px' }}>
+            <div className="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">Total Amount</h3>
+                <p className="text-primary font-bold text-xl">
                   {orderData.total_amount ? (orderData.total_amount / 100).toFixed(2) : '0.00'} {orderData.currency || 'USD'}
                 </p>
               </div>
             </div>
 
             {/* Confirmation Message */}
-            <div style={{ padding: '15px', backgroundColor: '#f0f8f0', borderLeft: '4px solid #4caf50', borderRadius: '4px', marginBottom: '20px' }}>
-              <p style={{ margin: '0', color: '#2e7d32', fontSize: '14px' }}>
+            <div className="p-4 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 rounded mb-5">
+              <p className="text-green-700 dark:text-green-300 text-sm">
                 A confirmation email has been sent to <strong>{orderData.customer_email}</strong>
               </p>
             </div>
 
             {/* Action Button */}
-            <Link to="/dashboard" style={{ display: 'block', textAlign: 'center', padding: '12px 20px', backgroundColor: '#182632', color: 'white', textDecoration: 'none', borderRadius: '4px', fontWeight: '500', transition: 'background-color 0.2s' }}>
+            <Link to="/dashboard" className="block text-center py-3 px-5 bg-primary text-white no-underline rounded font-medium transition-colors duration-200 hover:bg-accent">
               Go to Dashboard
             </Link>
           </div>
@@ -186,11 +186,11 @@ export function Success() {
       )}
 
       {sessionStatus === 'failure' && (
-        <div style={{ padding: '40px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-          <div style={{ fontSize: '3em', marginBottom: '20px' }}>❌</div>
-          <h2>Payment Verification Failed</h2>
-          <p style={{ color: '#f44336', marginBottom: '20px' }}>{errorMessage}</p>
-          <Link to="/dashboard" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#f5f5f5', color: '#333', textDecoration: 'none', borderRadius: '4px' }}>
+        <div className="p-10 bg-white dark:bg-secondary rounded-lg shadow-md text-center">
+          <div className="text-5xl mb-5">❌</div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Payment Verification Failed</h2>
+          <p className="text-red-500 mb-5">{errorMessage}</p>
+          <Link to="/dashboard" className="inline-block py-2 px-5 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white no-underline rounded">
             Return to Dashboard
           </Link>
         </div>

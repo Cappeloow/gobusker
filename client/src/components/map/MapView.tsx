@@ -200,11 +200,6 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
         const isUserLocation = marker.id === 'user-location';
         const markerColor = isUserLocation ? '#2563EB' : '#4CAF50'; // Blue for user, green for events
         
-        // Check if event is today
-        const isEventToday = !isUserLocation && marker.date ? 
-          new Date(marker.date).toDateString() === new Date().toDateString() : 
-          false;
-        
         return (
           <Marker
             key={marker.id}
@@ -212,7 +207,6 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             longitude={marker.longitude}
           >
             <div 
-              className={isEventToday ? 'marker-pulse' : ''}
               style={{
                 width: isUserLocation ? '28px' : '24px',
                 height: isUserLocation ? '28px' : '24px',

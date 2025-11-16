@@ -160,19 +160,3 @@ input::placeholder, textarea::placeholder {
 .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
   border-top-color: rgba(255, 255, 255, 0.9) !important;
 }
-
-/* Pulsing animation for today's events */
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(255, 215, 0, 0);
-    transform: scale(1.05);
-  }
-}
-
-.marker-pulse {
-  animation: pulse 2s infinite;
-}

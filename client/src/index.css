@@ -146,3 +146,33 @@ input::placeholder, textarea::placeholder {
   background-color: #4b5563;
   color: #ffffff;
 }
+
+/* Mapbox Popup Styling */
+.mapboxgl-popup-content {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(4px) !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Pulsing animation for today's events */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 215, 0, 0);
+    transform: scale(1.05);
+  }
+}
+
+.marker-pulse {
+  animation: pulse 2s infinite;
+}

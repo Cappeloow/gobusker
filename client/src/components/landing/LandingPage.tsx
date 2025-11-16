@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { MapView } from '../map/MapView';
 import { eventService } from '../../services/eventService';
 import type { Event } from '../../types/models';
@@ -10,6 +9,7 @@ interface MapFilters {
   location: string;
   category: string;
   subcategory: string;
+  maxDistance: number; // Maximum distance in kilometers
 }
 
 const CATEGORIES: { [key: string]: string[] } = {
@@ -20,16 +20,19 @@ const CATEGORIES: { [key: string]: string[] } = {
 };
 
 export function LandingPage() {
-  const navigate = useNavigate();
   const [filters, setFilters] = useState<MapFilters>({
     timeRange: 'week',
     location: '',
     category: '',
-    subcategory: ''
+    subcategory: '',
+    maxDistance: 50 // Default 50 km
   });
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
+  const [clickedMarker, setClickedMarker] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -42,6 +45,21 @@ export function LandingPage() {
       } finally {
         setLoading(false);
       }
+    }
+
+    // Request user location
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        () => {
+          console.log('Location access denied or unavailable');
+        }
+      );
     }
 
     fetchEvents();
@@ -87,20 +105,36 @@ export function LandingPage() {
       filtered = filtered.filter(event => event.subcategory === filters.subcategory);
     }
 
+    // Filter by distance if user location is available
+    if (userLocation) {
+      filtered = filtered.filter(event => {
+        if (!event.location) return false;
+        const distance = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          event.location.latitude,
+          event.location.longitude
+        );
+        return distance <= filters.maxDistance;
+      });
+    }
+
     setFilteredEvents(filtered);
-  }, [filters, events]);
+    }, [filters, events, userLocation]);  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Hero Section */}
-      <div className="bg-gray-800 text-white p-5 text-center">
-        <h1 className="text-4xl mb-2.5 bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent">
-          Discover Street Music Near You
-        </h1>
-        <p className="text-lg text-gray-300">
-          Find local artists, performances, and events in your area
-        </p>
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex h-[calc(100vh-150px)]">
@@ -124,23 +158,45 @@ export function LandingPage() {
             </div>
           ) : (
             <MapView
-              markers={filteredEvents
-                .filter(event => event.location) // Only show events with location
-                .map(event => ({
-                  id: event.id,
-                  latitude: event.location.latitude,
-                  longitude: event.location.longitude,
-                  title: event.title,
-                  date: new Date(event.start_time).toLocaleString(),
-                  location: event.location.place_name
-                }))}
+              markers={[
+                // User location marker
+                ...(userLocation ? [{
+                  id: 'user-location',
+                  latitude: userLocation.latitude,
+                  longitude: userLocation.longitude,
+                  title: 'Your Location',
+                  date: '',
+                  location: 'You are here'
+                }] : []),
+                // Event markers
+                ...filteredEvents
+                  .filter(event => event.location)
+                  .map(event => ({
+                    id: event.id,
+                    latitude: event.location.latitude,
+                    longitude: event.location.longitude,
+                    title: event.title,
+                    date: event.start_time,
+                    location: event.location.place_name
+                  }))
+              ]}
+              selectedMarkerId={selectedMarker}
+              userLocation={userLocation}
+              onMarkerClick={(markerId) => {
+                setClickedMarker(markerId);
+                setSelectedMarker(markerId);
+              }}
+              onMapClick={() => {
+                setClickedMarker(null);
+                setSelectedMarker(null);
+              }}
             />
           )}
         </div>
 
         {/* Filters & Results Panel */}
         <div className="w-[400px] bg-white shadow-lg p-5 overflow-y-auto">
-          <h2 className="mb-5 text-gray-700">Find Performances</h2>
+          <h1 className="mb-5 text-gray-900">Find Performances</h1>
 
           {/* Time Range Filter */}
           <div className="mb-5">
@@ -203,9 +259,90 @@ export function LandingPage() {
             </div>
           )}
 
+          {/* Distance Filter */}
+          {userLocation && (
+            <div className="mb-5">
+              <label className="block mb-2 text-gray-500">
+                Max Distance: <span className="font-semibold text-gray-700">{filters.maxDistance} km</span>
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="500"
+                value={filters.maxDistance}
+                onChange={(e) => setFilters({ ...filters, maxDistance: parseInt(e.target.value) })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>1 km</span>
+                <span>100 km</span>
+              </div>
+            </div>
+          )}
+
           {/* Results Section */}
           <div>
-            <h3 className="mb-4 text-gray-700">Upcoming Events</h3>
+            <h3 className="mb-4 text-gray-700">Upcoming Events ({filteredEvents.length})</h3>
+            
+            {userLocation && (
+              <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/30 rounded text-sm text-blue-700 dark:text-blue-300">
+                📍 Location detected - showing distances
+              </div>
+            )}
+
+            {filteredEvents.length === 0 ? (
+              <p className="text-gray-500">No events found</p>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredEvents.map((event) => {
+                  const distance = userLocation && event.location
+                    ? calculateDistance(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        event.location.latitude,
+                        event.location.longitude
+                      )
+                    : null;
+
+                  return (
+                    <div
+                      key={event.id}
+                      onClick={() => {
+                        setClickedMarker(event.id);
+                        setSelectedMarker(event.id);
+                      }}
+                      onMouseEnter={() => {
+                        // Only change selection on hover if nothing is clicked
+                        if (!clickedMarker) {
+                          setSelectedMarker(event.id);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        // Only clear on mouse leave if nothing is clicked
+                        if (!clickedMarker) {
+                          setSelectedMarker(null);
+                        }
+                      }}
+                      className={`p-3 rounded cursor-pointer transition-colors ${
+                        selectedMarker === event.id
+                          ? 'bg-green-100 dark:bg-green-900/30 border-2 border-green-500'
+                          : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <div className="font-semibold text-gray-900 dark:text-white text-sm">{event.title}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                        {new Date(event.start_time).toLocaleDateString()}
+                      </div>
+                      {distance !== null && (
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          📍 {distance.toFixed(1)} km away
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

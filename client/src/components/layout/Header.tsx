@@ -42,7 +42,7 @@ export function Header({ isDarkMode, onToggleDarkMode }: HeaderProps) {
           className={`text-2xl font-bold cursor-pointer flex items-center gap-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-primary'}`}
         >
           <span className="text-3xl">🎵</span>
-          GoBusker
+          Busker
         </div>
 
         {/* Right Section */}

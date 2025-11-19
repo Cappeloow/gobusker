@@ -144,9 +144,12 @@ export function CreateEvent() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block mb-1 font-medium text-gray-900 dark:text-white">Title</label>
+      <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-4">
+        {/* Title */}
+        <div className="col-span-1 flex items-center">
+          <label className="font-medium text-gray-900 dark:text-white">Title</label>
+        </div>
+        <div className="col-span-3">
           <input
             type="text"
             value={form.title}
@@ -156,8 +159,11 @@ export function CreateEvent() {
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium text-gray-900 dark:text-white">Description</label>
+        {/* Description */}
+        <div className="col-span-1 flex items-start pt-2">
+          <label className="font-medium text-gray-900 dark:text-white">Description</label>
+        </div>
+        <div className="col-span-3">
           <textarea
             value={form.description}
             onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
@@ -166,43 +172,90 @@ export function CreateEvent() {
           />
         </div>
 
-        <div className="mb-4 flex gap-4">
-          <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-900 dark:text-white">Start Time</label>
-            <input
-              type="datetime-local"
-              value={form.start_time}
-              onChange={e => setForm(prev => ({ ...prev, start_time: e.target.value }))}
-              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              required
-            />
-          </div>
+        {/* Event Timeline */}
+        <div className="col-span-1 flex items-start pt-2">
+          <label className="font-medium text-gray-900 dark:text-white">Timeline</label>
+        </div>
+        <div className="col-span-3">
+          <div className="flex gap-6 items-stretch">
+            {/* Timeline visualization */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Start</div>
+              <div className="w-3 h-3 bg-green-500 rounded-full border-2 border-green-600"></div>
+              <div className="w-1 flex-1 bg-gradient-to-b from-green-500 to-red-500"></div>
+              <div className="w-3 h-3 bg-red-500 rounded-full border-2 border-red-600"></div>
+              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">End</div>
+            </div>
 
-          <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-900 dark:text-white">End Time</label>
-            <input
-              type="datetime-local"
-              value={form.end_time}
-              onChange={e => setForm(prev => ({ ...prev, end_time: e.target.value }))}
-              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              required
-            />
+            {/* Input fields */}
+            <div className="flex-1 flex flex-col gap-4">
+              {/* Start Date & Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date & Time</label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={form.start_time.split('T')[0]}
+                    onChange={e => {
+                      const date = e.target.value;
+                      const time = form.start_time.split('T')[1] || '12:00';
+                      setForm(prev => ({ ...prev, start_time: `${date}T${time}` }));
+                    }}
+                    className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    required
+                  />
+                  <input
+                    type="time"
+                    value={form.start_time.split('T')[1] || '12:00'}
+                    onChange={e => {
+                      const date = form.start_time.split('T')[0] || new Date().toISOString().split('T')[0];
+                      setForm(prev => ({ ...prev, start_time: `${date}T${e.target.value}` }));
+                    }}
+                    className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-32"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Spacing */}
+              <div className="flex-1"></div>
+
+              {/* End Date & Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date & Time</label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={form.end_time.split('T')[0]}
+                    onChange={e => {
+                      const date = e.target.value;
+                      const time = form.end_time.split('T')[1] || '13:00';
+                      setForm(prev => ({ ...prev, end_time: `${date}T${time}` }));
+                    }}
+                    className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    required
+                  />
+                  <input
+                    type="time"
+                    value={form.end_time.split('T')[1] || '13:00'}
+                    onChange={e => {
+                      const date = form.end_time.split('T')[0] || new Date().toISOString().split('T')[0];
+                      setForm(prev => ({ ...prev, end_time: `${date}T${e.target.value}` }));
+                    }}
+                    className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-32"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-1 font-medium text-gray-900 dark:text-white">Location</label>
-          <input
-            type="text"
-            value={form.location.place_name}
-            onChange={e => setForm(prev => ({
-              ...prev,
-              location: { ...prev.location, place_name: e.target.value }
-            }))}
-            placeholder="Enter location name"
-            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            required
-          />
+        {/* Location */}
+        <div className="col-span-1 flex items-start pt-2">
+          <label className="font-medium text-gray-900 dark:text-white">Location</label>
+        </div>
+        <div className="col-span-3">
           <LocationSelectMap
             onLocationSelect={(location) => {
               setForm(prev => ({
@@ -215,6 +268,13 @@ export function CreateEvent() {
                 }
               }));
             }}
+            onPlaceNameChange={(placeName) => {
+              setForm(prev => ({
+                ...prev,
+                location: { ...prev.location, place_name: placeName }
+              }));
+            }}
+            placeName={form.location.place_name}
             initialLocation={form.location.latitude !== 0 ? {
               latitude: form.location.latitude,
               longitude: form.location.longitude
@@ -222,14 +282,19 @@ export function CreateEvent() {
           />
           {form.location.latitude !== 0 && (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Selected location: {form.location.latitude.toFixed(6)}, {form.location.longitude.toFixed(6)}
+              📍 {form.location.latitude.toFixed(6)}, {form.location.longitude.toFixed(6)}
             </p>
           )}
         </div>
 
-        <div className="mb-4 flex gap-4">
-          <div className="flex-1">
-            <label className="block mb-1 font-medium text-gray-900 dark:text-white">Category</label>
+        {/* Category & Subcategory */}
+        <div className="col-span-1 flex items-start pt-2">
+          <label className="font-medium text-gray-900 dark:text-white">Category</label>
+        </div>
+        <div className="col-span-3">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block mb-1 font-medium text-gray-900 dark:text-white text-left">Category</label>
             <select
               value={form.category}
               onChange={e => setForm(prev => ({ ...prev, category: e.target.value, subcategory: '' }))}
@@ -259,10 +324,14 @@ export function CreateEvent() {
               </select>
             </div>
           )}
+          </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-1">Collaborators</label>
+        {/* Collaborators */}
+        <div className="col-span-1 flex items-start pt-2">
+          <label className="font-medium text-gray-900 dark:text-white">Collaborators</label>
+        </div>
+        <div className="col-span-3">
           <input
             type="text"
             value={searchTerm}
@@ -310,21 +379,24 @@ export function CreateEvent() {
           )}
         </div>
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="flex-1 px-3 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex-[2] px-3 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? 'Creating...' : 'Create Event'}
-          </button>
+        {/* Buttons */}
+        <div className="col-span-4">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex-1 px-3 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-[2] px-3 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? 'Creating...' : 'Create Event'}
+            </button>
+          </div>
         </div>
       </form>
     </div>

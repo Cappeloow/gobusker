@@ -57,9 +57,11 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
 interface LocationSelectMapProps {
   onLocationSelect: (location: { latitude: number; longitude: number; place_name?: string }) => void;
   initialLocation?: { latitude: number; longitude: number };
+  onPlaceNameChange?: (placeName: string) => void;
+  placeName?: string;
 }
 
-export function LocationSelectMap({ onLocationSelect, initialLocation }: LocationSelectMapProps) {
+export function LocationSelectMap({ onLocationSelect, initialLocation, onPlaceNameChange, placeName = '' }: LocationSelectMapProps) {
   const [markerPosition, setMarkerPosition] = useState(initialLocation || {
     latitude: 59.3293,
     longitude: 18.0686
@@ -113,13 +115,36 @@ export function LocationSelectMap({ onLocationSelect, initialLocation }: Locatio
         position: 'absolute',
         bottom: '10px',
         left: '10px',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        padding: '8px',
+        right: '10px',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        padding: '12px',
         borderRadius: '4px',
-        fontSize: '12px',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        backdropFilter: 'blur(4px)'
       }}>
-        Click to place marker or drag marker to select location
+        <input
+          type="text"
+          value={placeName}
+          onChange={(e) => onPlaceNameChange?.(e.target.value)}
+          placeholder="Location name"
+          style={{
+            width: '100%',
+            padding: '8px',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            fontSize: '14px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            marginBottom: '4px'
+          }}
+        />
+        <div style={{
+          fontSize: '12px',
+          color: '#666',
+          lineHeight: '1.4'
+        }}>
+          💡 Click on the map to place a marker or drag the marker to select location
+        </div>
       </div>
     </div>
   );

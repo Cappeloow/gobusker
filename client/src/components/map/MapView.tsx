@@ -96,7 +96,15 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
   // Fetch route data from Mapbox Directions API
   useEffect(() => {
     const fetchRoute = async () => {
+      // Clear route if no selection, no user location, or selected marker doesn't exist in current markers
       if (!selectedMarkerId || !selectedEventMarker || !userLocation) {
+        setRouteData(null);
+        return;
+      }
+
+      // Check if the selected marker still exists in the markers list
+      const markerExists = markers.some(m => m.id === selectedMarkerId && m.id !== 'user-location');
+      if (!markerExists) {
         setRouteData(null);
         return;
       }
@@ -164,7 +172,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
     };
 
     fetchRoute();
-  }, [selectedMarkerId, selectedEventMarker, userLocation]);
+  }, [selectedMarkerId, selectedEventMarker, userLocation, markers]);
 
   return (
     <Map

@@ -120,7 +120,17 @@ export function LandingPage() {
     }
 
     setFilteredEvents(filtered);
-    }, [filters, events, userLocation]);  // Calculate distance between two coordinates using Haversine formula
+    }, [filters, events, userLocation]);
+
+  // Clear selection if the selected marker is no longer in filtered events
+  useEffect(() => {
+    if (selectedMarker && !filteredEvents.some(event => event.id === selectedMarker)) {
+      setSelectedMarker(null);
+      setClickedMarker(null);
+    }
+  }, [filteredEvents, selectedMarker]);
+
+  // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371; // Earth's radius in kilometers
     const dLat = (lat2 - lat1) * Math.PI / 180;

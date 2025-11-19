@@ -307,11 +307,20 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                 </div>
                 
                 {selectedEventMarker.location && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div 
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                    onClick={() => {
+                      if (selectedEventMarker.location) {
+                        const address = encodeURIComponent(selectedEventMarker.location);
+                        window.open(`https://www.google.com/maps/search/${address}`, '_blank');
+                      }
+                    }}
+                    title="Open in Google Maps"
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF6B6B" style={{ minWidth: '16px' }}>
                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                     </svg>
-                    <span>{selectedEventMarker.location}</span>
+                    <span style={{ textDecoration: 'underline' }}>{selectedEventMarker.location}</span>
                   </div>
                 )}
               </div>

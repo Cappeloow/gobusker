@@ -135,11 +135,11 @@ export function CreateEvent() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto my-10 px-5 py-5 bg-white dark:bg-secondary rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-5">Create New Event</h2>
+    <div className="max-w-2xl mx-auto my-10 px-5 py-5 bg-white dark:bg-github-card rounded-lg shadow-md border dark:border-github-border">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-github-text mb-5">Create New Event</h2>
 
       {error && (
-        <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 rounded mb-5">
+        <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded mb-5 border border-red-300 dark:border-red-800">
           {error}
         </div>
       )}
@@ -147,51 +147,51 @@ export function CreateEvent() {
       <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-4">
         {/* Title */}
         <div className="col-span-1 flex items-center">
-          <label className="font-medium text-gray-900 dark:text-white">Title</label>
+          <label className="font-medium text-gray-900 dark:text-github-text">Title</label>
         </div>
         <div className="col-span-3">
           <input
             type="text"
             value={form.title}
             onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text placeholder-gray-500 dark:placeholder-github-placeholder"
             required
           />
         </div>
 
         {/* Description */}
         <div className="col-span-1 flex items-start pt-2">
-          <label className="font-medium text-gray-900 dark:text-white">Description</label>
+          <label className="font-medium text-gray-900 dark:text-github-text">Description</label>
         </div>
         <div className="col-span-3">
           <textarea
             value={form.description}
             onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-24"
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text placeholder-gray-500 dark:placeholder-github-placeholder min-h-24"
             required
           />
         </div>
 
         {/* Event Timeline */}
         <div className="col-span-1 flex items-start pt-2">
-          <label className="font-medium text-gray-900 dark:text-white">Timeline</label>
+          <label className="font-medium text-gray-900 dark:text-github-text">Timeline</label>
         </div>
         <div className="col-span-3">
           <div className="flex gap-6 items-stretch">
             {/* Timeline visualization */}
             <div className="flex flex-col items-center gap-2">
-              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Start</div>
+              <div className="text-xs font-semibold text-gray-600 dark:text-github-text-secondary uppercase">Start</div>
               <div className="w-3 h-3 bg-green-500 rounded-full border-2 border-green-600"></div>
               <div className="w-1 flex-1 bg-gradient-to-b from-green-500 to-red-500"></div>
               <div className="w-3 h-3 bg-red-500 rounded-full border-2 border-red-600"></div>
-              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">End</div>
+              <div className="text-xs font-semibold text-gray-600 dark:text-github-text-secondary uppercase">End</div>
             </div>
 
             {/* Input fields */}
             <div className="flex-1 flex flex-col gap-4">
               {/* Start Date & Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date & Time</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-github-text-secondary mb-2">Start Date & Time</label>
                 <div className="flex gap-2">
                   <input
                     type="date"
@@ -201,7 +201,7 @@ export function CreateEvent() {
                       const time = form.start_time.split('T')[1] || '12:00';
                       setForm(prev => ({ ...prev, start_time: `${date}T${time}` }));
                     }}
-                    className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text text-sm"
                     required
                   />
                   <input
@@ -211,7 +211,7 @@ export function CreateEvent() {
                       const date = form.start_time.split('T')[0] || new Date().toISOString().split('T')[0];
                       setForm(prev => ({ ...prev, start_time: `${date}T${e.target.value}` }));
                     }}
-                    className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-32"
+                    className="px-3 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text text-sm w-32"
                     required
                   />
                 </div>
@@ -222,7 +222,7 @@ export function CreateEvent() {
 
               {/* End Date & Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date & Time</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-github-text-secondary mb-2">End Date & Time</label>
                 <div className="flex gap-2">
                   <input
                     type="date"
@@ -232,7 +232,7 @@ export function CreateEvent() {
                       const time = form.end_time.split('T')[1] || '13:00';
                       setForm(prev => ({ ...prev, end_time: `${date}T${time}` }));
                     }}
-                    className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text text-sm"
                     required
                   />
                   <input
@@ -242,7 +242,7 @@ export function CreateEvent() {
                       const date = form.end_time.split('T')[0] || new Date().toISOString().split('T')[0];
                       setForm(prev => ({ ...prev, end_time: `${date}T${e.target.value}` }));
                     }}
-                    className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-32"
+                    className="px-3 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text text-sm w-32"
                     required
                   />
                 </div>
@@ -253,7 +253,7 @@ export function CreateEvent() {
 
         {/* Location */}
         <div className="col-span-1 flex items-start pt-2">
-          <label className="font-medium text-gray-900 dark:text-white">Location</label>
+          <label className="font-medium text-gray-900 dark:text-github-text">Location</label>
         </div>
         <div className="col-span-3">
           <LocationSelectMap
@@ -281,7 +281,7 @@ export function CreateEvent() {
             } : undefined}
           />
           {form.location.latitude !== 0 && (
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-sm text-gray-600 dark:text-github-text-secondary">
               📍 {form.location.latitude.toFixed(6)}, {form.location.longitude.toFixed(6)}
             </p>
           )}
@@ -289,21 +289,21 @@ export function CreateEvent() {
 
         {/* Category & Subcategory */}
         <div className="col-span-1 flex items-start pt-2">
-          <label className="font-medium text-gray-900 dark:text-white">Category</label>
+          <label className="font-medium text-gray-900 dark:text-github-text">Category</label>
         </div>
         <div className="col-span-3">
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block mb-1 font-medium text-gray-900 dark:text-white text-left">Category</label>
+              <label className="block mb-1 font-medium text-gray-900 dark:text-github-text text-left">Category</label>
             <select
               value={form.category}
               onChange={e => setForm(prev => ({ ...prev, category: e.target.value, subcategory: '' }))}
-              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-2 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text"
               required
             >
-              <option value="" disabled>Select a category</option>
+              <option value="" disabled className="dark:bg-github-bg">Select a category</option>
               {Object.keys(CATEGORIES).map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat} className="dark:bg-github-bg">{cat}</option>
               ))}
             </select>
           </div>
@@ -314,12 +314,12 @@ export function CreateEvent() {
               <select
                 value={form.subcategory}
                 onChange={e => setForm(prev => ({ ...prev, subcategory: e.target.value }))}
-                className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-2 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text"
                 required
               >
-                <option value="" disabled>Select a subcategory</option>
+                <option value="" disabled className="dark:bg-github-bg">Select a subcategory</option>
                 {CATEGORIES[form.category].map(subcat => (
-                  <option key={subcat} value={subcat}>{subcat}</option>
+                  <option key={subcat} value={subcat} className="dark:bg-github-bg">{subcat}</option>
                 ))}
               </select>
             </div>
@@ -329,7 +329,7 @@ export function CreateEvent() {
 
         {/* Collaborators */}
         <div className="col-span-1 flex items-start pt-2">
-          <label className="font-medium text-gray-900 dark:text-white">Collaborators</label>
+          <label className="font-medium text-gray-900 dark:text-github-text">Collaborators</label>
         </div>
         <div className="col-span-3">
           <input
@@ -337,20 +337,21 @@ export function CreateEvent() {
             value={searchTerm}
             onChange={e => handleSearchCollaborators(e.target.value)}
             placeholder="Search for artists or bands"
-            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full px-2 py-2 rounded border border-gray-300 dark:border-github-border bg-white dark:bg-github-bg text-gray-900 dark:text-github-text placeholder-gray-500 dark:placeholder-github-placeholder"
           />
           
           {searchResults.length > 0 && (
-            <div className="mt-1 border border-gray-300 dark:border-gray-600 rounded-lg max-h-52 overflow-y-auto dark:bg-secondary">
+            <div className="mt-1 border border-gray-300 dark:border-github-border rounded-lg max-h-52 overflow-y-auto dark:bg-github-card">
               {searchResults.map(profile => (
                 <div
                   key={profile.id}
                   onClick={() => addCollaborator(profile)}
-                  className="px-2 py-2 cursor-pointer border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="px-2 py-2 cursor-pointer border-b border-gray-200 dark:border-github-border bg-white dark:bg-github-bg hover:bg-gray-100 dark:hover:bg-github-card transition-colors"
                 >
-                  <div className="font-bold dark:text-white">{profile.name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {profile.profile_type === 'band' ? '��� Band' : '��� Artist'}
+                  <div className="font-bold dark:text-github-text">{profile.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-github-text-secondary flex items-center gap-1">
+                    <span className="text-white">{profile.profile_type === 'band' ? '🎸' : '🎤'}</span>
+                    <span>{profile.profile_type === 'band' ? 'Band' : 'Artist'}</span>
                   </div>
                 </div>
               ))}
@@ -359,13 +360,13 @@ export function CreateEvent() {
 
           {selectedCollaborators.length > 0 && (
             <div className="mt-3">
-              <h4 className="dark:text-white">Selected Collaborators:</h4>
+              <h4 className="dark:text-github-text">Selected Collaborators:</h4>
               {selectedCollaborators.map(({ profile }) => (
                 <div
                   key={profile.id}
-                  className="flex items-center justify-between px-2 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg mt-1"
+                  className="flex items-center justify-between px-2 py-2 bg-gray-100 dark:bg-github-bg rounded-lg mt-1"
                 >
-                  <span className="dark:text-white">{profile.name}</span>
+                  <span className="dark:text-github-text">{profile.name}</span>
                   <button
                     type="button"
                     onClick={() => removeCollaborator(profile.id)}
@@ -385,14 +386,14 @@ export function CreateEvent() {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex-1 px-3 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 px-3 py-3 bg-gray-100 dark:bg-github-border text-gray-800 dark:text-github-text rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-github-border dark:hover:brightness-125 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-[2] px-3 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+              className="flex-[2] px-3 py-3 bg-blue-500 dark:bg-github-blue text-white rounded-lg cursor-pointer hover:bg-blue-600 dark:hover:bg-github-blue-dark disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Creating...' : 'Create Event'}
             </button>

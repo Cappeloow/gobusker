@@ -21,8 +21,8 @@ export function Layout({ children }: LayoutProps) {
     // Apply dark mode class to document
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
-      document.documentElement.style.backgroundColor = '#0d0d0d';
-      document.documentElement.style.color = '#ffffff';
+      document.documentElement.style.backgroundColor = '#0D1117';
+      document.documentElement.style.color = '#F0F6FC';
     } else {
       document.documentElement.classList.remove('dark');
       document.documentElement.style.backgroundColor = '#ffffff';
@@ -35,7 +35,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-github-bg text-gray-900 dark:text-github-text transition-colors duration-300">
       <Header isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
       
       <main className="flex-1 py-5 px-0">

@@ -1,21 +1,39 @@
 export interface Profile {
   id: string;
-  user_id: string;
+  user_id?: string;
 
+  // Basic Info
   name: string;
-  bio: string;
-  profile_type: 'individual' | 'band';
+  bio?: string;
   avatar_url?: string;
-  created_at: string;
-  updated_at: string;
+
+  // Role-based fields
+  role: 'eventmaker' | 'busker' | 'viewer';
+  profile_type?: 'individual' | 'band';
+
+  // For Buskers
+  stage_name?: string;
+  performance_type?: 'music' | 'comedy' | 'magic' | 'art' | 'other';
+  genres?: string[];
+  instruments?: string[];
   social_links?: {
     instagram?: string;
     youtube?: string;
     spotify?: string;
     website?: string;
   };
-  genres?: string[];
-  instruments?: string[];
+
+  // For Eventmakers
+  organization_name?: string;
+  contact_info?: string;
+  event_types?: string[];
+
+  // For Viewers
+  location?: string;
+
+  // Metadata
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface BandMembership {

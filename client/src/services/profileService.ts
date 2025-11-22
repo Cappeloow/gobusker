@@ -22,10 +22,21 @@ export const profileService = {
     return publicUrl;
   },
   async createProfile(profile: Omit<Profile, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
+    // Get current authenticated user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Create new profile with new UUID (not tied to user.id)
+    // This allows one user to have multiple profiles
     const { data, error } = await supabase
       .from('profiles')
       .insert([{
+        user_id: user.id,  // Link to auth user, but don't use as profile ID
         ...profile
+        // id will be auto-generated
       }])
       .select()
       .single();

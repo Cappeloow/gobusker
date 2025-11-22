@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ViewStateChangeEvent } from 'react-map-gl';
 import { Map, Marker, NavigationControl, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -12,6 +13,12 @@ interface EventMarker {
   title: string;
   date: string;
   location?: string;
+  profile?: {
+    id: string;
+    name: string;
+    avatar_url?: string;
+    profile_type?: 'individual' | 'band';
+  };
 }
 
 interface MapViewProps {
@@ -25,11 +32,11 @@ interface MapViewProps {
 }
 
 export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, onMarkerClick, onMapClick }: MapViewProps) {
+  const navigate = useNavigate();
   const [routeData, setRouteData] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [countdown, setCountdown] = useState<string>('');
   const [countdownColor, setCountdownColor] = useState<string>('#666');
-  const [isToday, setIsToday] = useState(false);
   const [travelTimes, setTravelTimes] = useState<{ walk: string; bike: string; car: string } | null>(null);
   const [viewport, setViewport] = useState({
     latitude: center[1],
@@ -106,7 +113,6 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       if (isNaN(eventTime.getTime())) {
         setCountdown('Invalid date');
         setCountdownColor('#999');
-        setIsToday(false);
         return;
       }
 
@@ -115,17 +121,12 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       if (diff < 0) {
         setCountdown('Event has started');
         setCountdownColor('#999');
-        setIsToday(false);
         return;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-      // Check if event is today
-      const isEventToday = eventTime.toDateString() === now.toDateString();
-      setIsToday(isEventToday);
 
       // Determine color and text
       if (days === 0 && hours === 0 && minutes <= 30) {
@@ -309,59 +310,61 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
       {/* Event Details Card at Top-Left Corner */}
       {selectedEventMarker && (
-        <div style={{
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          zIndex: 10,
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.4)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-          padding: '0',
-          width: isExpanded ? '450px' : '380px',
-          maxHeight: isExpanded ? '90vh' : 'auto',
-          transition: 'width 0.3s ease',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
+        <div className={`absolute top-0 left-0 z-10 bg-github-card backdrop-blur-lg border border-github-border shadow-2xl flex flex-col transition-all duration-300 ${isExpanded ? 'w-[450px] max-h-[90vh]' : 'w-[380px]'}`}>
           {/* Header */}
-          <div style={{
-            padding: '20px',
-            borderBottom: isExpanded ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'start'
-          }}>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ margin: '0 0 12px 0', color: '#1a1a1a', fontSize: '20px', fontWeight: 'bold' }}>
+          <div className={`p-5 flex justify-between items-start ${isExpanded ? 'border-b border-github-border' : ''}`}>
+            <div className="flex-1">
+              {/* Event Creator - Clickable */}
+              {selectedEventMarker.profile && (
+                <div
+                  onClick={() => {
+                    if (selectedEventMarker.profile) {
+                      navigate(`/profile/${selectedEventMarker.profile.id}`);
+                    }
+                  }}
+                  className="mb-3 p-2 bg-github-bg border border-github-border rounded-lg hover:border-github-blue cursor-pointer transition-all duration-200 flex items-center gap-2 group"
+                >
+                  {selectedEventMarker.profile.avatar_url && (
+                    <img
+                      src={selectedEventMarker.profile.avatar_url}
+                      alt={selectedEventMarker.profile.name}
+                      className="w-8 h-8 rounded-full object-cover border border-github-border group-hover:border-github-blue transition-colors flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-github-text-muted">By</p>
+                    <p className="text-xs font-semibold text-github-text group-hover:text-github-blue transition-colors truncate">
+                      {selectedEventMarker.profile.name}
+                    </p>
+                  </div>
+                  <span className="text-github-blue text-sm group-hover:translate-x-1 transition-transform flex-shrink-0">→</span>
+                </div>
+              )}
+              
+              <h2 className="m-0 mb-3 text-github-text text-xl font-bold">
                 {selectedEventMarker.title}
               </h2>
               
               {countdown && (
-                <div style={{
-                  marginBottom: '12px',
-                  padding: '8px 12px',
-                  backgroundColor: `${countdownColor}20`,
-                  borderLeft: `3px solid ${countdownColor}`,
-                  borderRadius: '4px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: countdownColor
-                }}>
+                <div className={`mb-3 p-3 rounded text-sm font-semibold`}
+                  style={{
+                    backgroundColor: `${countdownColor}20`,
+                    borderLeft: `3px solid ${countdownColor}`,
+                    color: countdownColor
+                  }}>
                   ⏱️ {countdown}
                 </div>
               )}
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: '#555', fontSize: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '16px' }}>📅</span>
+              <div className="flex flex-col gap-2.5 text-github-text-secondary text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📅</span>
                   <span>{new Date(selectedEventMarker.date).toLocaleString()}</span>
                 </div>
                 
                 {selectedEventMarker.location && (
                   <div 
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                    className="flex items-center gap-2 cursor-pointer hover:text-github-blue"
                     onClick={() => {
                       if (selectedEventMarker.location) {
                         const address = encodeURIComponent(selectedEventMarker.location);
@@ -370,10 +373,10 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                     }}
                     title="Open in Google Maps"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF6B6B" style={{ minWidth: '16px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF6B6B" className="min-w-4">
                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                     </svg>
-                    <span style={{ textDecoration: 'underline' }}>{selectedEventMarker.location}</span>
+                    <span className="underline">{selectedEventMarker.location}</span>
                   </div>
                 )}
               </div>
@@ -381,21 +384,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             
             <button
               onClick={() => onMapClick?.()}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                marginLeft: '12px',
-                color: '#999',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#333'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#999'}
+              className="bg-transparent border-none text-2xl cursor-pointer p-1 ml-3 text-github-text-muted hover:text-github-text flex items-center justify-center transition-colors duration-200"
             >
               ✕
             </button>
@@ -403,92 +392,52 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
           {/* Expanded Content */}
           {isExpanded && (
-            <div style={{
-              padding: '20px',
-              overflowY: 'auto',
-              flex: 1,
-              color: '#555',
-              fontSize: '14px',
-              lineHeight: '1.6'
-            }}>
-              <p style={{ margin: '0 0 16px 0' }}>
+            <div className="p-5 overflow-y-auto flex-1 text-github-text-secondary text-sm leading-relaxed">
+              <p className="m-0 mb-4">
                 Additional event details and description would go here. You can add more information about the event such as the organizer, ticket prices, capacity, and other relevant details.
               </p>
 
               {/* Travel Time Information */}
               {travelTimes && userLocation && (
-                <div style={{
-                  backgroundColor: '#f0f8ff',
-                  padding: '16px',
-                  borderRadius: '6px',
-                  marginBottom: '16px',
-                  border: '1px solid #d4e8ff'
-                }}>
-                  <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '600', color: '#1565c0' }}>
+                <div className="bg-github-bg p-4 rounded border border-github-border mb-4">
+                  <h4 className="m-0 mb-3 text-xs font-semibold text-github-blue">
                     ⏱️ Travel Time from Your Location
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                    <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>🚶</div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>Walk</div>
-                      <div style={{ fontWeight: '600', color: '#1565c0' }}>{travelTimes.walk}</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center p-2.5 bg-github-card rounded border border-github-border">
+                      <div className="text-xl mb-1.5">🚶</div>
+                      <div className="text-xs text-github-text-muted mb-1.5">Walk</div>
+                      <div className="font-semibold text-github-blue">{travelTimes.walk}</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>🚴</div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>Bike</div>
-                      <div style={{ fontWeight: '600', color: '#1565c0' }}>{travelTimes.bike}</div>
+                    <div className="text-center p-2.5 bg-github-card rounded border border-github-border">
+                      <div className="text-xl mb-1.5">🚴</div>
+                      <div className="text-xs text-github-text-muted mb-1.5">Bike</div>
+                      <div className="font-semibold text-github-blue">{travelTimes.bike}</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>🚗</div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>Drive</div>
-                      <div style={{ fontWeight: '600', color: '#1565c0' }}>{travelTimes.car}</div>
+                    <div className="text-center p-2.5 bg-github-card rounded border border-github-border">
+                      <div className="text-xl mb-1.5">🚗</div>
+                      <div className="text-xs text-github-text-muted mb-1.5">Drive</div>
+                      <div className="font-semibold text-github-blue">{travelTimes.car}</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div style={{
-                backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                padding: '12px',
-                borderRadius: '4px',
-                marginBottom: '12px'
-              }}>
-                <strong style={{ color: '#FF6B6B' }}>Note:</strong> Click on different events to see their routes on the map.
+              <div className="bg-github-bg p-3 rounded border border-github-border mb-3">
+                <strong className="text-github-blue">Note:</strong> <span className="text-github-text-secondary">Click on different events to see their routes on the map.</span>
               </div>
             </div>
           )}
 
           {/* Read More Button */}
-          <div style={{
-            padding: '16px 20px',
-            borderTop: '1px solid rgba(0, 0, 0, 0.08)',
-            display: 'flex',
-            gap: '8px'
-          }}>
+          <div className="p-4 border-t border-github-border flex gap-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              style={{
-                flex: 1,
-                padding: '10px 16px',
-                backgroundColor: isExpanded ? '#f0f0f0' : '#FF6B6B',
-                color: isExpanded ? '#333' : '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (isExpanded) {
-                  e.currentTarget.style.backgroundColor = '#e0e0e0';
-                } else {
-                  e.currentTarget.style.backgroundColor = '#ff5252';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isExpanded ? '#f0f0f0' : '#FF6B6B';
-              }}
+              className={`flex-1 px-4 py-2.5 rounded text-sm font-semibold transition-all duration-200 ${
+                isExpanded 
+                  ? 'bg-github-bg text-github-text hover:bg-github-card border border-github-border' 
+                  : 'bg-red-600 text-white hover:bg-red-700'
+              }`}
             >
               {isExpanded ? '← Collapse' : 'Read More →'}
             </button>

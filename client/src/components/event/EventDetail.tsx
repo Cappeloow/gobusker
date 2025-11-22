@@ -37,13 +37,13 @@ export function EventDetail() {
       
       try {
         const data = await eventService.getEvent(id);
-        console.log('Received event data:', data); // Debug log
+        console.log('Received event data:', data);
         if (!data) {
           throw new Error('No event data received');
         }
         setEvent(data as EventWithCollaborators);
       } catch (err) {
-        console.error('Error loading event:', err); // Debug log
+        console.error('Error loading event:', err);
         setError(err instanceof Error ? err.message : 'Failed to load event');
       } finally {
         setIsLoading(false);
@@ -58,7 +58,6 @@ export function EventDetail() {
 
     try {
       await eventService.updateCollaborationStatus(event.id, user.id, status);
-      // Reload event to get updated collaboration status
       const updatedEvent = await eventService.getEvent(event.id);
       setEvent(updatedEvent);
     } catch (err) {
@@ -68,208 +67,150 @@ export function EventDetail() {
 
   if (isLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        Loading...
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-github-bg to-github-card">
+        <p className="text-github-text-secondary">Loading...</p>
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div style={{ 
-        maxWidth: '600px', 
-        margin: '40px auto', 
-        padding: '20px',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h2>Error</h2>
-        <p style={{ color: '#f44336' }}>{error || 'Event not found'}</p>
-        <button
-          onClick={() => navigate('/dashboard')}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#4285f4',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
-        >
-          Back to Dashboard
-        </button>
+      <div className="w-full bg-gradient-to-br from-github-bg to-github-card min-h-screen py-8 px-4">
+        <div className="max-w-2xl mx-auto bg-github-card border border-github-border rounded-lg p-8">
+          <h2 className="text-2xl font-bold text-github-text mb-4">Error</h2>
+          <p className="text-red-500 mb-6">{error || 'Event not found'}</p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-white rounded transition-colors"
+          >
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ 
-      maxWidth: '800px', 
-      margin: '40px auto', 
-      padding: '20px' 
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        padding: '30px',
-        marginBottom: '20px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div>
-            <h1 style={{ marginBottom: '10px' }}>{event.title}</h1>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              <p style={{ 
-                display: 'inline-block',
-                padding: '4px 12px',
-                backgroundColor: '#e3f2fd',
-                borderRadius: '20px',
-                fontSize: '0.9em',
-                color: '#1565c0'
-              }}>
-                {event.status}
-              </p>
-              <p style={{ 
-                display: 'inline-block',
-                padding: '4px 12px',
-                backgroundColor: '#f3e5f5',
-                borderRadius: '20px',
-                fontSize: '0.9em',
-                color: '#8e24aa'
-              }}>
-                By {event.profile.name}
-              </p>
-              <p style={{ 
-                display: 'inline-block',
-                padding: '4px 12px',
-                backgroundColor: '#e0f2f1',
-                borderRadius: '20px',
-                fontSize: '0.9em',
-                color: '#00796b'
-              }}>
+    <div className="w-full bg-gradient-to-br from-github-bg to-github-card min-h-screen py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-6 px-4 py-2 bg-github-bg border border-github-border text-github-text hover:border-github-blue rounded transition-colors"
+        >
+          ← Back
+        </button>
+
+        <div className="bg-github-card border border-github-border rounded-lg shadow-xl p-8 mb-6">
+          <h1 className="text-4xl font-bold text-github-text mb-8">{event.title}</h1>
+
+          {/* Event Creator Section - Clickable */}
+          <div
+            onClick={() => navigate(`/profile/${event.profile.id}`)}
+            className="mb-8 p-5 bg-github-bg border border-github-border rounded-lg hover:border-github-blue cursor-pointer transition-all duration-200 flex items-center gap-4 group"
+          >
+            {event.profile.avatar_url && (
+              <img
+                src={event.profile.avatar_url}
+                alt={event.profile.name}
+                className="w-16 h-16 rounded-full object-cover border border-github-border group-hover:border-github-blue transition-colors flex-shrink-0"
+              />
+            )}
+            <div className="flex-1">
+              <p className="text-xs text-github-text-muted uppercase tracking-wide">Event Creator</p>
+              <h3 className="text-xl font-bold text-github-text group-hover:text-github-blue transition-colors mt-1">
+                {event.profile.name}
+              </h3>
+              <p className="text-sm text-github-text-secondary capitalize mt-1">{event.profile.profile_type}</p>
+            </div>
+            <span className="text-github-blue text-xl group-hover:translate-x-1 transition-transform flex-shrink-0">→</span>
+          </div>
+
+          {/* Event Status & Category */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            <span className="inline-block px-3 py-1.5 bg-github-bg border border-github-blue text-github-blue rounded-full text-sm font-semibold">
+              {event.status}
+            </span>
+            {event.category && (
+              <span className="inline-block px-3 py-1.5 bg-github-bg border border-github-border text-github-text-secondary rounded-full text-sm">
                 {event.category}
                 {event.subcategory && ` - ${event.subcategory}`}
-              </p>
-            </div>
+              </span>
+            )}
           </div>
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f5f5f5',
-              color: '#333',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Back
-          </button>
-        </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <h3>Event Details</h3>
-          <p style={{ whiteSpace: 'pre-wrap' }}>{event.description}</p>
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <h3>Date & Time</h3>
-          <p>
-            {new Date(event.start_time).toLocaleString()} - {new Date(event.end_time).toLocaleString()}
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <h3>Location</h3>
-          <p>{event.location.place_name}</p>
-        </div>
-
-        {event.collaborators && event.collaborators.length > 0 && (
-          <div>
-            <h3>Collaborators</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {event.collaborators.map(collab => (
-                <div
-                  key={collab.profile.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px',
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: '4px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {collab.profile.avatar_url && (
-                      <img
-                        src={collab.profile.avatar_url}
-                        alt={`${collab.profile.name}'s avatar`}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          objectFit: 'cover'
-                        }}
-                      />
-                    )}
-                    <span>{collab.profile.name}</span>
-                  </div>
-                  <div>
-                    {collab.status === 'pending' && user?.id === collab.profile.id && (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button
-                          onClick={() => handleCollaborationResponse('accepted')}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: '#4caf50',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleCollaborationResponse('rejected')}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: '#f44336',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    )}
-                    {collab.status !== 'pending' && (
-                      <span style={{
-                        padding: '4px 8px',
-                        backgroundColor: collab.status === 'accepted' ? '#e8f5e9' : '#ffebee',
-                        color: collab.status === 'accepted' ? '#2e7d32' : '#c62828',
-                        borderRadius: '4px',
-                        fontSize: '0.9em'
-                      }}>
-                        {collab.status === 'accepted' ? 'Accepted' : 'Declined'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Event Details */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-github-text mb-3">Event Details</h2>
+            <p className="text-github-text-secondary whitespace-pre-wrap">{event.description}</p>
           </div>
-        )}
+
+          {/* Date & Time */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-github-text mb-3">📅 Date & Time</h2>
+            <p className="text-github-text-secondary">
+              {new Date(event.start_time).toLocaleString()} - {new Date(event.end_time).toLocaleString()}
+            </p>
+          </div>
+
+          {/* Location */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-github-text mb-3">📍 Location</h2>
+            <p className="text-github-text-secondary">{event.location.place_name}</p>
+          </div>
+
+          {/* Collaborators */}
+          {event.collaborators && event.collaborators.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-github-text mb-4">Collaborators</h2>
+              <div className="space-y-3">
+                {event.collaborators.map(collab => (
+                  <div
+                    key={collab.profile.id}
+                    className="flex items-center justify-between p-4 bg-github-bg border border-github-border rounded-lg hover:border-github-blue transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      {collab.profile.avatar_url && (
+                        <img
+                          src={collab.profile.avatar_url}
+                          alt={`${collab.profile.name}'s avatar`}
+                          className="w-10 h-10 rounded-full object-cover border border-github-border"
+                        />
+                      )}
+                      <span className="text-github-text font-medium">{collab.profile.name}</span>
+                    </div>
+                    <div>
+                      {collab.status === 'pending' && user?.id === collab.profile.id && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleCollaborationResponse('accepted')}
+                            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleCollaborationResponse('rejected')}
+                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
+                      {collab.status !== 'pending' && (
+                        <span className={`px-3 py-1 rounded text-xs font-semibold ${
+                          collab.status === 'accepted'
+                            ? 'bg-green-900 text-green-200'
+                            : 'bg-red-900 text-red-200'
+                        }`}>
+                          {collab.status === 'accepted' ? '✓ Accepted' : '✗ Declined'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

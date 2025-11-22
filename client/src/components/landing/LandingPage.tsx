@@ -189,7 +189,13 @@ export function LandingPage() {
                     longitude: event.location.longitude,
                     title: event.title,
                     date: event.start_time,
-                    location: event.location.place_name
+                    location: event.location.place_name,
+                    profile: event.profile ? {
+                      id: event.profile.id,
+                      name: event.profile.name,
+                      avatar_url: event.profile.avatar_url,
+                      profile_type: event.profile.profile_type
+                    } : undefined
                   }))
               ]}
               selectedMarkerId={selectedMarker}

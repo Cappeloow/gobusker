@@ -30,16 +30,69 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
   const [countdown, setCountdown] = useState<string>('');
   const [countdownColor, setCountdownColor] = useState<string>('#666');
   const [isToday, setIsToday] = useState(false);
+  const [travelTimes, setTravelTimes] = useState<{ walk: string; bike: string; car: string } | null>(null);
   const [viewport, setViewport] = useState({
     latitude: center[1],
     longitude: center[0],
     zoom: zoom
   });
 
+  // Calculate travel time based on distance and mode of transport
+  const calculateTravelTime = (distance: number, mode: 'walk' | 'bike' | 'car') => {
+    const speeds = {
+      walk: 5,
+      bike: 15,
+      car: 40
+    };
+    const hours = distance / speeds[mode];
+    const minutes = Math.round(hours * 60);
+    
+    if (minutes < 60) {
+      return `${minutes} min`;
+    }
+    const fullHours = Math.floor(minutes / 60);
+    const remainingMins = minutes % 60;
+    return remainingMins > 0 ? `${fullHours}h ${remainingMins}m` : `${fullHours}h`;
+  };
+
+  // Haversine formula to calculate distance between two coordinates
+  const getDistanceFromCoords = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
   // Get the selected event marker (if any)
   const selectedEventMarker = selectedMarkerId
     ? markers.find(m => m.id === selectedMarkerId && m.id !== 'user-location')
     : null;
+
+  // Calculate travel times when user location or selected marker changes
+  useEffect(() => {
+    if (!selectedEventMarker || !userLocation) {
+      setTravelTimes(null);
+      return;
+    }
+
+    const distance = getDistanceFromCoords(
+      userLocation.latitude,
+      userLocation.longitude,
+      selectedEventMarker.latitude,
+      selectedEventMarker.longitude
+    );
+
+    setTravelTimes({
+      walk: calculateTravelTime(distance, 'walk'),
+      bike: calculateTravelTime(distance, 'bike'),
+      car: calculateTravelTime(distance, 'car')
+    });
+  }, [selectedEventMarker, userLocation]);
 
   // Calculate countdown timer
   useEffect(() => {
@@ -361,6 +414,39 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
               <p style={{ margin: '0 0 16px 0' }}>
                 Additional event details and description would go here. You can add more information about the event such as the organizer, ticket prices, capacity, and other relevant details.
               </p>
+
+              {/* Travel Time Information */}
+              {travelTimes && userLocation && (
+                <div style={{
+                  backgroundColor: '#f0f8ff',
+                  padding: '16px',
+                  borderRadius: '6px',
+                  marginBottom: '16px',
+                  border: '1px solid #d4e8ff'
+                }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '600', color: '#1565c0' }}>
+                    ⏱️ Travel Time from Your Location
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                    <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>🚶</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>Walk</div>
+                      <div style={{ fontWeight: '600', color: '#1565c0' }}>{travelTimes.walk}</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>🚴</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>Bike</div>
+                      <div style={{ fontWeight: '600', color: '#1565c0' }}>{travelTimes.bike}</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '10px', backgroundColor: 'white', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>🚗</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>Drive</div>
+                      <div style={{ fontWeight: '600', color: '#1565c0' }}>{travelTimes.car}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div style={{
                 backgroundColor: 'rgba(255, 107, 107, 0.1)',
                 padding: '12px',

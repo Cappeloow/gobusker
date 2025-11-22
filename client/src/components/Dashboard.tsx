@@ -70,29 +70,31 @@ export function Dashboard() {
   }
 
   return (
-    <div className="p-5">
-      <div className="max-w-4xl mx-auto p-5 bg-white dark:bg-secondary rounded-lg shadow-md dark:shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to Your Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">Logged in as: {userEmail}</p>
+    <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card p-4">
+      <div className="max-w-5xl mx-auto bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-github-text mb-2">Your Dashboard</h1>
+          <p className="text-github-text-secondary">Logged in as: <span className="text-github-blue">{userEmail}</span></p>
+        </div>
         
         {/* Tab Navigation */}
-        <div className="mt-7 mb-5 flex gap-2 border-b-2 border-gray-300 dark:border-gray-600">
+        <div className="flex gap-2 border-b border-github-border mb-8">
           <button
             onClick={() => setActiveTab('profiles')}
-            className={`px-5 py-3 rounded-t-md font-bold transition-colors duration-300 ${
+            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
               activeTab === 'profiles'
-                ? 'bg-primary text-white'
-                : 'bg-transparent text-gray-600 dark:text-gray-400 hover:text-accent'
+                ? 'text-github-blue border-github-blue'
+                : 'text-github-text-secondary border-transparent hover:text-github-text'
             }`}
           >
             Your Profiles
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-5 py-3 rounded-t-md font-bold transition-colors duration-300 ${
+            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
               activeTab === 'orders'
-                ? 'bg-primary text-white'
-                : 'bg-transparent text-gray-600 dark:text-gray-400 hover:text-accent'
+                ? 'text-github-blue border-github-blue'
+                : 'text-github-text-secondary border-transparent hover:text-github-text'
             }`}
           >
             Order History
@@ -100,44 +102,59 @@ export function Dashboard() {
         </div>
 
         {/* Tab Content */}
-        <div className="mt-5">
+        <div>
           {activeTab === 'profiles' ? (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Your Profiles</h2>
               {userProfiles.length === 0 ? (
-                <div className="text-center mt-5">
-                  <p className="text-gray-600 dark:text-gray-300 mb-3">You haven't created any profiles yet.</p>
+                <div className="text-center py-12">
+                  <p className="text-github-text-secondary mb-6 text-lg">You haven't created any profiles yet.</p>
                   <button
                     onClick={() => navigate('/create-profile')}
-                    className="px-6 py-3 bg-primary text-white rounded-md hover:bg-accent transition-colors duration-300 font-medium text-base"
+                    className="px-6 py-3 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200"
                   >
                     Create Your First Profile
                   </button>
                 </div>
               ) : (
                 <div>
-                  {userProfiles.map(profile => (
-                    <div 
-                      key={profile.id}
-                      onClick={() => navigate(`/profile/${profile.id}`)}
-                      className="p-4 bg-gray-100 dark:bg-gray-700 rounded-md mb-3 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-xl"
-                    >
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">{profile.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300">{profile.profile_type === 'band' ? '🎸 Band' : '🎵 Artist'}</p>
-                      {profile.bio && <p className="text-gray-600 dark:text-gray-300 mt-1">{profile.bio}</p>}
-                      {profile.genres && profile.genres.length > 0 && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                          {profile.genres.join(' • ')}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  <div className="flex justify-center mt-5">
+                  <div className="grid gap-4 mb-8">
+                    {userProfiles.map(profile => (
+                      <div 
+                        key={profile.id}
+                        onClick={() => navigate(`/profile/${profile.id}`)}
+                        className="p-6 bg-github-bg border border-github-border rounded-lg cursor-pointer transition-all duration-300 hover:border-github-blue hover:shadow-lg"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-xl font-bold text-github-text">{profile.name}</h3>
+                              <span className="text-sm px-3 py-1 bg-github-card border border-github-border rounded-full text-github-text-secondary capitalize">
+                                {profile.role}
+                              </span>
+                            </div>
+                            {profile.bio && <p className="text-github-text-secondary mb-3">{profile.bio}</p>}
+                            {profile.genres && profile.genres.length > 0 && (
+                              <p className="text-sm text-github-text-muted">
+                                <span className="text-github-text-secondary">Genres:</span> {profile.genres.join(', ')}
+                              </p>
+                            )}
+                            {profile.instruments && profile.instruments.length > 0 && (
+                              <p className="text-sm text-github-text-muted">
+                                <span className="text-github-text-secondary">Instruments:</span> {profile.instruments.join(', ')}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-2xl ml-4">→</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center">
                     <button
                       onClick={() => navigate('/create-profile')}
-                      className="px-6 py-3 bg-primary text-white rounded-md hover:bg-accent transition-colors duration-300 font-medium text-base flex items-center gap-2"
+                      className="px-6 py-3 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
                     >
-                      <span>👤</span>
+                      <span>+</span>
                       Create Another Profile
                     </button>
                   </div>
@@ -149,12 +166,20 @@ export function Dashboard() {
           )}
         </div>
 
-        <button
-          onClick={handleSignOut}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-300 mt-5 font-medium"
-        >
-          Sign Out
-        </button>
+        <div className="flex justify-between items-center mt-8 pt-6 border-t border-github-border">
+          <button
+            onClick={() => navigate('/create-profile')}
+            className="px-6 py-2 text-github-blue hover:text-github-text font-medium transition-colors duration-200"
+          >
+            ← Back
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="px-6 py-2 bg-red-900/20 border border-red-700 text-red-300 hover:bg-red-900/40 rounded-lg font-medium transition-all duration-200"
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
     </div>
   );

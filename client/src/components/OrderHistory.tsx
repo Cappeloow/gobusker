@@ -79,15 +79,15 @@ export function OrderHistory() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="text-gray-600">Loading order history...</div>
+        <div className="text-github-text-secondary">Loading order history...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-700">{error}</p>
+      <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+        <p className="text-red-300">{error}</p>
       </div>
     );
   }
@@ -95,90 +95,90 @@ export function OrderHistory() {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Order History</h2>
-        <p className="text-gray-600 mt-1">Track all your purchases</p>
+        <h2 className="text-2xl font-bold text-github-text">Order History</h2>
+        <p className="text-github-text-secondary mt-1">Track all your purchases</p>
       </div>
 
       {orders.length === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-          <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-github-bg border border-github-border rounded-lg p-8 text-center">
+          <svg className="w-12 h-12 mx-auto text-github-text-muted mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
-          <p className="text-gray-500 text-lg">No orders yet</p>
-          <p className="text-gray-400 text-sm mt-1">Your purchases will appear here</p>
+          <p className="text-github-text-secondary text-lg">No orders yet</p>
+          <p className="text-github-text-muted text-sm mt-1">Your purchases will appear here</p>
         </div>
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <div key={order.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div key={order.id} className="bg-github-card border border-github-border rounded-lg shadow-lg hover:border-github-blue transition-all duration-300">
               {/* Order Header */}
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-6 border-b border-github-border">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Order ID</p>
-                    <p className="font-mono text-sm text-gray-700">{order.stripe_session_id.slice(0, 12)}...</p>
+                    <p className="text-xs text-github-text-secondary uppercase tracking-wide mb-1">Order ID</p>
+                    <p className="font-mono text-sm text-github-text">{order.stripe_session_id.slice(0, 12)}...</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Date</p>
-                    <p className="text-sm text-gray-700">{formatDate(order.created_at)}</p>
+                    <p className="text-xs text-github-text-secondary uppercase tracking-wide mb-1">Date</p>
+                    <p className="text-sm text-github-text">{formatDate(order.created_at)}</p>
                   </div>
                 </div>
               </div>
 
               {/* Order Details */}
-              <div className="p-6 border-b border-gray-100 bg-gray-50">
+              <div className="p-6 border-b border-github-border bg-github-bg">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Status</p>
-                    <p className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <p className="text-xs text-github-text-secondary uppercase tracking-wide mb-1">Status</p>
+                    <p className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/30 text-green-300 border border-green-700">
                       {order.payment_status === 'paid' ? '✓ Paid' : order.payment_status}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Items</p>
-                    <p className="text-sm font-semibold text-gray-900">{order.items?.length || 0}</p>
+                    <p className="text-xs text-github-text-secondary uppercase tracking-wide mb-1">Items</p>
+                    <p className="text-sm font-semibold text-github-text">{order.items?.length || 0}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Currency</p>
-                    <p className="text-sm text-gray-700">{order.currency}</p>
+                    <p className="text-xs text-github-text-secondary uppercase tracking-wide mb-1">Currency</p>
+                    <p className="text-sm text-github-text-secondary">{order.currency}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Amount</p>
-                    <p className="text-lg font-bold text-gray-900">{formatPrice(order.total_amount, order.currency)}</p>
+                    <p className="text-xs text-github-text-secondary uppercase tracking-wide mb-1">Total Amount</p>
+                    <p className="text-lg font-bold text-github-blue">{formatPrice(order.total_amount, order.currency)}</p>
                   </div>
                 </div>
               </div>
 
               {/* Items */}
-              <div className="p-6 border-b border-gray-100">
-                <p className="text-sm font-semibold text-gray-900 mb-3">Items Purchased</p>
+              <div className="p-6 border-b border-github-border">
+                <p className="text-sm font-semibold text-github-text mb-3">Items Purchased</p>
                 <div className="space-y-2">
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, idx) => (
                       <div key={idx} className="flex justify-between text-sm">
                         <div>
-                          <p className="text-gray-700 font-medium">{item.name}</p>
-                          <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
+                          <p className="text-github-text font-medium">{item.name}</p>
+                          <p className="text-github-text-secondary text-xs">Qty: {item.quantity}</p>
                         </div>
-                        <p className="text-gray-900 font-semibold">{formatPrice(item.price * item.quantity, order.currency)}</p>
+                        <p className="text-github-text font-semibold">{formatPrice(item.price * item.quantity, order.currency)}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-sm">No items information available</p>
+                    <p className="text-github-text-secondary text-sm">No items information available</p>
                   )}
                 </div>
               </div>
 
               {/* Customer Info */}
-              <div className="p-6 bg-gray-50">
-                <p className="text-sm font-semibold text-gray-900 mb-2">Customer Information</p>
+              <div className="p-6 bg-github-bg">
+                <p className="text-sm font-semibold text-github-text mb-2">Customer Information</p>
                 <div className="space-y-1">
-                  <p className="text-sm text-gray-700">
-                    <span className="text-gray-500">Email:</span> {order.customer_email}
+                  <p className="text-sm text-github-text-secondary">
+                    <span className="text-github-text-muted">Email:</span> {order.customer_email}
                   </p>
                   {order.customer_name && (
-                    <p className="text-sm text-gray-700">
-                      <span className="text-gray-500">Name:</span> {order.customer_name}
+                    <p className="text-sm text-github-text-secondary">
+                      <span className="text-github-text-muted">Name:</span> {order.customer_name}
                     </p>
                   )}
                 </div>

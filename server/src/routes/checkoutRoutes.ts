@@ -11,11 +11,7 @@ export const checkoutRouter = Router();
  * On success, returns the session URL for frontend redirection.
  */
 checkoutRouter.post('/create-session', async (req: Request, res: Response) => {
-  const { priceId, profileId, email } = req.body;
-
-  if (!priceId) {
-    return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: priceId' });
-  }
+  const { priceId, profileId, email, tipId, tipAmount } = req.body;
 
   if (!profileId) {
     return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: profileId' });
@@ -25,37 +21,66 @@ checkoutRouter.post('/create-session', async (req: Request, res: Response) => {
     return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: email' });
   }
 
-  // Use environment variables for frontend URLs to support different environments (dev, prod).
+  // Check if this is a tip payment or regular product purchase
+  const isTipPayment = !!tipId && !!tipAmount;
+  
+  if (!isTipPayment && !priceId) {
+    return res.status(400).json({ statusCode: 400, message: 'Missing required parameter: priceId' });
+  }
+
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
   const successUrl = `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${frontendUrl}/payment/cancel`;
 
   try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
+    let lineItems;
+
+    if (isTipPayment) {
+      // For tips, create a custom line item
+      lineItems = [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Support Artist Tip',
+              description: 'Thank you for tipping this artist!'
+            },
+            unit_amount: tipAmount, // already in cents
+          },
+          quantity: 1,
+        },
+      ];
+    } else {
+      // For regular products, use the price ID
+      lineItems = [
         {
           price: priceId,
           quantity: 1,
         },
-      ],
+      ];
+    }
+    
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
       mode: 'payment',
-      customer_email: email, // Capture the customer email
+      customer_email: email,
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
         profileId: profileId,
+        ...(isTipPayment && { tipId: tipId })
       },
     });
 
     if (!session.url) {
       throw new Error('Could not create Stripe session URL.');
     }
-
     res.status(200).json({ url: session.url });
   } catch (error: any) {
-    console.error('Stripe session creation failed:', error);
+    console.error('Stripe session creation failed:', error.message);
+    console.error('Full error:', error);
     res.status(500).json({ statusCode: 500, message: error.message });
   }
 });
@@ -87,17 +112,63 @@ checkoutRouter.get('/session-status', async (req, res) => {
       // Fetch full payment intent details to get more information
       const paymentIntent = session.payment_intent as any;
       const profileId = session.metadata?.profileId;
+      const tipId = session.metadata?.tipId;
       const customerEmail = session.customer_email || paymentIntent?.receipt_email;
+
+      // If this is a tip payment, update the tip record and increment artist's saldo
+      if (tipId) {
+        try {
+          const tipAmount = (session.amount_total || 0) / 100; // Convert from cents to dollars
+          
+          // Mark tip as completed
+          const { data: updateResponse, error: tipError } = await supabase
+            .from('tips')
+            .update({
+              payment_status: 'completed',
+              stripe_session_id: sessionId
+            })
+            .eq('id', tipId)
+            .select();
+
+          if (tipError) {
+            console.error('Error updating tip payment status:', tipError);
+          }
+
+          // Get current saldo and increment it
+          const { data: profileData, error: fetchError } = await supabase
+            .from('profiles')
+            .select('saldo')
+            .eq('id', profileId)
+            .single();
+
+          if (fetchError) {
+            console.error('Error fetching current saldo:', fetchError);
+          } else {
+            const currentSaldo = profileData?.saldo || 0;
+            const newSaldo = currentSaldo + tipAmount;
+
+            const { error: saldoError } = await supabase
+              .from('profiles')
+              .update({ saldo: newSaldo })
+              .eq('id', profileId);
+
+            if (saldoError) {
+              console.error('Error updating artist saldo:', saldoError);
+            }
+          }
+        } catch (err) {
+          console.error('Error processing tip payment:', err);
+        }
+
+        return res.json({
+          status: 'complete',
+          type: 'tip',
+          tipId: tipId,
+          message: 'Tip payment successful'
+        });
+      }
       
-      console.log('Payment successful - Session details:', {
-        sessionId,
-        customerEmail,
-        profileId,
-        totalAmount: session.amount_total,
-        currency: session.currency
-      });
-      
-      // Prepare order data
+      // Regular product order handling
       const orderData = {
         profile_id: profileId,
         stripe_session_id: sessionId,
@@ -133,6 +204,7 @@ checkoutRouter.get('/session-status', async (req, res) => {
 
       return res.json({ 
         status: 'complete',
+        type: 'order',
         ...orderData
       });
     }

@@ -31,6 +31,9 @@ export interface Profile {
   // For Viewers
   location?: string;
 
+  // Financial
+  saldo?: number; // Accumulated balance from tips and sales
+
   // Metadata
   created_at?: string;
   updated_at?: string;

@@ -19,6 +19,9 @@ interface OrderData {
   items: OrderItem[];
   created_at: string;
   payment_method?: string;
+  type?: 'order' | 'tip';
+  tipId?: string;
+  message?: string;
 }
 
 export function Success() {
@@ -35,7 +38,6 @@ export function Success() {
     const sessionId = searchParams.get('session_id');
 
     if (sessionId) {
-        console.log(sessionId, "session ID found, verifying...");
       let attempts = 0;
       const maxAttempts = 4;
 
@@ -49,13 +51,9 @@ export function Success() {
           })
           .then(data => {
             attempts++;
-            console.log('Payment verification response:', data);
             if (data.status === 'complete') {
-                console.log("Payment complete, setting order data");
-                setOrderData(data);
                 setSessionStatus('success');
             } else if (attempts < maxAttempts) {
-                console.log(`Attempt ${attempts}: Status is '${data.status}'. Retrying...`);
                 setTimeout(verifySession, 1500);
             } else {
               setSessionStatus('failure');
@@ -63,14 +61,12 @@ export function Success() {
             }
           })
           .catch(error => {
-            console.error('Error verifying session:', error);
             setSessionStatus('failure');
             setErrorMessage('An error occurred while verifying your payment. Please contact support.');
           });
       };
       verifySession();
     } else {
-    console.log("No session ID found in URL.");
       setSessionStatus('failure');
       setErrorMessage('No session ID found. Payment status cannot be determined.');
     }
@@ -90,13 +86,53 @@ export function Success() {
         <div className="bg-white dark:bg-secondary rounded-lg shadow-md">
           {/* Success Header */}
           <div className="p-10 text-center border-b border-gray-300 dark:border-gray-600">
-            <div className="text-5xl mb-5">✅</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Payment Successful!</h2>
-            <p className="text-gray-600 dark:text-gray-300">Thank you for your purchase</p>
+            <div className="text-5xl mb-5">
+              {orderData.type === 'tip' ? '💰' : '✅'}
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {orderData.type === 'tip' ? 'Tip Sent Successfully!' : 'Payment Successful!'}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              {orderData.type === 'tip' 
+                ? 'Thank you for supporting this artist!' 
+                : 'Thank you for your purchase'}
+            </p>
           </div>
 
-          {/* Order Summary */}
-          <div className="p-7">
+          {/* Tip Summary (if applicable) */}
+          {orderData.type === 'tip' && (
+            <div className="p-7">
+              <div className="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Tip Details</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">TIP AMOUNT</p>
+                    <p className="text-gray-900 dark:text-white font-medium text-lg">
+                      ${(orderData.total_amount / 100).toFixed(2)} {orderData.currency?.toUpperCase() || 'USD'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">DATE</p>
+                    <p className="text-gray-900 dark:text-white font-medium">
+                      {new Date(orderData.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center gap-4">
+                <Link 
+                  to="/dashboard"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Back to Dashboard
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Order Summary (if order, not tip) */}
+          {orderData.type !== 'tip' && (
+            <div className="p-7">
             {/* Order ID & Date */}
             <div className="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Order Details</h3>
@@ -181,7 +217,8 @@ export function Success() {
             <Link to="/dashboard" className="block text-center py-3 px-5 bg-primary text-white no-underline rounded font-medium transition-colors duration-200 hover:bg-accent">
               Go to Dashboard
             </Link>
-          </div>
+            </div>
+          )}
         </div>
       )}
 

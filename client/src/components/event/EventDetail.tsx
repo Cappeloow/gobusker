@@ -37,7 +37,6 @@ export function EventDetail() {
       
       try {
         const data = await eventService.getEvent(id);
-        console.log('Received event data:', data);
         if (!data) {
           throw new Error('No event data received');
         }

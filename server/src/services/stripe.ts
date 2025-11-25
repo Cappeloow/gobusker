@@ -2,7 +2,6 @@ import Stripe from 'stripe';
 
 // This check ensures your app fails fast if the Stripe key is missing.
 if (!process.env.STRIPE_SECRET_KEY) {
-    console.log(process.env.STRIPE_SECRET_KEY)
 //   throw new Error('FATAL_ERROR: STRIPE_SECRET_KEY is not set in environment variables.');
 }
 

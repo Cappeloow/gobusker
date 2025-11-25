@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/models';
 import { profileService } from '../services/profileService';
-import { OrderHistory } from './OrderHistory';
+import { Wallet } from './Wallet';
 
 export function Dashboard() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userProfiles, setUserProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'profiles' | 'orders'>('profiles');
+  const [activeTab, setActiveTab] = useState<'profiles' | 'wallet'>('profiles');
 
   useEffect(() => {
     const getUser = async () => {
@@ -34,6 +34,7 @@ export function Dashboard() {
         setUserProfiles(profiles);
       } catch (err) {
         // If there's an error fetching profiles, we'll just show empty state
+        console.error('Error loading profiles:', err);
         setUserProfiles([]);
       } finally {
         setIsLoading(false);
@@ -90,14 +91,14 @@ export function Dashboard() {
             Your Profiles
           </button>
           <button
-            onClick={() => setActiveTab('orders')}
+            onClick={() => setActiveTab('wallet')}
             className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
-              activeTab === 'orders'
+              activeTab === 'wallet'
                 ? 'text-github-blue border-github-blue'
                 : 'text-github-text-secondary border-transparent hover:text-github-text'
             }`}
           >
-            Order History
+            💰 Wallet
           </button>
         </div>
 
@@ -162,7 +163,7 @@ export function Dashboard() {
               )}
             </div>
           ) : (
-            <OrderHistory />
+            <Wallet userProfiles={userProfiles} />
           )}
         </div>
 

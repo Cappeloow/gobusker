@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import type { Profile } from '../../types/models';
 import { profileService } from '../../services/profileService';
 import { ProfileQRCode } from './ProfileQRCode';
+import { TipWall } from './TipWall';
 import { ShoppingBag } from 'lucide-react';
 
 export function ProfileDetail() {
@@ -63,10 +64,16 @@ export function ProfileDetail() {
           <div className="flex items-start justify-between mb-8 pb-8 border-b border-github-border">
             <div className="flex-1">
               <h1 className="text-4xl font-bold text-github-text mb-4">{profile.name}</h1>
-              <div className="inline-flex items-center gap-3">
+              <div className="flex items-center gap-4 flex-wrap">
                 <span className="px-4 py-2 bg-github-bg border border-github-border rounded-full text-sm font-semibold text-github-text-secondary capitalize">
                   {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
                 </span>
+                {profile.saldo !== undefined && profile.saldo > 0 && (
+                  <span className="px-4 py-2 bg-green-900/20 border border-green-700 rounded-full text-sm font-semibold text-green-400 flex items-center gap-2">
+                    <span>💰</span>
+                    <span>Saldo: ${profile.saldo.toFixed(2)}</span>
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex gap-3 items-start">
@@ -168,6 +175,11 @@ export function ProfileDetail() {
               Create Event
             </button>
           </div>
+        </div>
+
+        {/* Tip Wall Section */}
+        <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
+          <TipWall profileId={profile.id} />
         </div>
       </div>
     </div>

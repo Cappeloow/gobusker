@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { DollarSign, History } from 'lucide-react';
 import type { Profile } from '../types/models';
+import { WithdrawalWidget } from './WithdrawalWidget';
 
 interface Transaction {
   id: string;
@@ -24,12 +25,21 @@ export function Wallet({ userProfiles }: WalletProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'tip' | 'order' | 'withdrawal'>('all');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // Get current user ID on mount
   useEffect(() => {
-    loadTransactions();
-  }, [userProfiles]);
+    const getUserId = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setCurrentUserId(session?.user?.id || null);
+    };
+    getUserId();
+  }, []);
 
-  const loadTransactions = async () => {
+  // Load transactions when currentUserId or userProfiles change
+  const loadTransactions = useCallback(async () => {
+    if (!currentUserId) return;
+
     try {
       setIsLoading(true);
       const allTransactions: Transaction[] = [];
@@ -59,15 +69,15 @@ export function Wallet({ userProfiles }: WalletProps) {
             donor_name: tip.donor_name,
             profile_id: profile.id,
             profile_name: profile.name,
-            status: tip.payment_status || 'pending',
+            status: 'completed',
             created_at: tip.created_at,
           });
         });
 
-        // Fetch orders
+        // Fetch orders - only show orders from OTHER customers (not your own purchases)
         const { data: orders, error: ordersError } = await supabase
           .from('orders')
-          .select('id, customer_name, total_amount, payment_status, created_at')
+          .select('id, customer_email, customer_name, total_amount, payment_status, created_at')
           .eq('profile_id', profile.id)
           .eq('payment_status', 'paid')
           .order('created_at', { ascending: false });
@@ -77,17 +87,47 @@ export function Wallet({ userProfiles }: WalletProps) {
         }
 
         if (orders) {
-          orders.forEach((order: { id: string; customer_name: string; total_amount: number; created_at: string }) => {
+          orders.forEach((order: { id: string; customer_email: string; customer_name: string; total_amount: number; created_at: string }) => {
+            // Only show orders from OTHER customers - exclude your own purchases from your own shop
+            if (order.customer_email !== currentUserId) {
+              allTransactions.push({
+                id: order.id,
+                type: 'order',
+                amount: order.total_amount / 100, // Convert from cents
+                description: `Sale from ${order.customer_name || 'Customer'}`,
+                customer_name: order.customer_name,
+                profile_id: profile.id,
+                profile_name: profile.name,
+                status: 'completed',
+                created_at: order.created_at,
+              });
+            }
+          });
+        }
+
+        // Fetch completed withdrawals
+        const { data: withdrawals, error: withdrawalsError } = await supabase
+          .from('withdrawals')
+          .select('id, amount, status, processed_at')
+          .eq('profile_id', profile.id)
+          .eq('status', 'completed')
+          .order('processed_at', { ascending: false });
+
+        if (withdrawalsError) {
+          console.error(`Error loading withdrawals for profile ${profile.id}:`, withdrawalsError);
+        }
+
+        if (withdrawals) {
+          withdrawals.forEach((withdrawal: { id: string; amount: number; status: string; processed_at: string }) => {
             allTransactions.push({
-              id: order.id,
-              type: 'order',
-              amount: order.total_amount / 100, // Convert from cents
-              description: `Sale to ${order.customer_name || 'Customer'}`,
-              customer_name: order.customer_name,
+              id: withdrawal.id,
+              type: 'withdrawal',
+              amount: -withdrawal.amount, // Negative because money goes out
+              description: `Withdrawal to bank account`,
               profile_id: profile.id,
               profile_name: profile.name,
               status: 'completed',
-              created_at: order.created_at,
+              created_at: withdrawal.processed_at,
             });
           });
         }
@@ -101,7 +141,12 @@ export function Wallet({ userProfiles }: WalletProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userProfiles, currentUserId]);
+
+  // Trigger load when dependencies change
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   const filteredTransactions = transactions.filter(tx => 
     filter === 'all' || tx.type === filter
@@ -210,7 +255,11 @@ export function Wallet({ userProfiles }: WalletProps) {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-github-text font-bold text-lg">+${tx.amount.toFixed(2)}</p>
+                <p className={`text-github-text font-bold text-lg ${
+                  tx.amount < 0 ? 'text-red-400' : 'text-green-400'
+                }`}>
+                  {tx.amount < 0 ? '−$' : '+$'}{Math.abs(tx.amount).toFixed(2)}
+                </p>
                 <p className={`text-xs font-semibold ${
                   tx.status === 'completed' ? 'text-green-400' :
                   tx.status === 'pending' ? 'text-yellow-400' :
@@ -224,18 +273,12 @@ export function Wallet({ userProfiles }: WalletProps) {
         )}
       </div>
 
-      {/* Withdrawal Section (Placeholder) */}
-      <div className="mt-8 pt-8 border-t border-github-border">
-        <div className="bg-github-bg border border-github-border rounded-lg p-6">
-          <h3 className="text-lg font-bold text-github-text mb-4">Withdrawals</h3>
-          <p className="text-github-text-secondary mb-4">
-            Contact the app owner to request a withdrawal of your accumulated saldo.
-          </p>
-          <button className="px-6 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200">
-            Request Withdrawal
-          </button>
+      {/* Withdrawal Section - Only show when withdrawal filter is selected */}
+      {filter === 'withdrawal' && (
+        <div className="mt-8 pt-8 border-t border-github-border">
+          <WithdrawalWidget userProfiles={userProfiles} />
         </div>
-      </div>
+      )}
     </div>
   );
 }

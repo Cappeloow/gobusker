@@ -12,8 +12,8 @@ if (!process.env.STRIPE_SECRET_KEY) {
  * `apiVersion` is a best practice to prevent breaking changes from
  * affecting your integration.
  */
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-10-29.clover' as any,
   typescript: true,
   appInfo: {
     name: 'Express-Stripe-Server',

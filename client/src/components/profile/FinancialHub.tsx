@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
-import { DollarSign, TrendingUp, History } from 'lucide-react';
+import { DollarSign, History } from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -23,11 +23,7 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'tip' | 'order' | 'withdrawal'>('all');
 
-  useEffect(() => {
-    loadTransactions();
-  }, [profileId]);
-
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -47,11 +43,19 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
         .eq('payment_status', 'paid')
         .order('created_at', { ascending: false });
 
+      // Fetch completed withdrawals
+      const { data: withdrawals } = await supabase
+        .from('withdrawals')
+        .select('id, amount, status, processed_at')
+        .eq('profile_id', profileId)
+        .eq('status', 'completed')
+        .order('processed_at', { ascending: false });
+
       // Combine and map transactions
       const allTransactions: Transaction[] = [];
 
       if (tips) {
-        tips.forEach((tip: any) => {
+        tips.forEach((tip: { id: string; donor_name: string; amount: number; payment_status: string; created_at: string }) => {
           allTransactions.push({
             id: tip.id,
             type: 'tip',
@@ -65,7 +69,7 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
       }
 
       if (orders) {
-        orders.forEach((order: any) => {
+        orders.forEach((order: { id: string; customer_name: string; total_amount: number; payment_status: string; created_at: string }) => {
           allTransactions.push({
             id: order.id,
             type: 'order',
@@ -78,6 +82,19 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
         });
       }
 
+      if (withdrawals) {
+        withdrawals.forEach((withdrawal: { id: string; amount: number; status: string; processed_at: string }) => {
+          allTransactions.push({
+            id: withdrawal.id,
+            type: 'withdrawal',
+            amount: -withdrawal.amount, // Negative because it's money going out
+            description: `Withdrawal to bank account`,
+            status: 'completed',
+            created_at: withdrawal.processed_at,
+          });
+        });
+      }
+
       // Sort by date
       allTransactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setTransactions(allTransactions);
@@ -86,7 +103,11 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [profileId]);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   const filteredTransactions = transactions.filter(tx => 
     filter === 'all' || tx.type === filter
@@ -215,7 +236,11 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-github-text font-bold text-lg">+${tx.amount.toFixed(2)}</p>
+                <p className={`text-github-text font-bold text-lg ${
+                  tx.amount < 0 ? 'text-red-400' : 'text-green-400'
+                }`}>
+                  {tx.amount < 0 ? '−$' : '+$'}{Math.abs(tx.amount).toFixed(2)}
+                </p>
                 <p className={`text-xs font-semibold ${
                   tx.status === 'completed' ? 'text-green-400' :
                   tx.status === 'pending' ? 'text-yellow-400' :

@@ -5,6 +5,7 @@ dotenv.config();
 import express from 'express';
 import { productRouter } from './routes/productRoutes'; // Import the product router
 import { checkoutRouter } from './routes/checkoutRoutes'; // Import the new checkout router
+import { withdrawalRouter } from './routes/withdrawalRoutes'; // Import the withdrawal router
 
 
 const app = express();
@@ -32,6 +33,7 @@ app.get('/health', (req, res) => {
 // Example: GET /api/products
 app.use('/api', productRouter);
 app.use('/api/checkout', checkoutRouter); // Register the checkout routes
+app.use('/api/withdrawals', withdrawalRouter); // Register the withdrawal routes
 
 // --- Server Activation ---
 app.listen(PORT, () => {

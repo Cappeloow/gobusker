@@ -61,10 +61,10 @@ withdrawalRouter.post('/request', async (req: Request, res: Response) => {
   }
 
   try {
-    // Get the profile to check current saldo and bank account
+    // Get the profile to check bank account and get user_id
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('saldo, bank_account_token')
+      .select('user_id, bank_account_token')
       .eq('id', profileId)
       .single();
 
@@ -79,10 +79,21 @@ withdrawalRouter.post('/request', async (req: Request, res: Response) => {
       });
     }
 
+    // Get user's wallet to check saldo
+    const { data: wallet, error: walletError } = await supabase
+      .from('user_wallets')
+      .select('saldo')
+      .eq('user_id', profile.user_id)
+      .single();
+
+    if (walletError || !wallet) {
+      return res.status(404).json({ message: 'User wallet not found' });
+    }
+
     // Check if requested amount doesn't exceed saldo
-    if (amount > (profile.saldo || 0)) {
+    if (amount > (wallet.saldo || 0)) {
       return res.status(400).json({ 
-        message: `Insufficient saldo. Available: ${(profile.saldo || 0).toFixed(2)} SEK` 
+        message: `Insufficient saldo. Available: ${(wallet.saldo || 0).toFixed(2)} SEK` 
       });
     }
 
@@ -178,10 +189,10 @@ withdrawalRouter.patch('/:withdrawalId/approve', async (req: Request, res: Respo
       return res.status(500).json({ message: 'Failed to approve withdrawal' });
     }
 
-    // Deduct from artist's saldo
+    // Get user_id from profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('saldo')
+      .select('user_id')
       .eq('id', withdrawal.profile_id)
       .single();
 
@@ -189,17 +200,28 @@ withdrawalRouter.patch('/:withdrawalId/approve', async (req: Request, res: Respo
       return res.status(404).json({ message: 'Profile not found' });
     }
 
-    const currentSaldo = profile.saldo || 0;
+    // Deduct from user's wallet (shared across all profiles)
+    const { data: wallet, error: walletError } = await supabase
+      .from('user_wallets')
+      .select('saldo')
+      .eq('user_id', profile.user_id)
+      .single();
+
+    if (walletError || !wallet) {
+      return res.status(404).json({ message: 'User wallet not found' });
+    }
+
+    const currentSaldo = wallet.saldo || 0;
     const newSaldo = Math.max(0, currentSaldo - withdrawal.amount);
 
     const { error: saldoError } = await supabase
-      .from('profiles')
+      .from('user_wallets')
       .update({ saldo: newSaldo })
-      .eq('id', withdrawal.profile_id);
+      .eq('user_id', profile.user_id);
 
     if (saldoError) {
-      console.error('Error updating saldo:', saldoError);
-      return res.status(500).json({ message: 'Failed to update artist saldo' });
+      console.error('Error updating wallet saldo:', saldoError);
+      return res.status(500).json({ message: 'Failed to update artist wallet' });
     }
 
     // Initiate Stripe payout

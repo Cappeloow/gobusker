@@ -19,23 +19,55 @@ interface WithdrawalWidgetProps {
 }
 
 export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
-  const [selectedProfile, setSelectedProfile] = useState<string>(userProfiles[0]?.id || '');
   const [requestAmount, setRequestAmount] = useState<string>('');
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasBankAccount, setHasBankAccount] = useState(false);
+  const [availableSaldo, setAvailableSaldo] = useState<number>(0);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
 
-  const selectedProfileData = userProfiles.find(p => p.id === selectedProfile);
-  const availableSaldo = selectedProfileData?.saldo || 0;
+  // Get current user ID from auth
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
+  const fetchUserWallet = useCallback(async () => {
+    if (!currentUserId) return;
+    try {
+      // Get user's wallet (shared across all profiles)
+      const { data: wallet, error: walletError } = await supabase
+        .from('user_wallets')
+        .select('saldo')
+        .eq('user_id', currentUserId)
+        .single();
+
+      if (!walletError && wallet) {
+        setAvailableSaldo(wallet.saldo || 0);
+      } else {
+        console.error('Error fetching wallet:', walletError);
+        setAvailableSaldo(0);
+      }
+    } catch (err) {
+      console.error('Error fetching user wallet:', err);
+    }
+  }, [currentUserId]);
 
   const checkBankAccount = useCallback(async () => {
+    if (!userProfiles.length) return;
     try {
+      // Check if any profile has bank account (just need one since it's user-level concept now)
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('bank_account_token')
-        .eq('id', selectedProfile)
+        .eq('id', userProfiles[0].id)
         .single();
 
       if (!error && profile?.bank_account_token) {
@@ -46,12 +78,14 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
     } catch (err) {
       console.error('Error checking bank account:', err);
     }
-  }, [selectedProfile]);
+  }, [userProfiles]);
 
   const fetchWithdrawals = useCallback(async () => {
+    if (!currentUserId || !userProfiles.length) return;
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3000/api/withdrawals/${selectedProfile}`);
+      // Fetch withdrawals for any of the user's profiles
+      const response = await fetch(`http://localhost:3000/api/withdrawals/${userProfiles[0].id}`);
       if (response.ok) {
         const data = await response.json();
         setWithdrawals(data);
@@ -61,14 +95,15 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedProfile]);
+  }, [currentUserId, userProfiles]);
 
   useEffect(() => {
-    if (selectedProfile) {
+    if (currentUserId && userProfiles.length) {
       checkBankAccount();
+      fetchUserWallet();
       fetchWithdrawals();
     }
-  }, [selectedProfile, checkBankAccount, fetchWithdrawals]);
+  }, [currentUserId, userProfiles, checkBankAccount, fetchUserWallet, fetchWithdrawals]);
 
   const handleRequestWithdrawal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +125,7 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          profileId: selectedProfile,
+          profileId: userProfiles[0].id,
           amount: parseFloat(requestAmount)
         })
       });
@@ -143,9 +178,9 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
   return (
     <div className="space-y-6">
       {/* Bank Account Setup - Show if needed */}
-      {!hasBankAccount && (
+      {!hasBankAccount && userProfiles.length > 0 && (
         <BankAccountSetup 
-          profileId={selectedProfile}
+          profileId={userProfiles[0].id}
           onAccountAdded={() => {
             checkBankAccount();
           }}
@@ -156,28 +191,10 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
       <div className="bg-github-bg border border-github-border rounded-lg p-6">
         <h3 className="text-lg font-bold text-github-text mb-4">Request Withdrawal</h3>
 
-        {userProfiles.length > 1 && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-github-text-secondary mb-2">
-              Select Profile
-            </label>
-            <select
-              value={selectedProfile}
-              onChange={(e) => setSelectedProfile(e.target.value)}
-              className="w-full px-3 py-2 bg-github-card border border-github-border rounded-lg text-github-text focus:border-github-blue focus:outline-none"
-            >
-              {userProfiles.map(profile => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name} ({(profile.saldo || 0).toFixed(2)} SEK)
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
         <div className="mb-4 p-4 bg-github-card border border-github-border rounded-lg">
           <p className="text-github-text-secondary text-sm mb-1">Available Saldo</p>
           <p className="text-2xl font-bold text-green-400">{availableSaldo.toFixed(2)} SEK</p>
+          <p className="text-xs text-github-text-secondary mt-2">Shared balance across all your profiles</p>
         </div>
 
         {!hasBankAccount && (

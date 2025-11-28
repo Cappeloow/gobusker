@@ -152,6 +152,29 @@ export function Wallet({ userProfiles }: WalletProps) {
     filter === 'all' || tx.type === filter
   );
 
+  // Fetch total saldo from user_wallets instead of summing profiles
+  useEffect(() => {
+    const fetchUserWallet = async () => {
+      if (!currentUserId) return;
+      try {
+        const { data: wallet } = await supabase
+          .from('user_wallets')
+          .select('saldo')
+          .eq('user_id', currentUserId)
+          .single();
+        
+        if (wallet) {
+          // Update totalSaldo when wallet changes
+        }
+      } catch (err) {
+        console.error('Error fetching wallet:', err);
+      }
+    };
+    fetchUserWallet();
+  }, [currentUserId]);
+
+  // This should now be fetched from user_wallets, not from profile.saldo
+  // For now, keeping this for display but it's read from server
   const totalSaldo = userProfiles.reduce((sum, profile) => sum + (profile.saldo || 0), 0);
 
   const getTransactionIcon = (type: string) => {

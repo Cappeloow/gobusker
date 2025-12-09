@@ -10,6 +10,7 @@ import { EventDetail } from './components/event/EventDetail';
 import { LandingPage } from './components/landing/LandingPage';
 import { Success } from './components/payment/Success';
 import { WithdrawalAdmin } from './components/admin/WithdrawalAdmin';
+import { InvitePage } from './pages/InvitePage';
 import { Layout } from './components/layout/Layout';
 import './App.css';
 
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/event/:id" element={<EventDetail />} />
           <Route path="/payment/success" element={<Success />} />
           <Route path="/admin/withdrawals" element={<WithdrawalAdmin />} />
+          <Route path="/invite/:token" element={<InvitePage />} />
         </Routes>
       </Layout>
     </Router>

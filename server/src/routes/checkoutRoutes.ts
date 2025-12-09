@@ -115,7 +115,7 @@ checkoutRouter.get('/session-status', async (req, res) => {
       const tipId = session.metadata?.tipId;
       const customerEmail = session.customer_email || paymentIntent?.receipt_email;
 
-      // If this is a tip payment, update the tip record and increment artist's saldo
+      // If this is a tip payment, update the tip record and distribute to band members
       if (tipId) {
         try {
           const tipAmount = (session.amount_total || 0) / 100; // Convert from cents to dollars
@@ -134,26 +134,88 @@ checkoutRouter.get('/session-status', async (req, res) => {
             console.error('Error updating tip payment status:', tipError);
           }
 
-          // Get current saldo and increment it
+          // Get profile and its band members
           const { data: profileData, error: fetchError } = await supabase
             .from('profiles')
-            .select('saldo')
+            .select('user_id')
             .eq('id', profileId)
             .single();
 
           if (fetchError) {
-            console.error('Error fetching current saldo:', fetchError);
-          } else {
-            const currentSaldo = profileData?.saldo || 0;
-            const newSaldo = currentSaldo + tipAmount;
+            console.error('Error fetching profile:', fetchError);
+          } else if (profileData) {
+            // Get all band members for this profile (including owner)
+            const { data: members, error: membersError } = await supabase
+              .from('profile_members')
+              .select('user_id, revenue_share')
+              .eq('profile_id', profileId);
 
-            const { error: saldoError } = await supabase
-              .from('profiles')
-              .update({ saldo: newSaldo })
-              .eq('id', profileId);
+            if (membersError) {
+              console.error('Error fetching band members:', membersError);
+            } else if (members && members.length > 0) {
+              // Distribute tip among band members based on revenue_share
+              for (const member of members) {
+                const memberShare = (member.revenue_share / 100) * tipAmount;
+                
+                // Get or create wallet for this member
+                const { data: wallet, error: walletFetchError } = await supabase
+                  .from('user_wallets')
+                  .select('saldo')
+                  .eq('user_id', member.user_id)
+                  .single();
 
-            if (saldoError) {
-              console.error('Error updating artist saldo:', saldoError);
+                if (walletFetchError && walletFetchError.code !== 'PGRST116') {
+                  console.error('Error fetching wallet for member:', walletFetchError);
+                  continue;
+                }
+
+                if (wallet) {
+                  // Update existing wallet
+                  const newSaldo = (wallet.saldo || 0) + memberShare;
+                  const { error: updateError } = await supabase
+                    .from('user_wallets')
+                    .update({ saldo: newSaldo })
+                    .eq('user_id', member.user_id);
+
+                  if (updateError) {
+                    console.error('Error updating wallet for member:', updateError);
+                  }
+                } else {
+                  // Create new wallet for this member
+                  const { error: createError } = await supabase
+                    .from('user_wallets')
+                    .insert([{
+                      user_id: member.user_id,
+                      saldo: memberShare
+                    }]);
+
+                  if (createError) {
+                    console.error('Error creating wallet for member:', createError);
+                  }
+                }
+              }
+            } else {
+              // No members found, add to profile owner's wallet
+              const { data: wallet } = await supabase
+                .from('user_wallets')
+                .select('saldo')
+                .eq('user_id', profileData.user_id)
+                .single();
+
+              if (wallet) {
+                const newSaldo = (wallet.saldo || 0) + tipAmount;
+                await supabase
+                  .from('user_wallets')
+                  .update({ saldo: newSaldo })
+                  .eq('user_id', profileData.user_id);
+              } else {
+                await supabase
+                  .from('user_wallets')
+                  .insert([{
+                    user_id: profileData.user_id,
+                    saldo: tipAmount
+                  }]);
+              }
             }
           }
         } catch (err) {

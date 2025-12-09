@@ -46,6 +46,23 @@ export const profileService = {
       throw error;
     }
     
+    // After profile creation, add the creator as the owner in profile_members
+    if (data && data.id) {
+      const { error: memberError } = await supabase
+        .from('profile_members')
+        .insert([{
+          profile_id: data.id,
+          user_id: user.id,
+          revenue_share: 100, // Owner gets 100%
+          role: 'owner'
+        }]);
+
+      if (memberError) {
+        console.error('Error adding creator as profile owner:', memberError);
+        // Don't throw - profile was created successfully, just member addition failed
+      }
+    }
+    
     return data;
   },
 

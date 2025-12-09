@@ -2,8 +2,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Profile } from '../../types/models';
 import { profileService } from '../../services/profileService';
+import { supabase } from '../../lib/supabase';
 import { ProfileQRCode } from './ProfileQRCode';
 import { TipWall } from './TipWall';
+import { BandMembersManager } from '../BandMembersManager';
 import { ShoppingBag } from 'lucide-react';
 
 export function ProfileDetail() {
@@ -12,14 +14,52 @@ export function ProfileDetail() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
       if (!id) return;
       
       try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setCurrentUserId(user.id);
+        }
+
         const data = await profileService.getProfile(id);
         setProfile(data);
+
+        // Check if current user is owner
+        if (user) {
+          try {
+            const { data: profileMember, error: memberError } = await supabase
+              .from('profile_members')
+              .select('role')
+              .eq('profile_id', id)
+              .eq('user_id', user.id)
+              .single();
+
+            if (profileMember && profileMember.role === 'owner') {
+              setIsOwner(true);
+            } else if (memberError) {
+              console.log('Member query error:', memberError);
+              // If no member record, check if this is the profile owner by user_id
+              const profileData = await profileService.getProfile(id);
+              if (profileData.user_id === user.id) {
+                setIsOwner(true);
+              }
+            }
+          } catch (err) {
+            console.error('Error checking owner status:', err);
+            // Fallback: check if this user created the profile
+            const profileData = await profileService.getProfile(id);
+            if (profileData.user_id === user.id) {
+              setIsOwner(true);
+            }
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile');
       } finally {
@@ -176,6 +216,13 @@ export function ProfileDetail() {
             </button>
           </div>
         </div>
+
+        {/* Band Members Section - Show for all members, but full management for owner */}
+        {currentUserId && id && (
+          <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl mb-6">
+            <BandMembersManager profileId={id} isOwner={isOwner} />
+          </div>
+        )}
 
         {/* Tip Wall Section */}
         <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl">

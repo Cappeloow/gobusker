@@ -21,7 +21,11 @@ export const profileService = {
 
     return publicUrl;
   },
-  async createProfile(profile: Omit<Profile, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
+  async createProfile(profile: Omit<Profile, 'id' | 'user_id' | 'created_at' | 'updated_at'> & {
+    owner_alias?: string;
+    owner_specialty?: string;
+    owner_description?: string;
+  }) {
     // Get current authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -29,13 +33,16 @@ export const profileService = {
       throw new Error('User not authenticated');
     }
 
+    // Extract owner member info
+    const { owner_alias, owner_specialty, owner_description, ...profileData } = profile;
+
     // Create new profile with new UUID (not tied to user.id)
     // This allows one user to have multiple profiles
     const { data, error } = await supabase
       .from('profiles')
       .insert([{
         user_id: user.id,  // Link to auth user, but don't use as profile ID
-        ...profile
+        ...profileData
         // id will be auto-generated
       }])
       .select()
@@ -54,7 +61,10 @@ export const profileService = {
           profile_id: data.id,
           user_id: user.id,
           revenue_share: 100, // Owner gets 100%
-          role: 'owner'
+          role: 'owner',
+          alias: owner_alias || null,
+          specialty: owner_specialty || null,
+          description: owner_description || null
         }]);
 
       if (memberError) {
@@ -81,10 +91,25 @@ export const profileService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No user logged in');
 
+    // Get profile IDs where user is a member
+    const { data: memberships, error: memberError } = await supabase
+      .from('profile_members')
+      .select('profile_id')
+      .eq('user_id', user.id);
+
+    if (memberError) throw memberError;
+
+    const profileIds = memberships?.map(m => m.profile_id) || [];
+
+    if (profileIds.length === 0) {
+      return [];
+    }
+
+    // Fetch all profiles where user is a member
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('user_id', user.id);
+      .in('id', profileIds);
 
     if (error) throw error;
     return data;

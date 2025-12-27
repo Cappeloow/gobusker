@@ -12,6 +12,9 @@ interface SendInviteRequest {
 
 interface AcceptInviteRequest {
   token: string;
+  alias?: string;
+  description?: string;
+  specialty?: string;
 }
 
 // Send invite to join a profile/band
@@ -53,6 +56,22 @@ router.post('/send', verifyAuth, async (req: Request, res: Response) => {
       }
     }
 
+    // Count current members to calculate default equal revenue share
+    const { data: currentMembers, error: countError } = await supabase
+      .from('profile_members')
+      .select('id')
+      .eq('profile_id', profileId);
+
+    if (countError) {
+      console.error('Error counting members:', countError);
+      return res.status(500).json({ message: 'Failed to count members' });
+    }
+
+    // Use provided revenue share, or default to equal distribution
+    const totalMembersAfterAccept = (currentMembers?.length || 0) + 1;
+    const defaultShare = 100 / totalMembersAfterAccept;
+    const finalShare = revenuShare || defaultShare;
+
     // Create invite record
     const { data: invite, error: inviteError } = await supabase
       .from('profile_invites')
@@ -61,7 +80,7 @@ router.post('/send', verifyAuth, async (req: Request, res: Response) => {
           profile_id: profileId,
           inviter_id: inviterId,
           invitee_email: inviteeEmail.toLowerCase(),
-          revenue_share: Math.min(100, Math.max(0, revenuShare)),
+          revenue_share: finalShare,
           status: 'pending'
         }
       ])
@@ -165,6 +184,8 @@ router.get('/me', verifyAuth, async (req: Request, res: Response) => {
     const userId = req.user?.id;
     const userEmail = req.user?.email;
 
+    console.log('Fetching invites for user:', userEmail, userId);
+
     if (!userId || !userEmail) {
       return res.status(400).json({ message: 'Not authenticated' });
     }
@@ -173,19 +194,41 @@ router.get('/me', verifyAuth, async (req: Request, res: Response) => {
     const { data: invites, error: invitesError } = await supabase
       .from('profile_invites')
       .select(`
-        *,
-        profiles:profile_id (id, name, description)
+        id,
+        invite_token,
+        invitee_email,
+        revenue_share,
+        expires_at,
+        inviter_id,
+        profiles:profile_id (
+          id,
+          name
+        )
       `)
       .eq('status', 'pending')
+      .eq('invitee_email', userEmail.toLowerCase())
       .gt('expires_at', new Date().toISOString())
-      .or(`invitee_email.eq.${userEmail},invitee_id.eq.${userId}`)
       .order('created_at', { ascending: false });
 
     if (invitesError) {
-      return res.status(500).json({ message: 'Failed to fetch invites' });
+      console.error('Error fetching invites:', invitesError);
+      return res.status(500).json({ message: 'Failed to fetch invites', error: invitesError.message });
     }
 
-    res.json(invites);
+    console.log('Found invites:', invites?.length || 0);
+    
+    // For each invite, fetch the inviter's name separately
+    const transformedInvites = await Promise.all((invites || []).map(async (invite) => {
+      const { data: inviterData } = await supabase.auth.admin.getUserById(invite.inviter_id);
+      return {
+        ...invite,
+        inviter: {
+          name: inviterData?.user?.user_metadata?.name || 'Someone'
+        }
+      };
+    }));
+
+    res.json(transformedInvites);
   } catch (err) {
     console.error('Error fetching user invites:', err);
     res.status(500).json({ message: 'Failed to fetch invites' });
@@ -204,9 +247,13 @@ router.get('/token/:token', async (req: Request, res: Response) => {
     const { data: invite, error } = await supabase
       .from('profile_invites')
       .select(`
-        *,
-        profiles:profile_id (id, name, description, image_url),
-        inviter:inviter_id (id, user_metadata->>'name' as name)
+        id,
+        invite_token,
+        invitee_email,
+        revenue_share,
+        expires_at,
+        inviter_id,
+        profiles:profile_id (id, name)
       `)
       .eq('invite_token', token)
       .eq('status', 'pending')
@@ -217,7 +264,18 @@ router.get('/token/:token', async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Invite not found or expired' });
     }
 
-    res.json(invite);
+    // Fetch inviter data separately
+    const { data: inviterData } = await supabase.auth.admin.getUserById(invite.inviter_id);
+    
+    const response = {
+      ...invite,
+      inviter: {
+        id: invite.inviter_id,
+        name: inviterData?.user?.user_metadata?.name || 'Someone'
+      }
+    };
+
+    res.json(response);
   } catch (err) {
     console.error('Error fetching invite:', err);
     res.status(500).json({ message: 'Failed to fetch invite' });
@@ -227,7 +285,7 @@ router.get('/token/:token', async (req: Request, res: Response) => {
 // Accept invite
 router.post('/accept', verifyAuth, async (req: Request, res: Response) => {
   try {
-    const { token } = req.body as AcceptInviteRequest;
+    const { token, alias, description, specialty } = req.body as AcceptInviteRequest;
     const userId = req.user?.id;
 
     if (!token || !userId) {
@@ -252,6 +310,39 @@ router.post('/accept', verifyAuth, async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'This invite was not sent to your email' });
     }
 
+    // Use the revenue_share from the invitation (respects manual adjustments)
+    const newMemberShare = invite.revenue_share;
+
+    // Get current members to adjust their shares
+    const { data: currentMembers, error: countError } = await supabase
+      .from('profile_members')
+      .select('id, user_id, revenue_share')
+      .eq('profile_id', invite.profile_id);
+
+    if (countError) {
+      console.error('Error fetching members:', countError);
+      return res.status(500).json({ message: 'Failed to fetch members' });
+    }
+
+    // Calculate total current share
+    const totalCurrentShare = currentMembers?.reduce((sum, m) => sum + Number(m.revenue_share), 0) || 0;
+    
+    // Calculate new total after adding new member
+    const newTotal = totalCurrentShare + newMemberShare;
+    
+    // If new total exceeds 100%, proportionally reduce existing members
+    if (newTotal > 100 && currentMembers && currentMembers.length > 0) {
+      const reductionFactor = (100 - newMemberShare) / totalCurrentShare;
+      
+      for (const member of currentMembers) {
+        const adjustedShare = Number(member.revenue_share) * reductionFactor;
+        await supabase
+          .from('profile_members')
+          .update({ revenue_share: adjustedShare })
+          .eq('id', member.id);
+      }
+    }
+
     // Start a transaction: update invite, add to profile_members
     // Update invite status
     const { error: updateInviteError } = await supabase
@@ -268,15 +359,18 @@ router.post('/accept', verifyAuth, async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Failed to accept invite' });
     }
 
-    // Add user to profile_members
+    // Add user to profile_members with the specified share from invitation
     const { data: profileMember, error: memberError } = await supabase
       .from('profile_members')
       .insert([
         {
           profile_id: invite.profile_id,
           user_id: userId,
-          revenue_share: invite.revenue_share,
-          role: 'member'
+          revenue_share: newMemberShare,
+          role: 'member',
+          alias: alias || null,
+          description: description || null,
+          specialty: specialty || null
         }
       ])
       .select()
@@ -355,25 +449,37 @@ router.delete('/:inviteId', verifyAuth, async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Invite not found' });
     }
 
-    // Verify user is owner/admin of profile
+    // Check if user is profile owner OR owner/admin in profile_members
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('id', invite.profile_id)
+      .single();
+
+    const isProfileOwner = profile?.user_id === userId;
+
+    // Also check profile_members
     const { data: profileMember } = await supabase
       .from('profile_members')
       .select('role')
       .eq('profile_id', invite.profile_id)
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (!profileMember || !['owner', 'admin'].includes(profileMember.role)) {
+    const isMemberAdmin = profileMember && ['owner', 'admin'].includes(profileMember.role);
+
+    if (!isProfileOwner && !isMemberAdmin) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // Cancel invite
+    // Delete invite (instead of updating status to avoid unique constraint issues)
     const { error: deleteError } = await supabase
       .from('profile_invites')
-      .update({ status: 'cancelled' })
+      .delete()
       .eq('id', inviteId);
 
     if (deleteError) {
+      console.error('Delete error:', deleteError);
       return res.status(500).json({ message: 'Failed to cancel invite' });
     }
 

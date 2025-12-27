@@ -24,7 +24,11 @@ const INITIAL_FORM_STATE = {
     youtube: '',
     spotify: '',
     website: ''
-  }
+  },
+  // Member info for owner
+  owner_alias: '',
+  owner_specialty: '',
+  owner_description: ''
 };
 
 import { useNavigate } from 'react-router-dom';
@@ -65,7 +69,10 @@ export function CreateProfile() {
         organization_name: form.organization_name,
         contact_info: form.contact_info,
         event_types: form.event_types.filter(Boolean),
-        social_links: form.social_links
+        social_links: form.social_links,
+        owner_alias: form.owner_alias || undefined,
+        owner_specialty: form.owner_specialty || undefined,
+        owner_description: form.owner_description || undefined
       });
 
       // If we have an avatar that was uploaded with a temporary ID,
@@ -376,6 +383,52 @@ export function CreateProfile() {
                   placeholder="Tell us about yourself and your performances..."
                   className="block w-full px-4 py-2 bg-github-bg border border-github-border rounded-lg text-github-text placeholder-github-placeholder focus:outline-none focus:border-github-blue min-h-24"
                 />
+              </div>
+              {/* Member Info Section */}
+              <div className="space-y-4 p-4 bg-github-bg rounded-lg border border-github-border">
+                <h3 className="text-md font-semibold text-github-text">Your Public Band Member Info</h3>
+                <p className="text-xs text-github-text-secondary mb-2">
+                  This will be visible to viewers in the Band Members section
+                </p>
+                
+                <div>
+                  <label className="block text-sm font-medium text-github-text mb-2">
+                    Alias / Stage Name
+                  </label>
+                  <input
+                    type="text"
+                    value={form.owner_alias}
+                    onChange={e => setForm(prev => ({ ...prev, owner_alias: e.target.value }))}
+                    placeholder="How you'd like to be displayed"
+                    className="block w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text placeholder-github-placeholder focus:outline-none focus:border-github-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-github-text mb-2">
+                    Specialty / Instrument
+                  </label>
+                  <input
+                    type="text"
+                    value={form.owner_specialty}
+                    onChange={e => setForm(prev => ({ ...prev, owner_specialty: e.target.value }))}
+                    placeholder="e.g., Guitarist, Vocalist, DJ, etc."
+                    className="block w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text placeholder-github-placeholder focus:outline-none focus:border-github-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-github-text mb-2">
+                    Short Description
+                  </label>
+                  <textarea
+                    value={form.owner_description}
+                    onChange={e => setForm(prev => ({ ...prev, owner_description: e.target.value }))}
+                    placeholder="Tell viewers a bit about yourself"
+                    rows={3}
+                    className="block w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text placeholder-github-placeholder focus:outline-none focus:border-github-blue resize-none"
+                  />
+                </div>
               </div>
 
               {form.performance_type === 'music' && (

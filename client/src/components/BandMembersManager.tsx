@@ -8,6 +8,9 @@ interface ProfileMember {
   profile_id: string;
   revenue_share: number;
   role: 'owner' | 'admin' | 'member';
+  alias?: string;
+  description?: string;
+  specialty?: string;
   profiles?: {
     user_metadata?: {
       name?: string;
@@ -54,6 +57,9 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
           profile_id,
           revenue_share,
           role,
+          alias,
+          description,
+          specialty,
           created_at
         `)
         .eq('profile_id', profileId)
@@ -78,10 +84,17 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
   }, [profileId]);
 
   const fetchInvites = useCallback(async () => {
-    if (!isOwner) return;
+    if (!isOwner) {
+      console.log('Not owner, skipping invite fetch');
+      return;
+    }
     try {
+      console.log('Fetching invites for profileId:', profileId);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
+      if (!session?.access_token) {
+        console.log('No session token, cannot fetch invites');
+        return;
+      }
 
       const response = await fetch(`http://localhost:3000/api/invites/profile/${profileId}`, {
         headers: {
@@ -89,8 +102,10 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
         }
       });
 
+      console.log('Invites fetch response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched invites:', data);
         setInvites(data);
       }
     } catch (err) {
@@ -159,13 +174,16 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
 
   const handleCancelInvite = async (inviteId: string) => {
     try {
+      console.log('Attempting to cancel invite:', inviteId);
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
+        console.log('No session token');
         setMessage({ type: 'error', text: 'Not authenticated' });
         return;
       }
 
+      console.log('Sending DELETE request to:', `http://localhost:3000/api/invites/${inviteId}`);
       const response = await fetch(`http://localhost:3000/api/invites/${inviteId}`, {
         method: 'DELETE',
         headers: {
@@ -173,11 +191,14 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
         }
       });
 
+      console.log('Cancel response status:', response.status);
       if (response.ok) {
         setMessage({ type: 'success', text: 'Invitation cancelled' });
         fetchInvites();
       } else {
-        setMessage({ type: 'error', text: 'Failed to cancel invitation' });
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Cancel failed:', errorData);
+        setMessage({ type: 'error', text: errorData.message || 'Failed to cancel invitation' });
       }
     } catch (err) {
       console.error('Error cancelling invite:', err);
@@ -224,27 +245,50 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
         ) : (
           <div className="space-y-3">
             {members.map(member => (
-              <div key={member.id} className="flex items-center justify-between p-3 bg-github-bg rounded-lg">
-                <div className="flex-1">
-                  <p className="text-github-text font-medium">
-                    {member.role === 'owner' ? '👤 Profile Owner' : 'Band Member'}
-                  </p>
-                  <p className="text-xs text-github-text-secondary mt-1">
-                    ID: {member.user_id}
-                  </p>
-                  <p className="text-sm text-github-text-secondary">
-                    Revenue Share: {member.revenue_share.toFixed(1)}%
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className={`inline-block px-2 py-1 text-xs rounded font-medium ${
-                    member.role === 'owner' ? 'bg-purple-900/30 text-purple-300' :
-                    member.role === 'admin' ? 'bg-blue-900/30 text-blue-300' :
-                    'bg-gray-900/30 text-gray-300'
-                  }`}>
-                    {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-                  </span>
-                </div>
+              <div key={member.id} className="p-4 bg-github-bg rounded-lg border border-github-border">
+                {isOwner ? (
+                  // Full details for members/owners
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-github-text font-medium">
+                        {member.alias || (member.role === 'owner' ? '👤 Profile Owner' : 'Band Member')}
+                      </p>
+                      <span className={`inline-block px-2 py-1 text-xs rounded font-medium ${
+                        member.role === 'owner' ? 'bg-purple-900/30 text-purple-300' :
+                        member.role === 'admin' ? 'bg-blue-900/30 text-blue-300' :
+                        'bg-gray-900/30 text-gray-300'
+                      }`}>
+                        {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                      </span>
+                    </div>
+                    {member.specialty && (
+                      <p className="text-sm text-github-blue mb-1">{member.specialty}</p>
+                    )}
+                    {member.description && (
+                      <p className="text-sm text-github-text-secondary mb-2">{member.description}</p>
+                    )}
+                    <div className="flex items-center justify-between text-xs text-github-text-secondary pt-2 border-t border-github-border">
+                      <span>ID: {member.user_id.substring(0, 8)}...</span>
+                      <span className="font-medium text-github-text">Revenue: {member.revenue_share.toFixed(1)}%</span>
+                    </div>
+                  </>
+                ) : (
+                  // Public view for visitors - only show alias, specialty, description
+                  <>
+                    <p className="text-github-text font-medium mb-1">
+                      {member.alias || (member.role === 'owner' ? 'Profile Owner' : 'Band Member')}
+                    </p>
+                    {member.specialty && (
+                      <p className="text-sm text-github-blue mb-1">{member.specialty}</p>
+                    )}
+                    {member.description && (
+                      <p className="text-sm text-github-text-secondary">{member.description}</p>
+                    )}
+                    {!member.alias && !member.specialty && !member.description && (
+                      <p className="text-xs text-github-text-secondary italic">Member of the band</p>
+                    )}
+                  </>
+                )}
               </div>
             ))}
           </div>

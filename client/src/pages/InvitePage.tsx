@@ -11,7 +11,7 @@ interface InviteData {
   profiles: {
     id: string;
     name: string;
-    description: string;
+    description?: string;
     image_url?: string;
   };
   inviter: {
@@ -29,20 +29,38 @@ export function InvitePage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [showSignup, setShowSignup] = useState(false);
+  const [memberInfo, setMemberInfo] = useState({
+    alias: '',
+    description: '',
+    specialty: ''
+  });
 
   useEffect(() => {
     const checkAuthAndLoadInvite = async () => {
-      // Check if user is logged in
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      setUser(authUser);
-
-      // Load invite details
+      // Load invite details first
       if (token) {
         try {
           const response = await fetch(`http://localhost:3000/api/invites/token/${token}`);
           if (response.ok) {
-            const data = await response.json();
-            setInvite(data);
+            const inviteData = await response.json();
+            setInvite(inviteData);
+
+            // Now check if user is logged in
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            setUser(authUser);
+
+            // If logged in, verify email matches invitation
+            if (authUser && authUser.email) {
+              if (authUser.email.toLowerCase() !== inviteData.invitee_email.toLowerCase()) {
+                setMessage({ 
+                  type: 'error', 
+                  text: `This invitation is for ${inviteData.invitee_email}. Please log in with that account.` 
+                });
+              }
+            } else {
+              // Not logged in, show signup prompt
+              setShowSignup(true);
+            }
           } else {
             setMessage({ type: 'error', text: 'Invite not found or expired' });
           }
@@ -80,13 +98,18 @@ export function InvitePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ token })
+        body: JSON.stringify({ 
+          token,
+          alias: memberInfo.alias || undefined,
+          description: memberInfo.description || undefined,
+          specialty: memberInfo.specialty || undefined
+        })
       });
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Invite accepted! Redirecting...' });
         setTimeout(() => {
-          navigate(`/profiles/${invite.profiles.id}`);
+          navigate(`/profile/${invite.profiles.id}`);
         }, 2000);
       } else {
         const error = await response.json();
@@ -195,6 +218,56 @@ export function InvitePage() {
     );
   }
 
+  // Check if logged in with wrong email
+  if (user && invite && user.email?.toLowerCase() !== invite.invitee_email.toLowerCase()) {
+    return (
+      <div className="min-h-screen bg-github-bg flex items-center justify-center p-4">
+        <div className="bg-github-card border border-github-border rounded-lg p-8 max-w-md w-full">
+          <div className="text-center mb-6">
+            <AlertCircle className="mx-auto mb-4 text-yellow-400" size={48} />
+            <h1 className="text-2xl font-bold text-github-text mb-2">Wrong Account</h1>
+            <p className="text-github-text-secondary mb-4">
+              This invitation is for a different email address.
+            </p>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="p-4 bg-github-bg rounded-lg">
+              <p className="text-sm text-github-text-secondary mb-1">You're logged in as:</p>
+              <p className="text-github-text font-medium">{user.email}</p>
+            </div>
+            <div className="p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+              <p className="text-sm text-github-text-secondary mb-1">This invitation is for:</p>
+              <p className="text-yellow-300 font-medium">{invite.invitee_email}</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.reload();
+              }}
+              className="w-full px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-medium rounded-lg transition-colors"
+            >
+              Switch Account
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full px-4 py-2 bg-github-border hover:bg-github-bg text-github-text font-medium rounded-lg transition-colors"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+
+          <p className="text-xs text-github-text-secondary text-center mt-4">
+            You need to log in with {invite.invitee_email} to accept this invitation
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-github-bg flex items-center justify-center p-4">
       <div className="bg-github-card border border-github-border rounded-lg overflow-hidden max-w-2xl w-full">
@@ -218,7 +291,9 @@ export function InvitePage() {
               )}
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-github-text mb-2">{invite.profiles.name}</h2>
-                <p className="text-github-text-secondary mb-4">{invite.profiles.description}</p>
+                {invite.profiles.description && (
+                  <p className="text-github-text-secondary mb-4">{invite.profiles.description}</p>
+                )}
                 <div className="inline-block px-3 py-1 bg-github-bg rounded-full">
                   <p className="text-sm text-github-blue font-medium">
                     Revenue Share: {invite.revenue_share.toFixed(1)}%
@@ -232,6 +307,52 @@ export function InvitePage() {
           <div className="mb-8 p-4 bg-github-bg rounded-lg border border-github-border">
             <p className="text-sm text-github-text-secondary mb-1">Invited by</p>
             <p className="text-github-text font-medium">{invite.inviter.name}</p>
+          </div>
+
+          {/* Member Info Form */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-github-text mb-4">Your Information</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="alias" className="block text-sm font-medium text-github-text mb-1">
+                  Alias / Stage Name
+                </label>
+                <input
+                  type="text"
+                  id="alias"
+                  value={memberInfo.alias}
+                  onChange={(e) => setMemberInfo({ ...memberInfo, alias: e.target.value })}
+                  placeholder="How you'd like to be displayed"
+                  className="w-full px-4 py-2 bg-github-bg border border-github-border rounded-lg text-github-text focus:border-github-blue focus:outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="specialty" className="block text-sm font-medium text-github-text mb-1">
+                  Role / Specialty
+                </label>
+                <input
+                  type="text"
+                  id="specialty"
+                  value={memberInfo.specialty}
+                  onChange={(e) => setMemberInfo({ ...memberInfo, specialty: e.target.value })}
+                  placeholder="e.g., Guitarist, Vocalist, Manager, etc."
+                  className="w-full px-4 py-2 bg-github-bg border border-github-border rounded-lg text-github-text focus:border-github-blue focus:outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-github-text mb-1">
+                  Short Bio
+                </label>
+                <textarea
+                  id="description"
+                  value={memberInfo.description}
+                  onChange={(e) => setMemberInfo({ ...memberInfo, description: e.target.value })}
+                  placeholder="Tell others a bit about yourself"
+                  rows={3}
+                  className="w-full px-4 py-2 bg-github-bg border border-github-border rounded-lg text-github-text focus:border-github-blue focus:outline-none resize-none"
+                />
+              </div>
+            </div>
           </div>
 
           {/* What's Included */}
@@ -294,7 +415,7 @@ export function InvitePage() {
             <button
               onClick={handleAccept}
               disabled={isAccepting}
-              className="flex-1 px-6 py-3 bg-github-blue hover:bg-github-blue-dark disabled:opacity-50 text-github-text font-semibold rounded-lg transition-colors"
+              className="flex-1 px-6 py-3 bg-github-blue hover:bg-github-blue-dark disabled:opacity-50 disabled:cursor-not-allowed text-github-text font-semibold rounded-lg transition-colors"
             >
               {isAccepting ? 'Accepting...' : 'Accept Invitation'}
             </button>

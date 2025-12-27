@@ -4,13 +4,61 @@ import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/models';
 import { profileService } from '../services/profileService';
 import { Wallet } from './Wallet';
+import { Mail, CheckCircle, XCircle } from 'lucide-react';
+
+interface PendingInvite {
+  id: string;
+  invite_token: string;
+  invitee_email: string;
+  revenue_share: number;
+  expires_at: string;
+  profiles: {
+    id: string;
+    name: string;
+    description?: string;
+    image_url?: string;
+  };
+  inviter: {
+    name?: string;
+  };
+}
 
 export function Dashboard() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userProfiles, setUserProfiles] = useState<Profile[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'profiles' | 'wallet'>('profiles');
+
+  const fetchPendingInvites = async () => {
+    try {
+      console.log('Fetching pending invites...');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        console.log('No session token');
+        return;
+      }
+
+      console.log('User email:', session.user?.email);
+      const response = await fetch('http://localhost:3000/api/invites/me', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      console.log('Invites response status:', response.status);
+      if (response.ok) {
+        const invites = await response.json();
+        console.log('Fetched invites:', invites);
+        setPendingInvites(invites);
+      } else {
+        console.error('Failed to fetch invites:', await response.text());
+      }
+    } catch (err) {
+      console.error('Error fetching invites:', err);
+    }
+  };
 
   useEffect(() => {
     const getUser = async () => {
@@ -32,6 +80,7 @@ export function Dashboard() {
       try {
         const profiles = await profileService.getCurrentUserProfiles();
         setUserProfiles(profiles);
+        await fetchPendingInvites();
       } catch (err) {
         // If there's an error fetching profiles, we'll just show empty state
         console.error('Error loading profiles:', err);
@@ -77,6 +126,43 @@ export function Dashboard() {
           <h1 className="text-4xl font-bold text-github-text mb-2">Your Dashboard</h1>
           <p className="text-github-text-secondary">Logged in as: <span className="text-github-blue">{userEmail}</span></p>
         </div>
+
+        {/* Pending Invitations Banner */}
+        {pendingInvites.length > 0 && (
+          <div className="mb-8 bg-blue-900/20 border border-blue-700 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Mail className="text-blue-400" size={24} />
+              <h2 className="text-xl font-bold text-blue-300">
+                You have {pendingInvites.length} pending invitation{pendingInvites.length > 1 ? 's' : ''}!
+              </h2>
+            </div>
+            <div className="space-y-3">
+              {pendingInvites.map(invite => (
+                <div key={invite.id} className="bg-github-bg border border-github-border rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-github-text mb-1">
+                        {invite.profiles.name}
+                      </h3>
+                      <p className="text-sm text-github-text-secondary mb-2">
+                        {invite.inviter.name || 'Someone'} invited you to join as a band member
+                      </p>
+                      <p className="text-sm text-green-400">
+                        💰 Revenue Share: {invite.revenue_share.toFixed(1)}% of tips
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/invite/${invite.invite_token}`)}
+                      className="px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-medium rounded-lg transition-colors"
+                    >
+                      View Invite
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Tab Navigation */}
         <div className="flex gap-2 border-b border-github-border mb-8">

@@ -7,7 +7,10 @@ export function Login() {
         provider: 'google',
         options: {
           redirectTo: 'http://localhost:5173/auth/callback',
-          skipBrowserRedirect: false
+          skipBrowserRedirect: false,
+          queryParams: {
+            prompt: 'select_account'
+          }
         }
       });
 

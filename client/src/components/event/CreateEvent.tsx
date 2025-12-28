@@ -196,6 +196,7 @@ export function CreateEvent() {
                   <input
                     type="date"
                     value={form.start_time.split('T')[0]}
+                    min={new Date().toISOString().split('T')[0]}
                     onChange={e => {
                       const date = e.target.value;
                       const time = form.start_time.split('T')[1] || '12:00';
@@ -227,6 +228,7 @@ export function CreateEvent() {
                   <input
                     type="date"
                     value={form.end_time.split('T')[0]}
+                    min={form.start_time.split('T')[0] || new Date().toISOString().split('T')[0]}
                     onChange={e => {
                       const date = e.target.value;
                       const time = form.end_time.split('T')[1] || '13:00';

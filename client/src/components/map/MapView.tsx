@@ -270,9 +270,9 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
           >
             <div 
               style={{
-                width: isUserLocation ? '28px' : '24px',
-                height: isUserLocation ? '28px' : '24px',
-                backgroundColor: markerColor,
+                width: isUserLocation ? '28px' : '40px',
+                height: isUserLocation ? '28px' : '40px',
+                backgroundColor: isUserLocation ? markerColor : 'white',
                 border: '3px solid white',
                 borderRadius: '50%',
                 cursor: 'pointer',
@@ -281,6 +281,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                overflow: 'hidden',
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -295,11 +296,29 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {isUserLocation && (
+              {isUserLocation ? (
                 <div style={{
                   width: '8px',
                   height: '8px',
                   backgroundColor: 'white',
+                  borderRadius: '50%',
+                }}/>
+              ) : marker.profile?.avatar_url ? (
+                <img 
+                  src={marker.profile.avatar_url} 
+                  alt={marker.profile.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '12px',
+                  height: '12px',
+                  backgroundColor: '#4CAF50',
                   borderRadius: '50%',
                 }}/>
               )}

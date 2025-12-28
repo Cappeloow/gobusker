@@ -212,13 +212,21 @@ export function Dashboard() {
                         className="p-6 bg-github-bg border border-github-border rounded-lg cursor-pointer transition-all duration-300 hover:border-github-blue hover:shadow-lg"
                       >
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-xl font-bold text-github-text">{profile.name}</h3>
-                              <span className="text-sm px-3 py-1 bg-github-card border border-github-border rounded-full text-github-text-secondary capitalize">
-                                {profile.role}
-                              </span>
-                            </div>
+                          <div className="flex items-center gap-4 flex-1">
+                            {profile.avatar_url && (
+                              <img 
+                                src={profile.avatar_url} 
+                                alt={`${profile.name}'s avatar`}
+                                className="w-16 h-16 rounded-full object-cover border-2 border-github-border"
+                              />
+                            )}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-xl font-bold text-github-text">{profile.name}</h3>
+                                <span className="text-sm px-3 py-1 bg-github-card border border-github-border rounded-full text-github-text-secondary capitalize">
+                                  {profile.role}
+                                </span>
+                              </div>
                             {profile.bio && <p className="text-github-text-secondary mb-3">{profile.bio}</p>}
                             {profile.genres && profile.genres.length > 0 && (
                               <p className="text-sm text-github-text-muted">
@@ -230,6 +238,7 @@ export function Dashboard() {
                                 <span className="text-github-text-secondary">Instruments:</span> {profile.instruments.join(', ')}
                               </p>
                             )}
+                            </div>
                           </div>
                           <span className="text-2xl ml-4">→</span>
                         </div>

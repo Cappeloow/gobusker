@@ -102,18 +102,27 @@ export function ProfileDetail() {
         <div className="bg-github-card border border-github-border rounded-lg p-8 mb-6 shadow-xl">
           {/* Header */}
           <div className="flex items-start justify-between mb-8 pb-8 border-b border-github-border">
-            <div className="flex-1">
-              <h1 className="text-4xl font-bold text-github-text mb-4">{profile.name}</h1>
-              <div className="flex items-center gap-4 flex-wrap">
-                <span className="px-4 py-2 bg-github-bg border border-github-border rounded-full text-sm font-semibold text-github-text-secondary capitalize">
-                  {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
-                </span>
-                {profile.saldo !== undefined && profile.saldo > 0 && (
-                  <span className="px-4 py-2 bg-green-900/20 border border-green-700 rounded-full text-sm font-semibold text-green-400 flex items-center gap-2">
-                    <span>💰</span>
-                    <span>Saldo: ${profile.saldo.toFixed(2)}</span>
+            <div className="flex items-center gap-6 flex-1">
+              {profile.avatar_url && (
+                <img 
+                  src={profile.avatar_url} 
+                  alt={`${profile.name}'s avatar`}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-github-border shadow-lg"
+                />
+              )}
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold text-github-text mb-4">{profile.name}</h1>
+                <div className="flex items-center gap-4 flex-wrap">
+                  <span className="px-4 py-2 bg-github-bg border border-github-border rounded-full text-sm font-semibold text-github-text-secondary capitalize">
+                    {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
                   </span>
-                )}
+                  {profile.saldo !== undefined && profile.saldo > 0 && (
+                    <span className="px-4 py-2 bg-green-900/20 border border-green-700 rounded-full text-sm font-semibold text-green-400 flex items-center gap-2">
+                      <span>💰</span>
+                      <span>Saldo: ${profile.saldo.toFixed(2)}</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex gap-3 items-start">

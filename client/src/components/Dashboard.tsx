@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/models';
 import { profileService } from '../services/profileService';
 import { Wallet } from './Wallet';
-import { Mail, CheckCircle, XCircle } from 'lucide-react';
+import { Mail } from 'lucide-react';
 
 interface PendingInvite {
   id: string;

@@ -28,7 +28,7 @@ export function Success() {
   const [searchParams] = useSearchParams();
   const [sessionStatus, setSessionStatus] = useState<'loading' | 'success' | 'failure'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [orderData] = useState<OrderData | null>(null);
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function Success() {
               setErrorMessage(data.message || 'Payment could not be verified in time.');
             }
           })
-          .catch(error => {
+          .catch(() => {
             setSessionStatus('failure');
             setErrorMessage('An error occurred while verifying your payment. Please contact support.');
           });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { ViewStateChangeEvent } from 'react-map-gl';
 import { Map, Marker } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';

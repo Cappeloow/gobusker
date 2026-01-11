@@ -1,6 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { profileService } from '../../services/profileService';
-import type { Profile } from '../../types/models';
 
 type ProfileRole = 'eventmaker' | 'busker' | 'viewer';
 type ProfileType = 'individual' | 'band';

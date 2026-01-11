@@ -78,6 +78,9 @@ export interface Event {
     place_name: string;
   };
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  category?: string;
+  subcategory?: string;
+  profile?: Profile;
   created_at: string;
   updated_at: string;
 }

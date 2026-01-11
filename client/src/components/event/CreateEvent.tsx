@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { eventService } from '../../services/eventService';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/useAuth';
 import type { Profile } from '../../types/models';
 import { LocationSelectMap } from '../map/LocationSelectMap';
 
@@ -43,8 +42,6 @@ export function CreateEvent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [selectedCollaborators, setSelectedCollaborators] = useState<Collaborator[]>([]);
-
-  const { user } = useAuth();
 
   if (!profileId) {
     return (

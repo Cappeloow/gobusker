@@ -4,7 +4,7 @@ import { eventService } from '../../services/eventService';
 import { useAuth } from '../../context/useAuth';
 import type { Event } from '../../types/models';
 
-interface EventWithCollaborators extends Event {
+interface EventWithCollaborators extends Omit<Event, 'profile'> {
   profile: {
     id: string;
     name: string;

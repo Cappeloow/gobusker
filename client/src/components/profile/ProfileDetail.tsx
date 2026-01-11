@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { ProfileQRCode } from './ProfileQRCode';
 import { TipWall } from './TipWall';
 import { BandMembersManager } from '../BandMembersManager';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Edit2, Save, X } from 'lucide-react';
 
 export function ProfileDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +16,9 @@ export function ProfileDetail() {
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ bio: '', avatar_url: '' });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -30,6 +33,7 @@ export function ProfileDetail() {
 
         const data = await profileService.getProfile(id);
         setProfile(data);
+        setEditForm({ bio: data.bio || '', avatar_url: data.avatar_url || '' });
 
         // Check if current user is owner
         if (user) {
@@ -70,6 +74,41 @@ export function ProfileDetail() {
     loadProfile();
   }, [id]);
 
+  const handleSaveProfile = async () => {
+    if (!id || !profile) return;
+    
+    setIsSaving(true);
+    setError(null);
+    
+    try {
+      await profileService.updateProfile(id, {
+        bio: editForm.bio,
+        avatar_url: editForm.avatar_url
+      });
+      
+      setProfile({ ...profile, bio: editForm.bio, avatar_url: editForm.avatar_url });
+      setIsEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!id) return;
+    
+    setIsSaving(true);
+    try {
+      const url = await profileService.uploadAvatar(file, id);
+      setEditForm(prev => ({ ...prev, avatar_url: url }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload avatar');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card flex items-center justify-center">
@@ -103,20 +142,34 @@ export function ProfileDetail() {
           {/* Header */}
           <div className="flex items-start justify-between mb-8 pb-8 border-b border-github-border">
             <div className="flex items-center gap-6 flex-1">
-              {profile.avatar_url && (
+              <div className="relative">
                 <img 
-                  src={profile.avatar_url} 
+                  src={isEditing ? editForm.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image' : profile.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image'}
                   alt={`${profile.name}'s avatar`}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-github-border shadow-lg"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-github-border shadow-lg bg-github-bg"
                 />
-              )}
+                {isEditing && isOwner && (
+                  <label className="absolute bottom-0 right-0 p-2 bg-github-blue rounded-full cursor-pointer hover:bg-github-blue-dark transition-colors shadow-lg">
+                    <Edit2 size={14} className="text-white" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAvatarUpload(file);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
               <div className="flex-1">
                 <h1 className="text-4xl font-bold text-github-text mb-4">{profile.name}</h1>
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="px-4 py-2 bg-github-bg border border-github-border rounded-full text-sm font-semibold text-github-text-secondary capitalize">
                     {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
                   </span>
-                  {profile.saldo !== undefined && profile.saldo > 0 && (
+                  {profile.role !== 'viewer' && profile.saldo !== undefined && profile.saldo > 0 && (
                     <span className="px-4 py-2 bg-green-900/20 border border-green-700 rounded-full text-sm font-semibold text-green-400 flex items-center gap-2">
                       <span>💰</span>
                       <span>Saldo: ${profile.saldo.toFixed(2)}</span>
@@ -126,17 +179,50 @@ export function ProfileDetail() {
               </div>
             </div>
             <div className="flex gap-3 items-start">
+              {isOwner && !isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="p-3 rounded-lg bg-github-bg border border-github-border hover:border-github-blue text-github-text-secondary hover:text-github-blue transition-all duration-200"
+                  title="Edit Profile"
+                >
+                  <Edit2 size={20} />
+                </button>
+              )}
+              {isOwner && isEditing && (
+                <>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="p-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all duration-200 disabled:opacity-50"
+                    title="Save Changes"
+                  >
+                    <Save size={20} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditForm({ bio: profile.bio || '', avatar_url: profile.avatar_url || '' });
+                    }}
+                    className="p-3 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
+                    title="Cancel"
+                  >
+                    <X size={20} />
+                  </button>
+                </>
+              )}
               <ProfileQRCode
                 profileUrl={window.location.href}
                 profileName={profile.name}
               />
-              <button
-                onClick={() => navigate(`/profile/${id}/shop`)}
-                className="p-3 rounded-lg bg-github-bg border border-github-border hover:border-github-blue text-github-text-secondary hover:text-github-blue transition-all duration-200"
-                title="Go to Shop"
-              >
-                <ShoppingBag size={24} />
-              </button>
+              {profile.role === 'busker' && (
+                <button
+                  onClick={() => navigate(`/profile/${id}/shop`)}
+                  className="p-3 rounded-lg bg-github-bg border border-github-border hover:border-github-blue text-github-text-secondary hover:text-github-blue transition-all duration-200"
+                  title="Go to Shop"
+                >
+                  <ShoppingBag size={24} />
+                </button>
+              )}
               <button
                 onClick={() => navigate('/dashboard')}
                 className="px-4 py-2 bg-github-bg border border-github-border hover:border-github-blue text-github-text hover:text-github-blue rounded-lg font-medium transition-all duration-200"
@@ -146,13 +232,23 @@ export function ProfileDetail() {
             </div>
           </div>
 
-          {/* About Section */}
-          {profile.bio && (
-            <div className="mb-8">
-              <h3 className="text-lg font-bold text-github-text mb-3">About</h3>
-              <p className="text-github-text-secondary whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
-            </div>
-          )}
+          {/* About Section - Always visible, editable for owner */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-github-text mb-3">About</h3>
+            {isEditing && isOwner ? (
+              <textarea
+                value={editForm.bio}
+                onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                placeholder="Tell us about yourself..."
+                className="w-full px-4 py-3 bg-github-bg border border-github-border rounded-lg text-github-text placeholder-github-placeholder focus:outline-none focus:border-github-blue resize-none"
+                rows={4}
+              />
+            ) : (
+              <p className="text-github-text-secondary whitespace-pre-wrap leading-relaxed">
+                {profile.bio || 'No bio added yet.'}
+              </p>
+            )}
+          </div>
 
           {/* Genres Section */}
           {profile.genres && profile.genres.length > 0 && (
@@ -214,7 +310,7 @@ export function ProfileDetail() {
             </div>
           )}
 
-          {/* Create Event Button */}
+          {/* Create Event Button - Available for all roles */}
           <div className="mt-8 pt-8 border-t border-github-border flex justify-center">
             <button
               onClick={() => navigate(`/create-event?profile=${profile.id}`)}
@@ -226,17 +322,19 @@ export function ProfileDetail() {
           </div>
         </div>
 
-        {/* Band Members Section - Show for all members, but full management for owner */}
-        {currentUserId && id && (
+        {/* Band Members Section - Only for Buskers */}
+        {profile.role === 'busker' && currentUserId && id && (
           <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl mb-6">
             <BandMembersManager profileId={id} isOwner={isOwner} />
           </div>
         )}
 
-        {/* Tip Wall Section */}
-        <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
-          <TipWall profileId={profile.id} />
-        </div>
+        {/* Tip Wall Section - Only for Buskers */}
+        {profile.role === 'busker' && (
+          <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
+            <TipWall profileId={profile.id} />
+          </div>
+        )}
       </div>
     </div>
   );

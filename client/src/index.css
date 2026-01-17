@@ -65,34 +65,40 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: #24292F;
+    background-color: #F6F8FA;
   }
   a:hover {
-    color: #747bff;
+    color: #0969DA;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #F6F8FA;
+    color: #24292F;
   }
 }
 
-/* Form inputs styling */
+/* Form inputs styling - Light Mode */
 input, textarea, select {
   background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #ccc;
+  color: #24292F;
+  border: 1px solid #D0D7DE;
   font-family: inherit;
   font-size: 1em;
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #c18654;
-  box-shadow: 0 0 0 3px rgba(193, 134, 84, 0.1);
+  border-color: #0969DA;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
 }
 
 input::placeholder, textarea::placeholder {
-  color: #999;
+  color: #57606A;
+}
+
+option {
+  background-color: #ffffff;
+  color: #24292F;
 }
 
 /* Dark mode form inputs - GLOBAL */

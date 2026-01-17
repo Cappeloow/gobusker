@@ -193,19 +193,19 @@ export function Wallet({ userProfiles }: WalletProps) {
   const getTransactionColor = (type: string) => {
     switch (type) {
       case 'tip':
-        return 'text-yellow-400 bg-yellow-900/20 border-yellow-700';
+        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700';
       case 'order':
-        return 'text-blue-400 bg-blue-900/20 border-blue-700';
+        return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700';
       case 'withdrawal':
-        return 'text-purple-400 bg-purple-900/20 border-purple-700';
+        return 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700';
       default:
-        return 'text-green-400 bg-green-900/20 border-green-700';
+        return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700';
     }
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-github-text mb-6 flex items-center gap-3">
+      <h2 className="text-2xl font-bold text-light-text dark:text-github-text mb-6 flex items-center gap-3">
         <DollarSign size={28} />
         Financial Overview
       </h2>
@@ -213,13 +213,13 @@ export function Wallet({ userProfiles }: WalletProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-8">
         {/* Total Saldo */}
-        <div className="bg-github-bg border border-github-border rounded-lg p-6">
+        <div className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-github-text-secondary text-sm font-medium">Total Saldo</span>
+            <span className="text-light-text-secondary dark:text-github-text-secondary text-sm font-medium">Total Saldo</span>
             <span className="text-2xl">💰</span>
           </div>
-          <p className="text-4xl font-bold text-green-400">${totalSaldo.toFixed(2)}</p>
-          <p className="text-github-text-secondary text-xs mt-2">Available balance from tips</p>
+          <p className="text-4xl font-bold text-green-600 dark:text-green-400">${totalSaldo.toFixed(2)}</p>
+          <p className="text-light-text-secondary dark:text-github-text-secondary text-xs mt-2">Available balance from tips</p>
         </div>
       </div>
 
@@ -231,8 +231,8 @@ export function Wallet({ userProfiles }: WalletProps) {
             onClick={() => setFilter(filterType)}
             className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
               filter === filterType
-                ? 'bg-github-blue text-github-text border border-github-blue'
-                : 'bg-github-bg border border-github-border text-github-text-secondary hover:border-github-blue'
+                ? 'bg-light-blue dark:bg-github-blue text-white dark:text-github-text border border-light-blue dark:border-github-blue'
+                : 'bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue'
             }`}
           >
             {filterType === 'all' && 'All Transactions'}
@@ -246,11 +246,11 @@ export function Wallet({ userProfiles }: WalletProps) {
       {/* Transactions List */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="text-center py-8 text-github-text-secondary">
+          <div className="text-center py-8 text-light-text-secondary dark:text-github-text-secondary">
             Loading transactions...
           </div>
         ) : filteredTransactions.length === 0 ? (
-          <div className="text-center py-8 text-github-text-secondary">
+          <div className="text-center py-8 text-light-text-secondary dark:text-github-text-secondary">
             <History size={32} className="mx-auto mb-2 opacity-50" />
             <p>No transactions yet</p>
           </div>
@@ -258,15 +258,15 @@ export function Wallet({ userProfiles }: WalletProps) {
           filteredTransactions.map((tx) => (
             <div
               key={tx.id}
-              className="bg-github-bg border border-github-border rounded-lg p-4 flex items-center justify-between hover:border-github-blue transition-all duration-200"
+              className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-4 flex items-center justify-between hover:border-light-blue dark:hover:border-github-blue transition-all duration-200"
             >
               <div className="flex items-center gap-4 flex-1">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl border ${getTransactionColor(tx.type)}`}>
                   {getTransactionIcon(tx.type)}
                 </div>
                 <div className="flex-1">
-                  <p className="text-github-text font-medium">{tx.description}</p>
-                  <p className="text-github-text-secondary text-xs">
+                  <p className="text-light-text dark:text-github-text font-medium">{tx.description}</p>
+                  <p className="text-light-text-secondary dark:text-github-text-secondary text-xs">
                     {tx.profile_name} • {new Date(tx.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',
@@ -278,15 +278,15 @@ export function Wallet({ userProfiles }: WalletProps) {
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-github-text font-bold text-lg ${
-                  tx.amount < 0 ? 'text-red-400' : 'text-green-400'
+                <p className={`text-light-text dark:text-github-text font-bold text-lg ${
+                  tx.amount < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                 }`}>
                   {tx.amount < 0 ? '−$' : '+$'}{Math.abs(tx.amount).toFixed(2)}
                 </p>
                 <p className={`text-xs font-semibold ${
-                  tx.status === 'completed' ? 'text-green-400' :
-                  tx.status === 'pending' ? 'text-yellow-400' :
-                  'text-red-400'
+                  tx.status === 'completed' ? 'text-green-600 dark:text-green-400' :
+                  tx.status === 'pending' ? 'text-yellow-600 dark:text-yellow-400' :
+                  'text-red-600 dark:text-red-400'
                 }`}>
                   {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                 </p>
@@ -298,7 +298,7 @@ export function Wallet({ userProfiles }: WalletProps) {
 
       {/* Withdrawal Section - Only show when withdrawal filter is selected */}
       {filter === 'withdrawal' && (
-        <div className="mt-8 pt-8 border-t border-github-border">
+        <div className="mt-8 pt-8 border-t border-light-border dark:border-github-border">
           <WithdrawalWidget userProfiles={userProfiles} />
         </div>
       )}

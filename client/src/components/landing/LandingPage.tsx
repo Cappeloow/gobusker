@@ -144,26 +144,26 @@ export function LandingPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-github-bg to-github-card">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card">
 
       {/* Main Content */}
       <div className="flex-1 flex h-[calc(100vh-150px)]">
         {/* Map Section */}
-        <div className="flex-1 bg-github-bg relative">
-          <div className="absolute top-5 left-5 right-5 bg-github-card border border-github-border p-4 rounded-lg shadow-xl flex gap-2.5">
+        <div className="flex-1 bg-light-bg dark:bg-github-bg relative">
+          <div className="absolute top-5 left-5 right-5 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border p-4 rounded-lg shadow-xl flex gap-2.5">
             <input
               type="text"
               placeholder="Search location..."
-              className="flex-1 px-3 py-2 bg-github-bg border border-github-border rounded-lg text-github-text placeholder-github-text-muted focus:outline-none focus:border-github-blue"
+              className="flex-1 px-3 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               value={filters.location}
               onChange={(e) => setFilters({ ...filters, location: e.target.value })}
             />
-            <button className="px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200">
+            <button className="px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200">
               Search
             </button>
           </div>
           {loading ? (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-github-card border border-github-border p-5 rounded-lg shadow-xl z-10 text-github-text">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border p-5 rounded-lg shadow-xl z-10 text-light-text dark:text-github-text">
               Loading events...
             </div>
           ) : (
@@ -213,12 +213,12 @@ export function LandingPage() {
         </div>
 
         {/* Filters & Results Panel */}
-        <div className="w-[400px] bg-github-card border-l border-github-border shadow-xl p-5 overflow-y-auto">
-          <h1 className="mb-5 text-github-text text-2xl font-bold">Find Performances</h1>
+        <div className="w-[400px] bg-light-card dark:bg-github-card border-l border-light-border dark:border-github-border shadow-xl p-5 overflow-y-auto">
+          <h1 className="mb-5 text-light-text dark:text-github-text text-2xl font-bold">Find Performances</h1>
 
           {/* Time Range Filter */}
           <div className="mb-5">
-            <label className="block mb-2 text-github-text-secondary font-medium">When</label>
+            <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">When</label>
             <div className="flex gap-2 mb-2">
               {(['today', 'week', 'month', 'custom'] as const).map((range) => (
                 <button
@@ -230,8 +230,8 @@ export function LandingPage() {
                   })}
                   className={`flex-1 py-2 font-medium rounded-lg transition-all duration-200 ${
                     filters.timeRange === range 
-                      ? 'bg-github-blue text-github-text' 
-                      : 'bg-github-bg border border-github-border text-github-text-secondary hover:border-github-blue'
+                      ? 'bg-light-blue dark:bg-github-blue text-white dark:text-github-text' 
+                      : 'bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue'
                   }`}
                 >
                   {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -243,16 +243,16 @@ export function LandingPage() {
                 type="date"
                 value={filters.customDate || ''}
                 onChange={(e) => setFilters({ ...filters, customDate: e.target.value })}
-                className="w-full p-2 bg-github-bg border border-github-border rounded-lg mt-2 text-github-text focus:outline-none focus:border-github-blue"
+                className="w-full p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg mt-2 text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               />
             )}
           </div>
 
           {/* Category Filter */}
           <div className="mb-5">
-            <label className="block mb-2 text-github-text-secondary font-medium">Category</label>
+            <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">Category</label>
             <select
-              className="w-full p-2 bg-github-bg border border-github-border rounded-lg text-github-text focus:outline-none focus:border-github-blue"
+              className="w-full p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               value={filters.category}
               onChange={(e) => setFilters({ ...filters, category: e.target.value, subcategory: '' })}
             >
@@ -266,9 +266,9 @@ export function LandingPage() {
           {/* Subcategory Filter */}
           {filters.category && CATEGORIES[filters.category]?.length > 0 && (
             <div className="mb-5">
-              <label className="block mb-2 text-github-text-secondary font-medium">Subcategory</label>
+              <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">Subcategory</label>
               <select
-                className="w-full p-2 bg-github-bg border border-github-border rounded-lg text-github-text focus:outline-none focus:border-github-blue"
+                className="w-full p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
                 value={filters.subcategory}
                 onChange={(e) => setFilters({ ...filters, subcategory: e.target.value })}
               >
@@ -283,8 +283,8 @@ export function LandingPage() {
           {/* Distance Filter */}
           {userLocation && (
             <div className="mb-5">
-              <label className="block mb-2 text-github-text-secondary font-medium">
-                Max Distance: <span className="text-github-blue font-semibold">{filters.maxDistance} km</span>
+              <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">
+                Max Distance: <span className="text-light-blue dark:text-github-blue font-semibold">{filters.maxDistance} km</span>
               </label>
               <input
                 type="range"
@@ -292,9 +292,9 @@ export function LandingPage() {
                 max="500"
                 value={filters.maxDistance}
                 onChange={(e) => setFilters({ ...filters, maxDistance: parseInt(e.target.value) })}
-                className="w-full h-2 bg-github-border rounded-lg appearance-none cursor-pointer accent-github-blue"
+                className="w-full h-2 bg-light-border dark:bg-github-border rounded-lg appearance-none cursor-pointer accent-light-blue dark:accent-github-blue"
               />
-              <div className="flex justify-between text-xs text-github-text-muted mt-1">
+              <div className="flex justify-between text-xs text-light-text-muted dark:text-github-text-muted mt-1">
                 <span>1 km</span>
                 <span>100 km</span>
               </div>
@@ -303,16 +303,16 @@ export function LandingPage() {
 
           {/* Results Section */}
           <div>
-            <h3 className="mb-4 text-github-text font-bold">Upcoming Events ({filteredEvents.length})</h3>
+            <h3 className="mb-4 text-light-text dark:text-github-text font-bold">Upcoming Events ({filteredEvents.length})</h3>
             
             {userLocation && (
-              <div className="mb-3 p-2 bg-github-bg border border-github-border rounded-lg text-sm text-github-text-secondary">
+              <div className="mb-3 p-2 bg-light-blue/10 dark:bg-github-bg border border-light-blue/30 dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text-secondary">
                 📍 Location detected - showing distances
               </div>
             )}
 
             {filteredEvents.length === 0 ? (
-              <p className="text-github-text-secondary">No events found</p>
+              <p className="text-light-text-secondary dark:text-github-text-secondary">No events found</p>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {filteredEvents.map((event) => {
@@ -344,16 +344,16 @@ export function LandingPage() {
                       }}
                       className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
                         selectedMarker === event.id
-                          ? 'bg-github-bg border-2 border-github-blue shadow-lg'
-                          : 'bg-github-bg border border-github-border hover:border-github-blue'
+                          ? 'bg-light-bg dark:bg-github-bg border-2 border-light-blue dark:border-github-blue shadow-lg'
+                          : 'bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue'
                       }`}
                     >
-                      <div className="font-semibold text-github-text text-sm">{event.title}</div>
-                      <div className="text-xs text-github-text-secondary mt-1">
+                      <div className="font-semibold text-light-text dark:text-github-text text-sm">{event.title}</div>
+                      <div className="text-xs text-light-text-secondary dark:text-github-text-secondary mt-1">
                         {new Date(event.start_time).toLocaleDateString()}
                       </div>
                       {distance !== null && (
-                        <div className="text-xs text-github-blue mt-1">
+                        <div className="text-xs text-light-blue dark:text-github-blue mt-1">
                           📍 {distance.toFixed(1)} km away
                         </div>
                       )}

@@ -120,40 +120,40 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card p-4">
-      <div className="max-w-5xl mx-auto bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
+    <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
+      <div className="max-w-5xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-github-text mb-2">Your Dashboard</h1>
-          <p className="text-github-text-secondary">Logged in as: <span className="text-github-blue">{userEmail}</span></p>
+          <h1 className="text-4xl font-bold text-light-text dark:text-github-text mb-2">Your Dashboard</h1>
+          <p className="text-light-text-secondary dark:text-github-text-secondary">Logged in as: <span className="text-light-blue dark:text-github-blue">{userEmail}</span></p>
         </div>
 
         {/* Pending Invitations Banner */}
         {pendingInvites.length > 0 && (
-          <div className="mb-8 bg-blue-900/20 border border-blue-700 rounded-lg p-6">
+          <div className="mb-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <Mail className="text-blue-400" size={24} />
-              <h2 className="text-xl font-bold text-blue-300">
+              <Mail className="text-blue-600 dark:text-blue-400" size={24} />
+              <h2 className="text-xl font-bold text-blue-700 dark:text-blue-300">
                 You have {pendingInvites.length} pending invitation{pendingInvites.length > 1 ? 's' : ''}!
               </h2>
             </div>
             <div className="space-y-3">
               {pendingInvites.map(invite => (
-                <div key={invite.id} className="bg-github-bg border border-github-border rounded-lg p-4">
+                <div key={invite.id} className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-github-text mb-1">
+                      <h3 className="text-lg font-semibold text-light-text dark:text-github-text mb-1">
                         {invite.profiles.name}
                       </h3>
-                      <p className="text-sm text-github-text-secondary mb-2">
+                      <p className="text-sm text-light-text-secondary dark:text-github-text-secondary mb-2">
                         {invite.inviter.name || 'Someone'} invited you to join as a band member
                       </p>
-                      <p className="text-sm text-green-400">
+                      <p className="text-sm text-green-600 dark:text-green-400">
                         💰 Revenue Share: {invite.revenue_share.toFixed(1)}% of tips
                       </p>
                     </div>
                     <button
                       onClick={() => navigate(`/invite/${invite.invite_token}`)}
-                      className="px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-medium rounded-lg transition-colors"
                     >
                       View Invite
                     </button>
@@ -165,13 +165,13 @@ export function Dashboard() {
         )}
         
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-github-border mb-8">
+        <div className="flex gap-2 border-b border-light-border dark:border-github-border mb-8">
           <button
             onClick={() => setActiveTab('profiles')}
             className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
               activeTab === 'profiles'
-                ? 'text-github-blue border-github-blue'
-                : 'text-github-text-secondary border-transparent hover:text-github-text'
+                ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
+                : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
             }`}
           >
             Your Profiles
@@ -180,8 +180,8 @@ export function Dashboard() {
             onClick={() => setActiveTab('wallet')}
             className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
               activeTab === 'wallet'
-                ? 'text-github-blue border-github-blue'
-                : 'text-github-text-secondary border-transparent hover:text-github-text'
+                ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
+                : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
             }`}
           >
             💰 Wallet
@@ -194,10 +194,10 @@ export function Dashboard() {
             <div>
               {userProfiles.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-github-text-secondary mb-6 text-lg">You haven't created any profiles yet.</p>
+                  <p className="text-light-text-secondary dark:text-github-text-secondary mb-6 text-lg">You haven't created any profiles yet.</p>
                   <button
                     onClick={() => navigate('/create-profile')}
-                    className="px-6 py-3 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200"
+                    className="px-6 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200"
                   >
                     Create Your First Profile
                   </button>
@@ -209,7 +209,7 @@ export function Dashboard() {
                       <div 
                         key={profile.id}
                         onClick={() => navigate(`/profile/${profile.id}`)}
-                        className="p-6 bg-github-bg border border-github-border rounded-lg cursor-pointer transition-all duration-300 hover:border-github-blue hover:shadow-lg"
+                        className="p-6 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg cursor-pointer transition-all duration-300 hover:border-light-blue dark:hover:border-github-blue hover:shadow-lg"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-4 flex-1">
@@ -217,25 +217,25 @@ export function Dashboard() {
                               <img 
                                 src={profile.avatar_url} 
                                 alt={`${profile.name}'s avatar`}
-                                className="w-16 h-16 rounded-full object-cover border-2 border-github-border"
+                                className="w-16 h-16 rounded-full object-cover border-2 border-light-border dark:border-github-border"
                               />
                             )}
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-github-text">{profile.name}</h3>
-                                <span className="text-sm px-3 py-1 bg-github-card border border-github-border rounded-full text-github-text-secondary capitalize">
+                                <h3 className="text-xl font-bold text-light-text dark:text-github-text">{profile.name}</h3>
+                                <span className="text-sm px-3 py-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary capitalize">
                                   {profile.role}
                                 </span>
                               </div>
-                            {profile.bio && <p className="text-github-text-secondary mb-3">{profile.bio}</p>}
+                            {profile.bio && <p className="text-light-text-secondary dark:text-github-text-secondary mb-3">{profile.bio}</p>}
                             {profile.genres && profile.genres.length > 0 && (
-                              <p className="text-sm text-github-text-muted">
-                                <span className="text-github-text-secondary">Genres:</span> {profile.genres.join(', ')}
+                              <p className="text-sm text-light-text-muted dark:text-github-text-muted">
+                                <span className="text-light-text-secondary dark:text-github-text-secondary">Genres:</span> {profile.genres.join(', ')}
                               </p>
                             )}
                             {profile.instruments && profile.instruments.length > 0 && (
-                              <p className="text-sm text-github-text-muted">
-                                <span className="text-github-text-secondary">Instruments:</span> {profile.instruments.join(', ')}
+                              <p className="text-sm text-light-text-muted dark:text-github-text-muted">
+                                <span className="text-light-text-secondary dark:text-github-text-secondary">Instruments:</span> {profile.instruments.join(', ')}
                               </p>
                             )}
                             </div>
@@ -248,7 +248,7 @@ export function Dashboard() {
                   <div className="flex justify-center">
                     <button
                       onClick={() => navigate('/create-profile')}
-                      className="px-6 py-3 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
+                      className="px-6 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
                     >
                       <span>+</span>
                       Create Another Profile
@@ -262,16 +262,16 @@ export function Dashboard() {
           )}
         </div>
 
-        <div className="flex justify-between items-center mt-8 pt-6 border-t border-github-border">
+        <div className="flex justify-between items-center mt-8 pt-6 border-t border-light-border dark:border-github-border">
           <button
             onClick={() => navigate('/create-profile')}
-            className="px-6 py-2 text-github-blue hover:text-github-text font-medium transition-colors duration-200"
+            className="px-6 py-2 text-light-blue dark:text-github-blue hover:text-light-text dark:hover:text-github-text font-medium transition-colors duration-200"
           >
             ← Back
           </button>
           <button
             onClick={handleSignOut}
-            className="px-6 py-2 bg-red-900/20 border border-red-700 text-red-300 hover:bg-red-900/40 rounded-lg font-medium transition-all duration-200"
+            className="px-6 py-2 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/40 rounded-lg font-medium transition-all duration-200"
           >
             Sign Out
           </button>

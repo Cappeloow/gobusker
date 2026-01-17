@@ -119,13 +119,13 @@ export function ProfileDetail() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card p-4">
-        <div className="max-w-2xl mx-auto bg-github-card border border-github-border rounded-lg p-8">
-          <h2 className="text-2xl font-bold text-github-text mb-4">Error</h2>
-          <p className="text-red-400 mb-6">{error || 'Profile not found'}</p>
+      <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
+        <div className="max-w-2xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8">
+          <h2 className="text-2xl font-bold text-light-text dark:text-github-text mb-4">Error</h2>
+          <p className="text-red-600 dark:text-red-400 mb-6">{error || 'Profile not found'}</p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200"
+            className="px-6 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200"
           >
             Back to Dashboard
           </button>
@@ -135,21 +135,21 @@ export function ProfileDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card p-4">
+    <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
       <div className="max-w-4xl mx-auto">
         {/* Main Profile Card */}
-        <div className="bg-github-card border border-github-border rounded-lg p-8 mb-6 shadow-xl">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 mb-6 shadow-xl">
           {/* Header */}
-          <div className="flex items-start justify-between mb-8 pb-8 border-b border-github-border">
+          <div className="flex items-start justify-between mb-8 pb-8 border-b border-light-border dark:border-github-border">
             <div className="flex items-center gap-6 flex-1">
               <div className="relative">
                 <img 
                   src={isEditing ? editForm.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image' : profile.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image'}
                   alt={`${profile.name}'s avatar`}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-github-border shadow-lg bg-github-bg"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-light-border dark:border-github-border shadow-lg bg-light-bg dark:bg-github-bg"
                 />
                 {isEditing && isOwner && (
-                  <label className="absolute bottom-0 right-0 p-2 bg-github-blue rounded-full cursor-pointer hover:bg-github-blue-dark transition-colors shadow-lg">
+                  <label className="absolute bottom-0 right-0 p-2 bg-light-blue dark:bg-github-blue rounded-full cursor-pointer hover:bg-light-blue-dark dark:hover:bg-github-blue-dark transition-colors shadow-lg">
                     <Edit2 size={14} className="text-white" />
                     <input
                       type="file"
@@ -164,13 +164,13 @@ export function ProfileDetail() {
                 )}
               </div>
               <div className="flex-1">
-                <h1 className="text-4xl font-bold text-github-text mb-4">{profile.name}</h1>
+                <h1 className="text-4xl font-bold text-light-text dark:text-github-text mb-4">{profile.name}</h1>
                 <div className="flex items-center gap-4 flex-wrap">
-                  <span className="px-4 py-2 bg-github-bg border border-github-border rounded-full text-sm font-semibold text-github-text-secondary capitalize">
+                  <span className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-sm font-semibold text-light-text-secondary dark:text-github-text-secondary capitalize">
                     {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
                   </span>
                   {profile.role !== 'viewer' && profile.saldo !== undefined && profile.saldo > 0 && (
-                    <span className="px-4 py-2 bg-green-900/20 border border-green-700 rounded-full text-sm font-semibold text-green-400 flex items-center gap-2">
+                    <span className="px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-full text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
                       <span>💰</span>
                       <span>Saldo: ${profile.saldo.toFixed(2)}</span>
                     </span>
@@ -182,7 +182,7 @@ export function ProfileDetail() {
               {isOwner && !isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-3 rounded-lg bg-github-bg border border-github-border hover:border-github-blue text-github-text-secondary hover:text-github-blue transition-all duration-200"
+                  className="p-3 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
                   title="Edit Profile"
                 >
                   <Edit2 size={20} />
@@ -217,7 +217,7 @@ export function ProfileDetail() {
               {profile.role === 'busker' && (
                 <button
                   onClick={() => navigate(`/profile/${id}/shop`)}
-                  className="p-3 rounded-lg bg-github-bg border border-github-border hover:border-github-blue text-github-text-secondary hover:text-github-blue transition-all duration-200"
+                  className="p-3 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
                   title="Go to Shop"
                 >
                   <ShoppingBag size={24} />
@@ -225,7 +225,7 @@ export function ProfileDetail() {
               )}
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 bg-github-bg border border-github-border hover:border-github-blue text-github-text hover:text-github-blue rounded-lg font-medium transition-all duration-200"
+                className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text dark:text-github-text hover:text-light-blue dark:hover:text-github-blue rounded-lg font-medium transition-all duration-200"
               >
                 Back
               </button>
@@ -234,17 +234,17 @@ export function ProfileDetail() {
 
           {/* About Section - Always visible, editable for owner */}
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-github-text mb-3">About</h3>
+            <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">About</h3>
             {isEditing && isOwner ? (
               <textarea
                 value={editForm.bio}
                 onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
                 placeholder="Tell us about yourself..."
-                className="w-full px-4 py-3 bg-github-bg border border-github-border rounded-lg text-github-text placeholder-github-placeholder focus:outline-none focus:border-github-blue resize-none"
+                className="w-full px-4 py-3 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-placeholder focus:outline-none focus:border-light-blue dark:focus:border-github-blue resize-none"
                 rows={4}
               />
             ) : (
-              <p className="text-github-text-secondary whitespace-pre-wrap leading-relaxed">
+              <p className="text-light-text-secondary dark:text-github-text-secondary whitespace-pre-wrap leading-relaxed">
                 {profile.bio || 'No bio added yet.'}
               </p>
             )}
@@ -253,12 +253,12 @@ export function ProfileDetail() {
           {/* Genres Section */}
           {profile.genres && profile.genres.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-github-text mb-3">Genres</h3>
+              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">Genres</h3>
               <div className="flex flex-wrap gap-3">
                 {profile.genres.map((genre, index) => (
                   <span
                     key={index}
-                    className="px-4 py-2 bg-github-bg border border-github-border text-github-text-secondary rounded-full text-sm font-medium"
+                    className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary rounded-full text-sm font-medium"
                   >
                     {genre}
                   </span>
@@ -270,12 +270,12 @@ export function ProfileDetail() {
           {/* Instruments Section */}
           {profile.role === 'busker' && profile.instruments && profile.instruments.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-github-text mb-3">Instruments</h3>
+              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">Instruments</h3>
               <div className="flex flex-wrap gap-3">
                 {profile.instruments.map((instrument, index) => (
                   <span
                     key={index}
-                    className="px-4 py-2 bg-github-bg border border-github-border text-github-text-secondary rounded-full text-sm font-medium"
+                    className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary rounded-full text-sm font-medium"
                   >
                     {instrument}
                   </span>
@@ -287,7 +287,7 @@ export function ProfileDetail() {
           {/* Social Links Section */}
           {profile.social_links && Object.keys(profile.social_links).length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-github-text mb-3">Connect</h3>
+              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">Connect</h3>
               <div className="flex flex-wrap gap-3">
                 {Object.entries(profile.social_links).map(([platform, url]) => 
                   url ? (
@@ -296,7 +296,7 @@ export function ProfileDetail() {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-github-bg border border-github-border hover:border-github-blue text-github-text-secondary hover:text-github-blue rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                      className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
                     >
                       {platform === 'instagram' && '📸'}
                       {platform === 'youtube' && '🎥'}
@@ -311,10 +311,10 @@ export function ProfileDetail() {
           )}
 
           {/* Create Event Button - Available for all roles */}
-          <div className="mt-8 pt-8 border-t border-github-border flex justify-center">
+          <div className="mt-8 pt-8 border-t border-light-border dark:border-github-border flex justify-center">
             <button
               onClick={() => navigate(`/create-event?profile=${profile.id}`)}
-              className="px-8 py-3 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-3"
+              className="px-8 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-3"
             >
               <span>📅</span>
               Create Event
@@ -324,14 +324,14 @@ export function ProfileDetail() {
 
         {/* Band Members Section - Only for Buskers */}
         {profile.role === 'busker' && currentUserId && id && (
-          <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl mb-6">
+          <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl mb-6">
             <BandMembersManager profileId={id} isOwner={isOwner} />
           </div>
         )}
 
         {/* Tip Wall Section - Only for Buskers */}
         {profile.role === 'busker' && (
-          <div className="bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
+          <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
             <TipWall profileId={profile.id} />
           </div>
         )}

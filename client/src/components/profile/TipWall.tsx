@@ -129,12 +129,12 @@ export function TipWall({ profileId }: TipWallProps) {
   const tipAmounts = [1, 5, 10, 20, 50];
 
   return (
-    <div className="mt-8 pt-8 border-t border-github-border">
+    <div className="mt-8 pt-8 border-t border-light-border dark:border-github-border">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-github-text">💰 Tip Wall</h2>
+        <h2 className="text-2xl font-bold text-light-text dark:text-github-text">💰 Tip Wall</h2>
         <button
           onClick={() => setShowTipForm(!showTipForm)}
-          className="px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-semibold rounded-lg transition-all duration-200"
+          className="px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200"
         >
           {showTipForm ? 'Cancel' : 'Send a Tip'}
         </button>
@@ -142,18 +142,18 @@ export function TipWall({ profileId }: TipWallProps) {
 
       {/* Tip Form */}
       {showTipForm && (
-        <div className="mb-6 p-6 bg-github-bg border border-github-border rounded-lg">
+        <div className="mb-6 p-6 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg">
           <form onSubmit={handleSubmitTip} className="space-y-4">
             {/* Error Message */}
             {error && (
-              <div className="p-3 bg-red-900/20 border border-red-700 text-red-300 rounded-lg text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             {/* Donor Name */}
             <div>
-              <label className="block text-sm font-medium text-github-text mb-2">
+              <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
                 Your Name
               </label>
               <input
@@ -161,13 +161,13 @@ export function TipWall({ profileId }: TipWallProps) {
                 placeholder="Enter your name"
                 value={formData.donor_name}
                 onChange={(e) => setFormData({ ...formData, donor_name: e.target.value })}
-                className="w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text placeholder-github-text-muted focus:outline-none focus:border-github-blue"
+                className="w-full px-4 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               />
             </div>
 
             {/* Donor Email */}
             <div>
-              <label className="block text-sm font-medium text-github-text mb-2">
+              <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
                 Your Email
               </label>
               <input
@@ -175,13 +175,13 @@ export function TipWall({ profileId }: TipWallProps) {
                 placeholder="Enter your email"
                 value={formData.donor_email}
                 onChange={(e) => setFormData({ ...formData, donor_email: e.target.value })}
-                className="w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text placeholder-github-text-muted focus:outline-none focus:border-github-blue"
+                className="w-full px-4 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               />
             </div>
 
             {/* Tip Amount */}
             <div>
-              <label className="block text-sm font-medium text-github-text mb-2">
+              <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
                 Tip Amount
               </label>
               <div className="grid grid-cols-5 gap-2 mb-3">
@@ -192,8 +192,8 @@ export function TipWall({ profileId }: TipWallProps) {
                     onClick={() => setFormData({ ...formData, amount })}
                     className={`py-2 rounded-lg font-semibold transition-all duration-200 ${
                       formData.amount === amount
-                        ? 'bg-github-blue text-github-text border border-github-blue'
-                        : 'bg-github-card border border-github-border text-github-text-secondary hover:border-github-blue'
+                        ? 'bg-light-blue dark:bg-github-blue text-white dark:text-github-text border border-light-blue dark:border-github-blue'
+                        : 'bg-light-card dark:bg-github-card border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue'
                     }`}
                   >
                     ${amount}
@@ -206,13 +206,13 @@ export function TipWall({ profileId }: TipWallProps) {
                 step="0.01"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-                className="w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text focus:outline-none focus:border-github-blue"
+                className="w-full px-4 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               />
             </div>
 
             {/* Message */}
             <div>
-              <label className="block text-sm font-medium text-github-text mb-2">
+              <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
                 Message (Optional)
               </label>
               <textarea
@@ -221,9 +221,9 @@ export function TipWall({ profileId }: TipWallProps) {
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 maxLength={150}
                 rows={3}
-                className="w-full px-4 py-2 bg-github-card border border-github-border rounded-lg text-github-text placeholder-github-text-muted focus:outline-none focus:border-github-blue resize-none"
+                className="w-full px-4 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue resize-none"
               />
-              <p className="text-xs text-github-text-muted mt-1">
+              <p className="text-xs text-light-text-muted dark:text-github-text-muted mt-1">
                 {formData.message.length}/150 characters
               </p>
             </div>
@@ -231,7 +231,7 @@ export function TipWall({ profileId }: TipWallProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2 bg-github-blue hover:bg-github-blue-dark disabled:opacity-50 text-github-text font-semibold rounded-lg transition-all duration-200"
+              className="w-full py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark disabled:opacity-50 text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200"
             >
               {isSubmitting ? 'Processing...' : 'Send Tip'}
             </button>
@@ -243,7 +243,7 @@ export function TipWall({ profileId }: TipWallProps) {
       {isLoading ? (
         <div className="text-center py-8 text-github-text-secondary">Loading tips...</div>
       ) : tips.length === 0 ? (
-        <div className="text-center py-8 text-github-text-secondary">
+        <div className="text-center py-8 text-light-text-secondary dark:text-github-text-secondary">
           No tips yet. Be the first to support this artist!
         </div>
       ) : (
@@ -251,25 +251,21 @@ export function TipWall({ profileId }: TipWallProps) {
           {tips.map((tip) => (
             <div
               key={tip.id}
-              className="p-4 bg-github-bg border border-github-border rounded-lg hover:border-github-blue transition-all duration-200 transform hover:scale-105"
-              style={{
-                backgroundColor: `hsl(${Math.random() * 360}, 70%, 15%)`,
-                borderColor: `hsl(${Math.random() * 360}, 70%, 40%)`
-              }}
+              className="p-4 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg hover:border-light-blue dark:hover:border-github-blue transition-all duration-200 transform hover:scale-105"
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <p className="font-bold text-github-text text-sm">{tip.donor_name}</p>
-                  <p className="text-xs text-github-text-muted">
+                  <p className="font-bold text-light-text dark:text-github-text text-sm">{tip.donor_name}</p>
+                  <p className="text-xs text-light-text-muted dark:text-github-text-muted">
                     ${tip.amount.toFixed(2)}
                   </p>
                 </div>
                 <span className="text-lg">💝</span>
               </div>
               {tip.message && (
-                <p className="text-xs text-github-text-secondary italic">"{tip.message}"</p>
+                <p className="text-xs text-light-text-secondary dark:text-github-text-secondary italic">"{tip.message}"</p>
               )}
-              <p className="text-xs text-github-text-muted mt-2">
+              <p className="text-xs text-light-text-muted dark:text-github-text-muted mt-2">
                 {new Date(tip.created_at).toLocaleDateString()}
               </p>
             </div>

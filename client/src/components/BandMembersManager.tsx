@@ -238,44 +238,44 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
       )}
 
       {/* Current Members */}
-      <div className="bg-github-card border border-github-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-github-text mb-4">Current Members ({members.length})</h3>
+      <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-light-text dark:text-github-text mb-4">Current Members ({members.length})</h3>
         {members.length === 0 ? (
-          <p className="text-github-text-secondary">No members yet. Invite someone to get started!</p>
+          <p className="text-light-text-secondary dark:text-github-text-secondary">No members yet. Invite someone to get started!</p>
         ) : (
           <div className="space-y-3">
             {members.map(member => (
-              <div key={member.id} className="p-4 bg-github-bg rounded-lg border border-github-border">
+              <div key={member.id} className="p-4 bg-light-bg dark:bg-github-bg rounded-lg border border-light-border dark:border-github-border">
                 {isOwner ? (
                   // Full details for members/owners
                   <>
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-github-text font-medium">
+                      <p className="text-light-text dark:text-github-text font-medium">
                         {member.alias || (member.role === 'owner' ? '👤 Profile Owner' : 'Band Member')}
                       </p>
                       <span className={`inline-block px-2 py-1 text-xs rounded font-medium ${
-                        member.role === 'owner' ? 'bg-purple-900/30 text-purple-300' :
-                        member.role === 'admin' ? 'bg-blue-900/30 text-blue-300' :
-                        'bg-gray-900/30 text-gray-300'
+                        member.role === 'owner' ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' :
+                        member.role === 'admin' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                        'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300'
                       }`}>
                         {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                       </span>
                     </div>
                     {member.specialty && (
-                      <p className="text-sm text-github-blue mb-1">{member.specialty}</p>
+                      <p className="text-sm text-light-blue dark:text-github-blue mb-1">{member.specialty}</p>
                     )}
                     {member.description && (
-                      <p className="text-sm text-github-text-secondary mb-2">{member.description}</p>
+                      <p className="text-sm text-light-text-secondary dark:text-github-text-secondary mb-2">{member.description}</p>
                     )}
-                    <div className="flex items-center justify-between text-xs text-github-text-secondary pt-2 border-t border-github-border">
+                    <div className="flex items-center justify-between text-xs text-light-text-secondary dark:text-github-text-secondary pt-2 border-t border-light-border dark:border-github-border">
                       <span>ID: {member.user_id.substring(0, 8)}...</span>
-                      <span className="font-medium text-github-text">Revenue: {member.revenue_share.toFixed(1)}%</span>
+                      <span className="font-medium text-light-text dark:text-github-text">Revenue: {member.revenue_share.toFixed(1)}%</span>
                     </div>
                   </>
                 ) : (
                   // Public view for visitors - only show alias, specialty, description
                   <>
-                    <p className="text-github-text font-medium mb-1">
+                    <p className="text-light-text dark:text-github-text font-medium mb-1">
                       {member.alias || (member.role === 'owner' ? 'Profile Owner' : 'Band Member')}
                     </p>
                     {member.specialty && (
@@ -297,11 +297,11 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
 
       {/* Pending Invites */}
       {invites.length > 0 && (
-        <div className="bg-github-card border border-github-border rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-github-text mb-4">Pending Invitations ({invites.length})</h3>
-          <div className="space-y-3">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-light-text dark:text-github-text mb-4">Pending Invites ({invites.length})</h3>
+          <div className="space-y-2">
             {invites.map(invite => (
-              <div key={invite.id} className="flex items-center justify-between p-3 bg-github-bg rounded-lg">
+              <div key={invite.id} className="flex items-center justify-between p-3 bg-light-bg dark:bg-github-bg rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Mail size={16} className="text-yellow-400" />
@@ -332,20 +332,20 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
 
       {/* Send Invite Form */}
       {isOwner && (
-        <div className="bg-github-card border border-github-border rounded-lg p-6">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6">
           {!showInviteForm ? (
             <button
               onClick={() => setShowInviteForm(true)}
-              className="w-full px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-medium rounded-lg transition-colors"
+              className="w-full px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-medium rounded-lg transition-colors"
             >
               + Invite Band Member
             </button>
           ) : (
             <form onSubmit={handleSendInvite} className="space-y-4">
-              <h3 className="text-lg font-semibold text-github-text">Invite a New Member</h3>
+              <h3 className="text-lg font-semibold text-light-text dark:text-github-text">Invite a New Member</h3>
 
               <div>
-                <label className="block text-sm font-medium text-github-text-secondary mb-2">
+                <label className="block text-sm font-medium text-light-text-secondary dark:text-github-text-secondary mb-2">
                   Email Address
                 </label>
                 <input
@@ -353,13 +353,13 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                   value={newMemberEmail}
                   onChange={(e) => setNewMemberEmail(e.target.value)}
                   placeholder="member@example.com"
-                  className="w-full px-3 py-2 bg-github-bg border border-github-border rounded-lg text-github-text placeholder-github-text-secondary focus:border-github-blue focus:outline-none"
+                  className="w-full px-3 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-secondary dark:placeholder-github-text-secondary focus:border-light-blue dark:focus:border-github-blue focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-github-text-secondary mb-2">
+                <label className="block text-sm font-medium text-light-text-secondary dark:text-github-text-secondary mb-2">
                   Revenue Share: {revenueShare.toFixed(1)}%
                 </label>
                 <input
@@ -371,7 +371,7 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                   onChange={(e) => setRevenueShare(parseFloat(e.target.value))}
                   className="w-full"
                 />
-                <p className="text-xs text-github-text-secondary mt-2">
+                <p className="text-xs text-light-text-secondary dark:text-github-text-secondary mt-2">
                   This member will receive {revenueShare.toFixed(1)}% of tips to this profile
                 </p>
               </div>
@@ -380,14 +380,14 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 bg-github-blue hover:bg-github-blue-dark disabled:opacity-50 text-github-text font-medium rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark disabled:opacity-50 text-white dark:text-github-text font-medium rounded-lg transition-colors"
                 >
-                  {isLoading ? 'Sending...' : 'Send Invitation'}
+                  {isLoading ? 'Sending...' : 'Send Invite'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowInviteForm(false)}
-                  className="flex-1 px-4 py-2 bg-github-border hover:bg-github-bg text-github-text font-medium rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-light-border dark:bg-github-border hover:bg-light-bg dark:hover:bg-github-bg text-light-text dark:text-github-text font-medium rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -398,9 +398,9 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
       )}
 
       {/* Info Box */}
-      <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
-        <h4 className="font-semibold text-blue-300 mb-2">💡 How Revenue Distribution Works</h4>
-        <ul className="text-sm text-blue-200 space-y-1">
+      <div className="p-4 bg-blue-100 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
+        <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">💡 How Revenue Distribution Works</h4>
+        <ul className="text-sm text-blue-600 dark:text-blue-200 space-y-1">
           <li>• When someone sends a tip, it's automatically split among all band members</li>
           <li>• Each member receives their percentage of the tip based on their revenue share</li>
           <li>• Example: If you set a member to 30%, they get 30% of every tip to this profile</li>

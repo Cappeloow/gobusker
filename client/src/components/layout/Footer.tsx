@@ -1,6 +1,6 @@
 export function Footer(): React.ReactNode {
   return (
-    <footer className="w-full bg-github-card border-t border-github-border text-github-text-secondary py-10 px-5 mt-16">
+    <footer className="w-full bg-light-card dark:bg-github-card border-t border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary py-10 px-5 mt-16">
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* About Section */}

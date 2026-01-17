@@ -108,14 +108,14 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
   }
 
   return (
-    <div className="bg-github-bg border border-github-border rounded-lg p-6">
-      <h3 className="text-lg font-bold text-github-text mb-4">💳 Bank Account</h3>
+    <div className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-6">
+      <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-4">💳 Bank Account</h3>
 
       {message && (
         <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${
           message.type === 'success' 
-            ? 'bg-green-900/20 border border-green-700 text-green-300' 
-            : 'bg-red-900/20 border border-red-700 text-red-300'
+            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300' 
+            : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300'
         }`}>
           {message.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
           {message.text}
@@ -124,16 +124,16 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
 
       {hasAccount ? (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-green-400">
+          <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
             <CheckCircle size={20} />
             <span className="font-semibold">Bank account connected</span>
           </div>
-          <p className="text-sm text-github-text-secondary">
+          <p className="text-sm text-light-text-secondary dark:text-github-text-secondary">
             You can now request withdrawals. Money will be transferred to your connected bank account.
           </p>
           <button
             onClick={handleRemoveAccount}
-            className="w-full px-4 py-2 bg-red-900/20 border border-red-700 text-red-400 hover:bg-red-900/30 rounded-lg transition-all flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all flex items-center justify-center gap-2"
           >
             <Trash2 size={18} />
             Remove Bank Account
@@ -141,12 +141,12 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
         </div>
       ) : (
         <form onSubmit={handleAddAccount} className="space-y-4">
-          <p className="text-sm text-github-text-secondary mb-4">
+          <p className="text-sm text-light-text-secondary dark:text-github-text-secondary mb-4">
             Add your bank account to enable withdrawals of your earnings.
           </p>
 
           <div>
-            <label className="block text-sm font-medium text-github-text mb-2">
+            <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
               Account Holder Name
             </label>
             <input
@@ -154,12 +154,12 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
               value={accountData.accountHolder}
               onChange={(e) => setAccountData({ ...accountData, accountHolder: e.target.value })}
               placeholder="Your Name"
-              className="w-full px-3 py-2 bg-github-card border border-github-border rounded text-github-text placeholder-github-text-secondary focus:outline-none focus:border-github-blue"
+              className="w-full px-3 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-secondary focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-github-text mb-2">
+            <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
               Account Number (IBAN/Swedish account)
             </label>
             <input
@@ -167,13 +167,13 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
               value={accountData.accountNumber}
               onChange={(e) => setAccountData({ ...accountData, accountNumber: e.target.value })}
               placeholder="e.g., SE3550000000054910000003"
-              className="w-full px-3 py-2 bg-github-card border border-github-border rounded text-github-text placeholder-github-text-secondary focus:outline-none focus:border-github-blue"
+              className="w-full px-3 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-secondary focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
             />
-            <p className="text-xs text-github-text-secondary mt-1">Swedish IBAN format: SE + 24 digits</p>
+            <p className="text-xs text-light-text-secondary dark:text-github-text-secondary mt-1">Swedish IBAN format: SE + 24 digits</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-github-text mb-2">
+            <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
               Bank Code / BIC
             </label>
             <input
@@ -181,19 +181,19 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
               value={accountData.bankCode}
               onChange={(e) => setAccountData({ ...accountData, bankCode: e.target.value })}
               placeholder="e.g., DABASE"
-              className="w-full px-3 py-2 bg-github-card border border-github-border rounded text-github-text placeholder-github-text-secondary focus:outline-none focus:border-github-blue"
+              className="w-full px-3 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-secondary focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
             />
-            <p className="text-xs text-github-text-secondary mt-1">Bank Identifier Code (BIC)</p>
+            <p className="text-xs text-light-text-secondary dark:text-github-text-secondary mt-1">Bank Identifier Code (BIC)</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-github-text mb-2">
+            <label className="block text-sm font-medium text-light-text dark:text-github-text mb-2">
               Country
             </label>
             <select
               value={accountData.country}
               onChange={(e) => setAccountData({ ...accountData, country: e.target.value })}
-              className="w-full px-3 py-2 bg-github-card border border-github-border rounded text-github-text focus:outline-none focus:border-github-blue"
+              className="w-full px-3 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
             >
               <option value="SE">Sweden 🇸🇪</option>
               <option value="NO">Norway 🇳🇴</option>
@@ -206,13 +206,13 @@ export function BankAccountSetup({ profileId, onAccountAdded }: BankAccountSetup
           <button
             type="submit"
             disabled={isAdding}
-            className="w-full px-4 py-2 bg-github-blue hover:bg-github-blue-dark disabled:opacity-50 text-white font-semibold rounded-lg transition-all"
+            className="w-full px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark disabled:opacity-50 text-white font-semibold rounded-lg transition-all"
           >
             {isAdding ? 'Adding...' : 'Add Bank Account'}
           </button>
 
-          <div className="p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-            <p className="text-xs text-yellow-300">
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+            <p className="text-xs text-yellow-700 dark:text-yellow-300">
               ⚠️ Your bank details are encrypted and only used for payouts. We never store card information.
             </p>
           </div>

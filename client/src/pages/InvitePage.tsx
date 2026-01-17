@@ -162,14 +162,14 @@ export function InvitePage() {
 
   if (!invite) {
     return (
-      <div className="min-h-screen bg-github-bg flex items-center justify-center p-4">
-        <div className="bg-github-card border border-github-border rounded-lg p-8 max-w-md w-full text-center">
-          <XCircle className="mx-auto mb-4 text-red-400" size={48} />
-          <h1 className="text-2xl font-bold text-github-text mb-2">Invitation Not Found</h1>
-          <p className="text-github-text-secondary mb-6">This invitation has expired or is invalid.</p>
+      <div className="min-h-screen bg-light-bg dark:bg-github-bg flex items-center justify-center p-4">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 max-w-md w-full text-center">
+          <XCircle className="mx-auto mb-4 text-red-600 dark:text-red-400" size={48} />
+          <h1 className="text-2xl font-bold text-light-text dark:text-github-text mb-2">Invitation Not Found</h1>
+          <p className="text-light-text-secondary dark:text-github-text-secondary mb-6">This invitation has expired or is invalid.</p>
           <a
             href="/"
-            className="inline-block px-6 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-medium rounded-lg transition-colors"
+            className="inline-block px-6 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-medium rounded-lg transition-colors"
           >
             Go Home
           </a>
@@ -180,37 +180,37 @@ export function InvitePage() {
 
   if (showSignup && !user) {
     return (
-      <div className="min-h-screen bg-github-bg flex items-center justify-center p-4">
-        <div className="bg-github-card border border-github-border rounded-lg p-8 max-w-md w-full">
+      <div className="min-h-screen bg-light-bg dark:bg-github-bg flex items-center justify-center p-4">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 max-w-md w-full">
           <div className="text-center mb-6">
-            <LogIn className="mx-auto mb-4 text-github-blue" size={40} />
-            <h1 className="text-2xl font-bold text-github-text mb-2">Sign Up First</h1>
-            <p className="text-github-text-secondary">
+            <LogIn className="mx-auto mb-4 text-light-blue dark:text-github-blue" size={40} />
+            <h1 className="text-2xl font-bold text-light-text dark:text-github-text mb-2">Sign Up First</h1>
+            <p className="text-light-text-secondary dark:text-github-text-secondary">
               Create an account to accept this invitation to <strong>{invite.profiles.name}</strong>
             </p>
           </div>
 
-          <div className="mb-6 p-4 bg-github-bg rounded-lg">
-            <p className="text-sm text-github-text-secondary mb-2">Invitation for:</p>
-            <p className="text-github-text font-medium">{invite.invitee_email}</p>
+          <div className="mb-6 p-4 bg-light-bg dark:bg-github-bg rounded-lg">
+            <p className="text-sm text-light-text-secondary dark:text-github-text-secondary mb-2">Invitation for:</p>
+            <p className="text-light-text dark:text-github-text font-medium">{invite.invitee_email}</p>
           </div>
 
           <div className="space-y-3">
             <button
               onClick={() => navigate('/signup')}
-              className="w-full px-4 py-2 bg-github-blue hover:bg-github-blue-dark text-github-text font-medium rounded-lg transition-colors"
+              className="w-full px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-medium rounded-lg transition-colors"
             >
               Sign Up with This Email
             </button>
             <button
               onClick={() => navigate('/login')}
-              className="w-full px-4 py-2 bg-github-border hover:bg-github-bg text-github-text font-medium rounded-lg transition-colors"
+              className="w-full px-4 py-2 bg-light-border dark:bg-github-border hover:bg-light-bg dark:hover:bg-github-bg text-light-text dark:text-github-text font-medium rounded-lg transition-colors"
             >
               Already Have an Account? Login
             </button>
           </div>
 
-          <p className="text-xs text-github-text-secondary text-center mt-4">
+          <p className="text-xs text-light-text-secondary dark:text-github-text-secondary text-center mt-4">
             The invitation will remain valid for 30 days
           </p>
         </div>

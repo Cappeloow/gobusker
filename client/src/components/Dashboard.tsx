@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/models';
 import { profileService } from '../services/profileService';
 import { Wallet } from './Wallet';
-import { Mail } from 'lucide-react';
+import { Mail, Plus } from 'lucide-react';
 
 interface PendingInvite {
   id: string;
@@ -30,6 +30,20 @@ export function Dashboard() {
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'profiles' | 'wallet'>('profiles');
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const createMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (createMenuRef.current && !createMenuRef.current.contains(event.target as Node)) {
+        setShowCreateMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchPendingInvites = async () => {
     try {
@@ -122,9 +136,35 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
       <div className="max-w-5xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-light-text dark:text-github-text mb-2">Your Dashboard</h1>
-          <p className="text-light-text-secondary dark:text-github-text-secondary">Logged in as: <span className="text-light-blue dark:text-github-blue">{userEmail}</span></p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-light-text dark:text-github-text mb-2">Your Dashboard</h1>
+            <p className="text-light-text-secondary dark:text-github-text-secondary">Logged in as: <span className="text-light-blue dark:text-github-blue">{userEmail}</span></p>
+          </div>
+          {/* Create Profile Button */}
+          <div className="relative" ref={createMenuRef}>
+            <button
+              onClick={() => setShowCreateMenu(!showCreateMenu)}
+              className="p-3 rounded-lg bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white transition-all duration-200"
+              title="Create Profile"
+            >
+              <Plus size={20} />
+            </button>
+            {showCreateMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg shadow-xl z-50 overflow-hidden">
+                <button
+                  onClick={() => {
+                    navigate('/create-profile');
+                    setShowCreateMenu(false);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-light-text dark:text-github-text hover:bg-light-bg dark:hover:bg-github-bg transition-colors flex items-center gap-2"
+                >
+                  <span>🎵</span>
+                  <span>Create New Profile</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Pending Invitations Banner */}
@@ -209,50 +249,47 @@ export function Dashboard() {
                       <div 
                         key={profile.id}
                         onClick={() => navigate(`/profile/${profile.id}`)}
-                        className="p-6 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg cursor-pointer transition-all duration-300 hover:border-light-blue dark:hover:border-github-blue hover:shadow-lg"
+                        className="group p-6 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg cursor-pointer transition-all duration-300 hover:border-light-blue dark:hover:border-github-blue hover:shadow-lg hover:scale-[1.01]"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            {profile.avatar_url && (
-                              <img 
-                                src={profile.avatar_url} 
-                                alt={`${profile.name}'s avatar`}
-                                className="w-16 h-16 rounded-full object-cover border-2 border-light-border dark:border-github-border"
-                              />
-                            )}
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-light-text dark:text-github-text">{profile.name}</h3>
-                                <span className="text-sm px-3 py-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary capitalize">
-                                  {profile.role}
+                        <div className="flex items-start gap-4">
+                          {/* Avatar */}
+                          <div className="flex-shrink-0">
+                            <img 
+                              src={profile.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image'} 
+                              alt={`${profile.name}'s avatar`}
+                              className="w-20 h-20 rounded-full object-cover border-4 border-light-border dark:border-github-border shadow-lg"
+                            />
+                          </div>
+                          
+                          {/* Content - All Left Aligned */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-2xl font-bold text-light-text dark:text-github-text">{profile.name}</h3>
+                              <span className="text-xs px-3 py-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary capitalize">
+                                {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {profile.genres && profile.genres.slice(0, 3).map((genre, idx) => (
+                                <span key={idx} className="text-xs px-2 py-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-full text-light-text-muted dark:text-github-text-muted">
+                                  {genre}
                                 </span>
-                              </div>
-                            {profile.bio && <p className="text-light-text-secondary dark:text-github-text-secondary mb-3">{profile.bio}</p>}
-                            {profile.genres && profile.genres.length > 0 && (
-                              <p className="text-sm text-light-text-muted dark:text-github-text-muted">
-                                <span className="text-light-text-secondary dark:text-github-text-secondary">Genres:</span> {profile.genres.join(', ')}
-                              </p>
-                            )}
-                            {profile.instruments && profile.instruments.length > 0 && (
-                              <p className="text-sm text-light-text-muted dark:text-github-text-muted">
-                                <span className="text-light-text-secondary dark:text-github-text-secondary">Instruments:</span> {profile.instruments.join(', ')}
-                              </p>
-                            )}
+                              ))}
+                              {profile.genres && profile.genres.length > 3 && (
+                                <span className="text-xs px-2 py-1 text-light-text-muted dark:text-github-text-muted">
+                                  +{profile.genres.length - 3} more
+                                </span>
+                              )}
                             </div>
                           </div>
-                          <span className="text-2xl ml-4">→</span>
+                          
+                          {/* Arrow */}
+                          <div className="flex-shrink-0 text-light-text-secondary dark:text-github-text-secondary group-hover:text-light-blue dark:group-hover:text-github-blue transition-colors">
+                            <span className="text-2xl">→</span>
+                          </div>
                         </div>
                       </div>
                     ))}
-                  </div>
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => navigate('/create-profile')}
-                      className="px-6 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
-                    >
-                      <span>+</span>
-                      Create Another Profile
-                    </button>
                   </div>
                 </div>
               )}
@@ -260,21 +297,6 @@ export function Dashboard() {
           ) : (
             <Wallet userProfiles={userProfiles} />
           )}
-        </div>
-
-        <div className="flex justify-between items-center mt-8 pt-6 border-t border-light-border dark:border-github-border">
-          <button
-            onClick={() => navigate('/create-profile')}
-            className="px-6 py-2 text-light-blue dark:text-github-blue hover:text-light-text dark:hover:text-github-text font-medium transition-colors duration-200"
-          >
-            ← Back
-          </button>
-          <button
-            onClick={handleSignOut}
-            className="px-6 py-2 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/40 rounded-lg font-medium transition-all duration-200"
-          >
-            Sign Out
-          </button>
         </div>
       </div>
     </div>

@@ -1,12 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Profile } from '../../types/models';
 import { profileService } from '../../services/profileService';
 import { supabase } from '../../lib/supabase';
 import { ProfileQRCode } from './ProfileQRCode';
 import { TipWall } from './TipWall';
 import { BandMembersManager } from '../BandMembersManager';
-import { ShoppingBag, Edit2, Save, X } from 'lucide-react';
+import { ShoppingBag, Edit2, Save, X, Plus, ChevronLeft } from 'lucide-react';
 
 export function ProfileDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +19,21 @@ export function ProfileDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ bio: '', avatar_url: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'about' | 'members' | 'tips'>('about');
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const actionsMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target as Node)) {
+        setShowActionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -136,21 +151,32 @@ export function ProfileDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Main Profile Card */}
-        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 mb-6 shadow-xl">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-8 pb-8 border-b border-light-border dark:border-github-border">
-            <div className="flex items-center gap-6 flex-1">
+      {/* Back Button - Fixed to the left */}
+      <div className="max-w-5xl mx-auto relative">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="absolute -left-16 top-0 p-2 rounded-lg hover:bg-light-bg dark:hover:bg-github-bg text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text transition-all duration-200"
+          title="Back to Dashboard"
+        >
+          <ChevronLeft size={24} />
+        </button>
+      </div>
+
+      <div className="max-w-5xl mx-auto">
+        {/* Header Card - Fixed at top */}
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6 mb-6 shadow-xl">
+          <div className="flex items-center justify-between">
+            {/* Avatar and Name */}
+            <div className="flex items-center gap-4">
               <div className="relative">
                 <img 
                   src={isEditing ? editForm.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image' : profile.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image'}
                   alt={`${profile.name}'s avatar`}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-light-border dark:border-github-border shadow-lg bg-light-bg dark:bg-github-bg"
+                  className="w-20 h-20 rounded-full object-cover border-4 border-light-border dark:border-github-border shadow-lg bg-light-bg dark:bg-github-bg"
                 />
                 {isEditing && isOwner && (
-                  <label className="absolute bottom-0 right-0 p-2 bg-light-blue dark:bg-github-blue rounded-full cursor-pointer hover:bg-light-blue-dark dark:hover:bg-github-blue-dark transition-colors shadow-lg">
-                    <Edit2 size={14} className="text-white" />
+                  <label className="absolute bottom-0 right-0 p-1.5 bg-light-blue dark:bg-github-blue rounded-full cursor-pointer hover:bg-light-blue-dark dark:hover:bg-github-blue-dark transition-colors shadow-lg">
+                    <Edit2 size={12} className="text-white" />
                     <input
                       type="file"
                       accept="image/*"
@@ -163,29 +189,46 @@ export function ProfileDetail() {
                   </label>
                 )}
               </div>
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold text-light-text dark:text-github-text mb-4">{profile.name}</h1>
-                <div className="flex items-center gap-4 flex-wrap">
-                  <span className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-sm font-semibold text-light-text-secondary dark:text-github-text-secondary capitalize">
+              <div className="flex-1 max-w-2xl">
+                <h1 className="text-3xl font-bold text-light-text dark:text-github-text mb-2">{profile.name}</h1>
+                <div className="flex items-center gap-3 flex-wrap mb-2">
+                  <span className="px-3 py-1 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-xs font-semibold text-light-text-secondary dark:text-github-text-secondary capitalize">
                     {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
                   </span>
                   {profile.role !== 'viewer' && profile.saldo !== undefined && profile.saldo > 0 && (
-                    <span className="px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-full text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
+                    <span className="px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-full text-xs font-semibold text-green-700 dark:text-green-400 flex items-center gap-1.5">
                       <span>💰</span>
-                      <span>Saldo: ${profile.saldo.toFixed(2)}</span>
+                      <span>${profile.saldo.toFixed(2)}</span>
                     </span>
                   )}
                 </div>
+                {/* Bio Preview */}
+                {!isEditing && profile.bio && (
+                  <p className="text-sm text-light-text-secondary dark:text-github-text-secondary line-clamp-2 leading-relaxed">
+                    {profile.bio}
+                  </p>
+                )}
+                {isEditing && (
+                  <textarea
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Tell us about yourself..."
+                    className="w-full px-3 py-2 mt-1 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-placeholder focus:outline-none focus:border-light-blue dark:focus:border-github-blue resize-none"
+                    rows={2}
+                  />
+                )}
               </div>
             </div>
-            <div className="flex gap-3 items-start">
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 items-center">
               {isOwner && !isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-3 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
+                  className="p-2.5 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
                   title="Edit Profile"
                 >
-                  <Edit2 size={20} />
+                  <Edit2 size={18} />
                 </button>
               )}
               {isOwner && isEditing && (
@@ -193,20 +236,20 @@ export function ProfileDetail() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={isSaving}
-                    className="p-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all duration-200 disabled:opacity-50"
+                    className="p-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all duration-200 disabled:opacity-50"
                     title="Save Changes"
                   >
-                    <Save size={20} />
+                    <Save size={18} />
                   </button>
                   <button
                     onClick={() => {
                       setIsEditing(false);
                       setEditForm({ bio: profile.bio || '', avatar_url: profile.avatar_url || '' });
                     }}
-                    className="p-3 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
+                    className="p-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
                     title="Cancel"
                   >
-                    <X size={20} />
+                    <X size={18} />
                   </button>
                 </>
               )}
@@ -217,124 +260,171 @@ export function ProfileDetail() {
               {profile.role === 'busker' && (
                 <button
                   onClick={() => navigate(`/profile/${id}/shop`)}
-                  className="p-3 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
+                  className="p-2.5 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
                   title="Go to Shop"
                 >
-                  <ShoppingBag size={24} />
+                  <ShoppingBag size={18} />
                 </button>
               )}
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text dark:text-github-text hover:text-light-blue dark:hover:text-github-blue rounded-lg font-medium transition-all duration-200"
-              >
-                Back
-              </button>
-            </div>
-          </div>
-
-          {/* About Section - Always visible, editable for owner */}
-          <div className="mb-8">
-            <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">About</h3>
-            {isEditing && isOwner ? (
-              <textarea
-                value={editForm.bio}
-                onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
-                placeholder="Tell us about yourself..."
-                className="w-full px-4 py-3 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-placeholder focus:outline-none focus:border-light-blue dark:focus:border-github-blue resize-none"
-                rows={4}
-              />
-            ) : (
-              <p className="text-light-text-secondary dark:text-github-text-secondary whitespace-pre-wrap leading-relaxed">
-                {profile.bio || 'No bio added yet.'}
-              </p>
-            )}
-          </div>
-
-          {/* Genres Section */}
-          {profile.genres && profile.genres.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">Genres</h3>
-              <div className="flex flex-wrap gap-3">
-                {profile.genres.map((genre, index) => (
-                  <span
-                    key={index}
-                    className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary rounded-full text-sm font-medium"
-                  >
-                    {genre}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Instruments Section */}
-          {profile.role === 'busker' && profile.instruments && profile.instruments.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">Instruments</h3>
-              <div className="flex flex-wrap gap-3">
-                {profile.instruments.map((instrument, index) => (
-                  <span
-                    key={index}
-                    className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary rounded-full text-sm font-medium"
-                  >
-                    {instrument}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Social Links Section */}
-          {profile.social_links && Object.keys(profile.social_links).length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3">Connect</h3>
-              <div className="flex flex-wrap gap-3">
-                {Object.entries(profile.social_links).map(([platform, url]) => 
-                  url ? (
-                    <a
-                      key={platform}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
+              {/* Actions Dropdown */}
+              <div className="relative" ref={actionsMenuRef}>
+                <button
+                  onClick={() => setShowActionsMenu(!showActionsMenu)}
+                  className="p-2.5 rounded-lg bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white transition-all duration-200"
+                  title="Actions"
+                >
+                  <Plus size={18} />
+                </button>
+                {showActionsMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg shadow-xl z-50 overflow-hidden">
+                    <button
+                      onClick={() => {
+                        navigate(`/create-event?profile=${profile.id}`);
+                        setShowActionsMenu(false);
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-light-text dark:text-github-text hover:bg-light-bg dark:hover:bg-github-bg transition-colors flex items-center gap-2"
                     >
-                      {platform === 'instagram' && '📸'}
-                      {platform === 'youtube' && '🎥'}
-                      {platform === 'spotify' && '🎵'}
-                      {platform === 'website' && '🌐'}
-                      <span>{platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                    </a>
-                  ) : null
+                      <span>📅</span>
+                      <span>Create Event</span>
+                    </button>
+                    {/* Future actions can be added here */}
+                  </div>
                 )}
               </div>
             </div>
-          )}
-
-          {/* Create Event Button - Available for all roles */}
-          <div className="mt-8 pt-8 border-t border-light-border dark:border-github-border flex justify-center">
-            <button
-              onClick={() => navigate(`/create-event?profile=${profile.id}`)}
-              className="px-8 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200 flex items-center gap-3"
-            >
-              <span>📅</span>
-              Create Event
-            </button>
           </div>
         </div>
 
-        {/* Band Members Section - Only for Buskers */}
-        {profile.role === 'busker' && currentUserId && id && (
-          <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl mb-6">
-            <BandMembersManager profileId={id} isOwner={isOwner} />
+        {/* Tabs Navigation */}
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg mb-6 shadow-xl">
+          <div className="flex border-b border-light-border dark:border-github-border">
+            <button
+              onClick={() => setActiveTab('about')}
+              className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                activeTab === 'about'
+                  ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
+                  : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
+              }`}
+            >
+              📋 About
+            </button>
+            {profile.role === 'busker' && (
+              <>
+                <button
+                  onClick={() => setActiveTab('members')}
+                  className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                    activeTab === 'members'
+                      ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
+                      : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
+                  }`}
+                >
+                  👥 Band Members
+                </button>
+                <button
+                  onClick={() => setActiveTab('tips')}
+                  className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                    activeTab === 'tips'
+                      ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
+                      : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
+                  }`}
+                >
+                  💝 Tip Wall
+                </button>
+              </>
+            )}
           </div>
-        )}
 
-        {/* Tip Wall Section - Only for Buskers */}
-        {profile.role === 'busker' && (
-          <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
-            <TipWall profileId={profile.id} />
+          {/* Tab Content */}
+          <div className="p-6">
+            {/* About Tab */}
+            {activeTab === 'about' && (
+              <div className="space-y-6">
+                {/* Genres Section */}
+                {profile.genres && profile.genres.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3 flex items-center gap-2">
+                      <span>🎸</span>
+                      <span>Genres</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.genres.map((genre, index) => (
+                        <span
+                          key={index}
+                          className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary rounded-full text-sm font-medium hover:border-light-blue dark:hover:border-github-blue transition-colors"
+                        >
+                          {genre}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Instruments Section */}
+                {profile.role === 'busker' && profile.instruments && profile.instruments.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3 flex items-center gap-2">
+                      <span>🎹</span>
+                      <span>Instruments</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.instruments.map((instrument, index) => (
+                        <span
+                          key={index}
+                          className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary rounded-full text-sm font-medium hover:border-light-blue dark:hover:border-github-blue transition-colors"
+                        >
+                          {instrument}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Social Links Section */}
+                {profile.social_links && Object.keys(profile.social_links).length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-3 flex items-center gap-2">
+                      <span>🔗</span>
+                      <span>Connect</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(profile.social_links).map(([platform, url]) => 
+                        url ? (
+                          <a
+                            key={platform}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                          >
+                            {platform === 'instagram' && '📸'}
+                            {platform === 'youtube' && '🎥'}
+                            {platform === 'spotify' && '🎵'}
+                            {platform === 'website' && '🌐'}
+                            <span>{platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                          </a>
+                        ) : null
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Band Members Tab */}
+            {activeTab === 'members' && profile.role === 'busker' && currentUserId && id && (
+              <div>
+                <BandMembersManager profileId={id} isOwner={isOwner} />
+              </div>
+            )}
+
+            {/* Tip Wall Tab */}
+            {activeTab === 'tips' && profile.role === 'busker' && (
+              <div>
+                <TipWall profileId={profile.id} />
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

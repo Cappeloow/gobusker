@@ -44,6 +44,15 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
     zoom: zoom
   });
 
+  // Update viewport when center or zoom props change (for search functionality)
+  useEffect(() => {
+    setViewport({
+      latitude: center[1],
+      longitude: center[0],
+      zoom: zoom
+    });
+  }, [center[0], center[1], zoom]);
+
   // Calculate travel time based on distance and mode of transport
   const calculateTravelTime = (distance: number, mode: 'walk' | 'bike' | 'car') => {
     const speeds = {
@@ -329,7 +338,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
       {/* Event Details Card at Top-Left Corner */}
       {selectedEventMarker && (
-        <div className={`absolute top-0 left-0 z-10 bg-light-card/95 dark:bg-github-card backdrop-blur-lg border border-light-border dark:border-github-border shadow-2xl flex flex-col transition-all duration-300 ${isExpanded ? 'w-[450px] max-h-[90vh]' : 'w-[380px]'}`}>
+        <div className={`absolute top-0 left-0 z-10 bg-light-card/40 dark:bg-github-card/40 backdrop-blur-sm border border-light-border/20 dark:border-github-border/20 shadow-2xl flex flex-col transition-all duration-300 ${isExpanded ? 'w-[450px] max-h-[90vh]' : 'w-[380px]'}`}>
           {/* Header */}
           <div className={`p-5 flex justify-between items-start ${isExpanded ? 'border-b border-light-border dark:border-github-border' : ''}`}>
             <div className="flex-1">

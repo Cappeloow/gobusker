@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ViewStateChangeEvent } from 'react-map-gl';
+import type { ViewStateChangeEvent, MapRef } from 'react-map-gl';
 import { Map, Marker, NavigationControl, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -27,12 +27,47 @@ interface MapViewProps {
   markers?: EventMarker[];
   selectedMarkerId?: string | null;
   userLocation?: { latitude: number; longitude: number } | null;
+  searchCenter?: { latitude: number; longitude: number } | null; // Center for search radius (activeLocation or userLocation)
+  searchRadius?: number; // in kilometers
+  flyToKey?: number; // Change this to trigger a flyTo animation to center
   onMarkerClick?: (markerId: string) => void;
   onMapClick?: () => void;
+  onBoundsChange?: (bounds: { north: number; south: number; east: number; west: number }) => void;
 }
 
-export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, onMarkerClick, onMapClick }: MapViewProps) {
+// Generate a circle polygon for the search radius
+// Using geodesic calculation: 1 degree latitude ≈ 110.574 km
+// 1 degree longitude ≈ 111.32 * cos(latitude) km
+function createCirclePolygon(center: [number, number], radiusKm: number, points: number = 64): GeoJSON.Feature<GeoJSON.Polygon> {
+  const coords: [number, number][] = [];
+  const lat = center[1];
+  const lng = center[0];
+  
+  // Convert radius from km to degrees
+  const latOffset = radiusKm / 110.574;
+  const lngOffset = radiusKm / (111.32 * Math.cos(lat * Math.PI / 180));
+
+  for (let i = 0; i < points; i++) {
+    const angle = (i / points) * 2 * Math.PI;
+    const dy = latOffset * Math.sin(angle);
+    const dx = lngOffset * Math.cos(angle);
+    coords.push([lng + dx, lat + dy]);
+  }
+  coords.push(coords[0]); // Close the polygon
+
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Polygon',
+      coordinates: [coords]
+    }
+  };
+}
+
+export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange }: MapViewProps) {
   const navigate = useNavigate();
+  const mapRef = useRef<MapRef>(null);
   const [routeData, setRouteData] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [countdown, setCountdown] = useState<string>('');
@@ -52,6 +87,17 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       zoom: zoom
     });
   }, [center[0], center[1], zoom]);
+
+  // Fly to center when flyToKey changes (for "My Location" button)
+  useEffect(() => {
+    if (flyToKey && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [center[0], center[1]],
+        zoom: zoom,
+        duration: 1000
+      });
+    }
+  }, [flyToKey]);
 
   // Calculate travel time based on distance and mode of transport
   const calculateTravelTime = (distance: number, mode: 'walk' | 'bike' | 'car') => {
@@ -239,8 +285,37 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
   return (
     <Map
+      ref={mapRef}
       {...viewport}
-      onMove={(evt: ViewStateChangeEvent) => setViewport(evt.viewState)}
+      onLoad={() => {
+        // Report initial bounds when map loads
+        if (onBoundsChange && mapRef.current) {
+          const bounds = mapRef.current.getBounds();
+          if (bounds) {
+            onBoundsChange({
+              north: bounds.getNorth(),
+              south: bounds.getSouth(),
+              east: bounds.getEast(),
+              west: bounds.getWest()
+            });
+          }
+        }
+      }}
+      onMove={(evt: ViewStateChangeEvent) => {
+        setViewport(evt.viewState);
+        // Report bounds to parent if callback provided
+        if (onBoundsChange && evt.target) {
+          const bounds = evt.target.getBounds();
+          if (bounds) {
+            onBoundsChange({
+              north: bounds.getNorth(),
+              south: bounds.getSouth(),
+              east: bounds.getEast(),
+              west: bounds.getWest()
+            });
+          }
+        }
+      }}
       onClick={() => onMapClick?.()}
       style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
@@ -262,6 +337,35 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
               'line-color': '#FF6B6B',
               'line-width': 3,
               'line-opacity': 0.8
+            }}
+          />
+        </Source>
+      )}
+
+      {/* Search Radius Circle */}
+      {searchRadius && searchCenter && (
+        <Source 
+          key={`search-radius-${searchCenter.latitude}-${searchCenter.longitude}-${searchRadius}`}
+          id="search-radius" 
+          type="geojson" 
+          data={createCirclePolygon([searchCenter.longitude, searchCenter.latitude], searchRadius)}
+        >
+          <Layer
+            id="search-radius-fill"
+            type="fill"
+            paint={{
+              'fill-color': '#c18654',
+              'fill-opacity': 0.15
+            }}
+          />
+          <Layer
+            id="search-radius-line"
+            type="line"
+            paint={{
+              'line-color': '#c18654',
+              'line-width': 2,
+              'line-opacity': 0.6,
+              'line-dasharray': [2, 2]
             }}
           />
         </Source>

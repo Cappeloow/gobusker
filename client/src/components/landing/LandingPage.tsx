@@ -29,7 +29,7 @@ export function LandingPage() {
     location: '',
     category: '',
     subcategory: '',
-    maxDistance: 50 // Default 50 km
+    maxDistance: 3 // Default 3 km
   });
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,15 +43,35 @@ export function LandingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [mapViewport, setMapViewport] = useState<{ latitude: number; longitude: number; zoom: number } | null>(null);
-  const [searchKey, setSearchKey] = useState(0);
+  const [flyToKey, setFlyToKey] = useState(0);
 
   const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeLocation, setActiveLocation] = useState<{ latitude: number; longitude: number; name?: string } | null>(null);
   const [skipSuggestions, setSkipSuggestions] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
+  const [isUserLocationVisible, setIsUserLocationVisible] = useState(true);
+  const [currentBounds, setCurrentBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   
   const commonCities = ['Stockholm', 'Göteborg', 'Malmö', 'Uppsala', 'Västerås', 'Örebro', 'Linköping', 'Helsingborg'];
+  
+  // Store bounds and check visibility
+  const handleBoundsChange = (bounds: { north: number; south: number; east: number; west: number }) => {
+    setCurrentBounds(bounds);
+  };
+  
+  // Check if user location is visible whenever bounds or userLocation changes
+  useEffect(() => {
+    if (!userLocation || !currentBounds) {
+      return;
+    }
+    const isVisible = 
+      userLocation.latitude <= currentBounds.north &&
+      userLocation.latitude >= currentBounds.south &&
+      userLocation.longitude <= currentBounds.east &&
+      userLocation.longitude >= currentBounds.west;
+    setIsUserLocationVisible(isVisible);
+  }, [userLocation, currentBounds]);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -75,11 +95,11 @@ export function LandingPage() {
             longitude: position.coords.longitude
           };
           setUserLocation(loc);
-          // Center map on user immediately
+          // Center map on user immediately with zoom for 3km radius
           setMapViewport({
             latitude: loc.latitude,
             longitude: loc.longitude,
-            zoom: 13
+            zoom: 12 // Zoom level for 3km radius
           });
         },
         () => {
@@ -179,6 +199,21 @@ export function LandingPage() {
 
     setFilteredEvents(filtered);
     }, [filters, events, userLocation, activeLocation]);
+
+  // Calculate appropriate zoom level for a given radius in km
+  // Lower zoom = more zoomed out to see the full circle
+  const getZoomForRadius = (radiusKm: number): number => {
+    if (radiusKm <= 1) return 13;
+    if (radiusKm <= 2) return 12.5;
+    if (radiusKm <= 3) return 12;
+    if (radiusKm <= 5) return 11.5;
+    if (radiusKm <= 10) return 10.5;
+    if (radiusKm <= 20) return 9.5;
+    if (radiusKm <= 40) return 8.5;
+    if (radiusKm <= 60) return 8;
+    if (radiusKm <= 80) return 7.5;
+    return 7;
+  };
 
   // Clear selection if the selected marker is no longer in filtered events
   useEffect(() => {
@@ -332,11 +367,16 @@ export function LandingPage() {
           zoom = 15;
         }
         
-        setMapViewport({ latitude, longitude, zoom });
+        // Set zoom based on 3km radius (default when selecting a city)
+        const radiusZoom = getZoomForRadius(3);
+        
+        setMapViewport({ latitude, longitude, zoom: radiusZoom });
         // Set active location to the searched location for event filtering
         setActiveLocation({ latitude, longitude, name: feature.place_name });
-        setSearchKey(prev => prev + 1); // Force map to update
-        console.log(`Found: ${feature.place_name} at [${latitude}, ${longitude}] with zoom ${zoom}`);
+        // Reset distance to 3km when selecting a new location
+        setFilters(prev => ({ ...prev, maxDistance: 3 }));
+        setFlyToKey(prev => prev + 1); // Force map to update
+        console.log(`Found: ${feature.place_name} at [${latitude}, ${longitude}] with zoom ${radiusZoom}`);
       } else {
         console.warn('No results found for:', query);
         alert(`No location found for "${query}". Try being more specific or use a different spelling.`);
@@ -486,6 +526,9 @@ export function LandingPage() {
                 ]}
                 selectedMarkerId={selectedMarker}
                 userLocation={userLocation}
+                searchCenter={activeLocation || userLocation}
+                searchRadius={filters.maxDistance}
+                flyToKey={flyToKey}
                 onMarkerClick={(markerId) => {
                   setClickedMarker(markerId);
                   setSelectedMarker(markerId);
@@ -494,6 +537,7 @@ export function LandingPage() {
                   setClickedMarker(null);
                   setSelectedMarker(null);
                 }}
+                onBoundsChange={handleBoundsChange}
               />
               
               {/* Event Cards Overlay - Desktop */}
@@ -608,13 +652,31 @@ export function LandingPage() {
             
             {/* Quick City Buttons */}
             <div className="flex flex-wrap gap-1.5 mb-3">
+              {/* My Location Button - show when blue dot is off screen */}
+              {userLocation && !isUserLocationVisible && (
+                <button
+                  onClick={() => {
+                    setActiveLocation(null);
+                    setSearchQuery('');
+                    setMapViewport({ 
+                      latitude: userLocation.latitude, 
+                      longitude: userLocation.longitude, 
+                      zoom: getZoomForRadius(filters.maxDistance) 
+                    });
+                    setFlyToKey(prev => prev + 1); // Trigger flyTo animation
+                  }}
+                  className="px-2.5 py-1 text-xs bg-light-blue/20 dark:bg-github-blue/20 border border-light-blue dark:border-github-blue rounded-full text-light-blue dark:text-github-blue font-medium"
+                >
+                  📍 My Location
+                </button>
+              )}
               {commonCities.slice(0, 4).map((city) => (
                 <button
                   key={city}
                   onClick={() => {
                     setShowSuggestions(false);
                     setSearchSuggestions([]);
-                    handleSearch(city);
+                    handleSearch(`${city}, Sweden`);
                   }}
                   className="px-2.5 py-1 text-xs bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
                 >
@@ -719,14 +781,26 @@ export function LandingPage() {
               <input
                 type="range"
                 min="1"
-                max="500"
+                max="50"
                 value={filters.maxDistance}
-                onChange={(e) => setFilters({ ...filters, maxDistance: parseInt(e.target.value) })}
+                onChange={(e) => {
+                  const newDistance = parseInt(e.target.value);
+                  setFilters({ ...filters, maxDistance: newDistance });
+                  // Adjust zoom to fit the circle
+                  const searchLocation = activeLocation || userLocation;
+                  if (searchLocation) {
+                    setMapViewport({
+                      latitude: searchLocation.latitude,
+                      longitude: searchLocation.longitude,
+                      zoom: getZoomForRadius(newDistance)
+                    });
+                  }
+                }}
                 className="w-full h-2 bg-light-border dark:bg-github-border rounded-lg appearance-none cursor-pointer accent-light-blue dark:accent-github-blue"
               />
               <div className="flex justify-between text-xs text-light-text-muted dark:text-github-text-muted mt-1">
                 <span>1 km</span>
-                <span>100 km</span>
+                <span>50 km</span>
               </div>
             </div>
           )}
@@ -783,10 +857,29 @@ export function LandingPage() {
                 </div>
                 {/* Quick cities */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
+                  {/* My Location Button - show when blue dot is off screen */}
+                  {userLocation && !isUserLocationVisible && (
+                    <button
+                      onClick={() => {
+                        setActiveLocation(null);
+                        setSearchQuery('');
+                        setMapViewport({ 
+                          latitude: userLocation.latitude, 
+                          longitude: userLocation.longitude, 
+                          zoom: getZoomForRadius(filters.maxDistance) 
+                        });
+                        setFlyToKey(prev => prev + 1); // Trigger flyTo animation
+                        setSheetHeight(32); // Collapse sheet
+                      }}
+                      className="px-2 py-1 text-xs bg-light-blue/20 dark:bg-github-blue/20 border border-light-blue dark:border-github-blue rounded-full text-light-blue dark:text-github-blue font-medium"
+                    >
+                      📍 Near me
+                    </button>
+                  )}
                   {commonCities.slice(0, 4).map((city) => (
                     <button
                       key={city}
-                      onClick={() => handleSearch(city)}
+                      onClick={() => handleSearch(`${city}, Sweden`)}
                       className="px-2 py-1 text-xs bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary"
                     >
                       {city}
@@ -851,9 +944,21 @@ export function LandingPage() {
                   <input
                     type="range"
                     min="1"
-                    max="100"
+                    max="50"
                     value={filters.maxDistance}
-                    onChange={(e) => setFilters({ ...filters, maxDistance: parseInt(e.target.value) })}
+                    onChange={(e) => {
+                      const newDistance = parseInt(e.target.value);
+                      setFilters({ ...filters, maxDistance: newDistance });
+                      // Adjust zoom to fit the circle
+                      const searchLocation = activeLocation || userLocation;
+                      if (searchLocation) {
+                        setMapViewport({
+                          latitude: searchLocation.latitude,
+                          longitude: searchLocation.longitude,
+                          zoom: getZoomForRadius(newDistance)
+                        });
+                      }
+                    }}
                     className="w-full h-2 bg-light-border dark:bg-github-border rounded-lg appearance-none cursor-pointer accent-light-blue"
                   />
                 </div>

@@ -205,8 +205,11 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
   // Fetch route data from Mapbox Directions API
   useEffect(() => {
     const fetchRoute = async () => {
-      // Clear route if no selection, no user location, or selected marker doesn't exist in current markers
-      if (!selectedMarkerId || !selectedEventMarker || !userLocation) {
+      // Use searchCenter (activeLocation or userLocation) as the route origin
+      const routeOrigin = searchCenter;
+      
+      // Clear route if no selection, no origin, or selected marker doesn't exist in current markers
+      if (!selectedMarkerId || !selectedEventMarker || !routeOrigin) {
         setRouteData(null);
         return;
       }
@@ -220,7 +223,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
       try {
         const response = await fetch(
-          `https://api.mapbox.com/directions/v5/mapbox/driving/${userLocation.longitude},${userLocation.latitude};${selectedEventMarker.longitude},${selectedEventMarker.latitude}?access_token=${MAPBOX_TOKEN}&geometries=geojson`
+          `https://api.mapbox.com/directions/v5/mapbox/driving/${routeOrigin.longitude},${routeOrigin.latitude};${selectedEventMarker.longitude},${selectedEventMarker.latitude}?access_token=${MAPBOX_TOKEN}&geometries=geojson`
         );
         const data = await response.json();
         
@@ -235,10 +238,10 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
           });
 
           // Calculate bounds with proper padding
-          const minLat = Math.min(userLocation.latitude, selectedEventMarker.latitude);
-          const maxLat = Math.max(userLocation.latitude, selectedEventMarker.latitude);
-          const minLng = Math.min(userLocation.longitude, selectedEventMarker.longitude);
-          const maxLng = Math.max(userLocation.longitude, selectedEventMarker.longitude);
+          const minLat = Math.min(routeOrigin.latitude, selectedEventMarker.latitude);
+          const maxLat = Math.max(routeOrigin.latitude, selectedEventMarker.latitude);
+          const minLng = Math.min(routeOrigin.longitude, selectedEventMarker.longitude);
+          const maxLng = Math.max(routeOrigin.longitude, selectedEventMarker.longitude);
 
           // Add 15% padding
           const latPadding = (maxLat - minLat) * 0.15;
@@ -281,7 +284,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
     };
 
     fetchRoute();
-  }, [selectedMarkerId, selectedEventMarker, userLocation, markers]);
+  }, [selectedMarkerId, selectedEventMarker, searchCenter, markers]);
 
   return (
     <Map

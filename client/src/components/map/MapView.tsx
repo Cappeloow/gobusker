@@ -68,6 +68,7 @@ function createCirclePolygon(center: [number, number], radiusKm: number, points:
 export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange }: MapViewProps) {
   const navigate = useNavigate();
   const mapRef = useRef<MapRef>(null);
+  const lastFittedMarkerId = useRef<string | null>(null); // Track which marker we've already zoomed to
   const [routeData, setRouteData] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [countdown, setCountdown] = useState<string>('');
@@ -211,6 +212,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       // Clear route if no selection, no origin, or selected marker doesn't exist in current markers
       if (!selectedMarkerId || !selectedEventMarker || !routeOrigin) {
         setRouteData(null);
+        lastFittedMarkerId.current = null;
         return;
       }
 
@@ -218,6 +220,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       const markerExists = markers.some(m => m.id === selectedMarkerId && m.id !== 'user-location');
       if (!markerExists) {
         setRouteData(null);
+        lastFittedMarkerId.current = null;
         return;
       }
 
@@ -237,45 +240,49 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             }]
           });
 
-          // Calculate bounds with proper padding
-          const minLat = Math.min(routeOrigin.latitude, selectedEventMarker.latitude);
-          const maxLat = Math.max(routeOrigin.latitude, selectedEventMarker.latitude);
-          const minLng = Math.min(routeOrigin.longitude, selectedEventMarker.longitude);
-          const maxLng = Math.max(routeOrigin.longitude, selectedEventMarker.longitude);
+          // Only zoom to fit route once per marker selection (allow user to pan/zoom freely after)
+          if (lastFittedMarkerId.current !== selectedMarkerId) {
+            lastFittedMarkerId.current = selectedMarkerId;
+            
+            // Calculate bounds with proper padding
+            const minLat = Math.min(routeOrigin.latitude, selectedEventMarker.latitude);
+            const maxLat = Math.max(routeOrigin.latitude, selectedEventMarker.latitude);
+            const minLng = Math.min(routeOrigin.longitude, selectedEventMarker.longitude);
+            const maxLng = Math.max(routeOrigin.longitude, selectedEventMarker.longitude);
 
-          // Add 15% padding
-          const latPadding = (maxLat - minLat) * 0.15;
-          const lngPadding = (maxLng - minLng) * 0.15;
+            // Add 15% padding
+            const latPadding = (maxLat - minLat) * 0.15;
+            const lngPadding = (maxLng - minLng) * 0.15;
 
-          const paddedMinLat = minLat - latPadding;
-          const paddedMaxLat = maxLat + latPadding;
-          const paddedMinLng = minLng - lngPadding;
-          const paddedMaxLng = maxLng + lngPadding;
+            const paddedMinLat = minLat - latPadding;
+            const paddedMaxLat = maxLat + latPadding;
+            const paddedMinLng = minLng - lngPadding;
+            const paddedMaxLng = maxLng + lngPadding;
 
-          // Center point
-          const centerLat = (paddedMinLat + paddedMaxLat) / 2;
-          const centerLng = (paddedMinLng + paddedMaxLng) / 2;
+            // Center point
+            const centerLat = (paddedMinLat + paddedMaxLat) / 2;
+            const centerLng = (paddedMinLng + paddedMaxLng) / 2;
 
-          // Calculate zoom using Mapbox formula
-          // EARTH_CIRCUMFERENCE = 40075016.686 meters
-          const maxDistance = Math.max(
-            paddedMaxLat - paddedMinLat,
-            paddedMaxLng - paddedMinLng
-          );
+            // Calculate zoom using Mapbox formula
+            const maxDistance = Math.max(
+              paddedMaxLat - paddedMinLat,
+              paddedMaxLng - paddedMinLng
+            );
 
-          // More accurate zoom calculation
-          const zoom = Math.max(
-            0,
-            Math.floor(
-              Math.log2(360 / maxDistance / 2)
-            )
-          );
+            // More accurate zoom calculation
+            const zoom = Math.max(
+              0,
+              Math.floor(
+                Math.log2(360 / maxDistance / 2)
+              )
+            );
 
-          setViewport({
-            latitude: centerLat,
-            longitude: centerLng,
-            zoom: Math.min(zoom, 18) // Cap zoom at 18
-          });
+            setViewport({
+              latitude: centerLat,
+              longitude: centerLng,
+              zoom: Math.min(zoom, 18) // Cap zoom at 18
+            });
+          }
         }
       } catch (error) {
         console.error('Error fetching route:', error);

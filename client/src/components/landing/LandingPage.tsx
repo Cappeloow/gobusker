@@ -37,7 +37,7 @@ export function LandingPage() {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
   const [clickedMarker, setClickedMarker] = useState<string | null>(null);
-  const [sheetHeight, setSheetHeight] = useState(200); // Initial collapsed height
+  const [sheetHeight, setSheetHeight] = useState(() => window.innerHeight * 0.4); // Start expanded
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,14 +70,22 @@ export function LandingPage() {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          const loc = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
+          };
+          setUserLocation(loc);
+          // Center map on user immediately
+          setMapViewport({
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+            zoom: 13
           });
         },
         () => {
           console.log('Location access denied or unavailable');
-        }
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
       );
     }
 
@@ -203,21 +211,67 @@ export function LandingPage() {
   const handleDragMove = (clientY: number) => {
     if (!isDragging) return;
     const deltaY = startY - clientY;
-    const newHeight = Math.max(150, Math.min(window.innerHeight * 0.85, sheetHeight + deltaY));
+    const newHeight = Math.max(80, Math.min(window.innerHeight * 0.9, sheetHeight + deltaY));
     setSheetHeight(newHeight);
     setStartY(clientY);
   };
 
-  // Handle drag end
+  // Handle drag end - snap to 3 positions
   const handleDragEnd = () => {
     setIsDragging(false);
-    // Snap to collapsed (200px) or expanded (70vh)
-    if (sheetHeight < window.innerHeight * 0.4) {
-      setSheetHeight(200);
+    const vh = window.innerHeight;
+    // Snap to: collapsed (32px), medium (40vh), or expanded (85vh)
+    if (sheetHeight < vh * 0.2) {
+      setSheetHeight(32);
+    } else if (sheetHeight < vh * 0.55) {
+      setSheetHeight(vh * 0.4);
     } else {
-      setSheetHeight(window.innerHeight * 0.7);
+      setSheetHeight(vh * 0.85);
     }
   };
+
+  // Global mouse/touch move handler for dragging (works outside the element)
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        handleDragMove(e.clientY);
+      }
+    };
+    
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        handleDragEnd();
+      }
+    };
+
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        handleDragMove(e.touches[0].clientY);
+      }
+    };
+
+    const handleGlobalTouchEnd = () => {
+      if (isDragging) {
+        handleDragEnd();
+      }
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleGlobalMouseMove);
+      window.addEventListener('mouseup', handleGlobalMouseUp);
+      window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+      window.addEventListener('touchend', handleGlobalTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchmove', handleGlobalTouchMove);
+      window.removeEventListener('touchend', handleGlobalTouchEnd);
+    };
+  }, [isDragging, startY, sheetHeight]);
 
   // Handle location search using Mapbox Geocoding API
   const handleSearch = async (placeQuery?: string) => {
@@ -298,13 +352,37 @@ export function LandingPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card">
+    <div className="fixed inset-0 top-14 md:top-16 flex flex-col">
       
       {/* Date Range Modal with Calendar */}
       {showDateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowDateModal(false)}>
           <div className="bg-light-card dark:bg-github-card rounded-2xl shadow-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-light-text dark:text-github-text mb-5">Select Date Range</h3>
+            <h3 className="text-xl font-bold text-light-text dark:text-github-text mb-3">Select Date</h3>
+            
+            {/* Show selected date(s) */}
+            <div className="mb-4 p-3 bg-light-bg dark:bg-github-bg rounded-lg text-sm text-light-text dark:text-github-text">
+              {filters.customDateStart ? (
+                filters.customDateEnd ? (
+                  filters.customDateEnd !== filters.customDateStart ? (
+                    <span>
+                      <span className="font-semibold">{new Date(filters.customDateStart).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                      {' → '}
+                      <span className="font-semibold">{new Date(filters.customDateEnd).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                    </span>
+                  ) : (
+                    <span className="font-semibold">{new Date(filters.customDateStart).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                  )
+                ) : (
+                  <span>
+                    <span className="font-semibold">{new Date(filters.customDateStart).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                    <span className="text-light-text-secondary dark:text-github-text-secondary"> — now tap end date</span>
+                  </span>
+                )
+              ) : (
+                <span className="text-light-text-secondary dark:text-github-text-secondary">Tap to select start date</span>
+              )}
+            </div>
             
             <div className="space-y-4">
               <DatePicker
@@ -326,7 +404,15 @@ export function LandingPage() {
               />
             </div>
             
-            <div className="flex gap-3 mt-6">
+            <p className="text-xs text-light-text-secondary dark:text-github-text-secondary mt-2 text-center">
+              {!filters.customDateStart 
+                ? 'Select a start date' 
+                : !filters.customDateEnd 
+                  ? 'Now select an end date (or same date for single day)'
+                  : 'Tap a new date to start over'}
+            </p>
+            
+            <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowDateModal(false)}
                 className="flex-1 py-2.5 px-4 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg font-semibold text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue transition-all"
@@ -335,14 +421,20 @@ export function LandingPage() {
               </button>
               <button
                 onClick={() => {
-                  if (filters.customDateStart && filters.customDateEnd) {
-                    setFilters({ ...filters, timeRange: 'custom' });
+                  if (filters.customDateStart) {
+                    // If no end date, use start date as end date (single day)
+                    if (!filters.customDateEnd) {
+                      setFilters({ ...filters, timeRange: 'custom', customDateEnd: filters.customDateStart });
+                    } else {
+                      setFilters({ ...filters, timeRange: 'custom' });
+                    }
                     setShowDateModal(false);
                   } else {
-                    alert('Please select both start and end dates');
+                    alert('Please select a date');
                   }
                 }}
-                className="flex-1 py-2.5 px-4 bg-light-blue dark:bg-github-blue text-white rounded-lg font-semibold hover:bg-light-blue-dark dark:hover:bg-github-blue-dark transition-all shadow-lg"
+                disabled={!filters.customDateStart}
+                className="flex-1 py-2.5 px-4 bg-light-blue dark:bg-github-blue text-white rounded-lg font-semibold hover:bg-light-blue-dark dark:hover:bg-github-blue-dark transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Apply
               </button>
@@ -351,96 +443,8 @@ export function LandingPage() {
         </div>
       )}
       
-      {/* Search Bar - Outside Map */}
-      <div className="p-3 md:p-4 bg-light-card dark:bg-github-card border-b border-light-border dark:border-github-border">
-        <div className="max-w-2xl mx-auto">
-          <div className="relative flex gap-2">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="Search for a location..."
-                className="w-full px-4 py-2.5 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm md:text-base text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSkipSuggestions(false); // Allow suggestions when user is typing
-                }}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                onFocus={() => searchSuggestions.length > 0 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              />
-              {/* Autocomplete Suggestions Dropdown */}
-              {showSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                  {searchSuggestions.map((suggestion, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSearchQuery(suggestion.place_name);
-                        handleSearch(suggestion.place_name);
-                      }}
-                      className="w-full px-4 py-3 text-left hover:bg-light-bg dark:hover:bg-github-bg transition-colors border-b border-light-border dark:border-github-border last:border-b-0"
-                    >
-                      <div className="text-sm font-medium text-light-text dark:text-github-text">
-                        {suggestion.text}
-                      </div>
-                      <div className="text-xs text-light-text-secondary dark:text-github-text-secondary">
-                        {suggestion.place_name}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button 
-              onClick={handleSearch}
-              disabled={isSearching}
-              className="px-4 md:px-6 py-2.5 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-semibold rounded-lg transition-all duration-200 text-sm md:text-base disabled:opacity-50"
-            >
-              {isSearching ? '...' : 'Search'}
-            </button>
-          </div>
-          
-          {/* Common Cities Quick Search & Location Status */}
-          <div className="mt-3 flex flex-wrap gap-2 items-center">
-            <span className="text-xs text-light-text-muted dark:text-github-text-muted self-center mr-1"></span>
-            {commonCities.map((city) => (
-              <button
-                key={city}
-                onClick={() => {
-                  setShowSuggestions(false);
-                  setSearchSuggestions([]);
-                  handleSearch(city);
-                }}
-                className="px-3 py-1 text-xs bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
-              >
-                {city}
-              </button>
-            ))}
-            {activeLocation && activeLocation.name && (
-              <div className="flex items-center gap-2 ml-auto">
-                <span className="text-xs text-light-blue dark:text-github-blue">📍 Showing events near: {activeLocation.name.split(',')[0]}</span>
-                <button
-                  onClick={() => {
-                    setActiveLocation(null);
-                    setSearchQuery('');
-                    if (userLocation) {
-                      setMapViewport({ latitude: userLocation.latitude, longitude: userLocation.longitude, zoom: 13 });
-                    }
-                  }}
-                  className="px-3 py-1 text-xs bg-light-blue/10 dark:bg-github-blue/10 border border-light-blue/30 dark:border-github-blue/30 rounded-full text-light-blue dark:text-github-blue hover:bg-light-blue/20 dark:hover:bg-github-blue/20 transition-all duration-200"
-                  title="Reset to my current location"
-                >
-                  Reset to My Location
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-200px)]">
+      <div className="flex-1 flex flex-col md:flex-row min-h-0">
         {/* Map Section */}
         <div className="flex-1 bg-light-bg dark:bg-github-bg relative">
           {loading ? (
@@ -553,6 +557,95 @@ export function LandingPage() {
         <div className="hidden md:block md:w-[400px] bg-light-card dark:bg-github-card border-l border-light-border dark:border-github-border shadow-xl p-5 overflow-y-auto">
           <h1 className="mb-5 text-light-text dark:text-github-text text-2xl font-bold">Find Performances</h1>
 
+          {/* Location Search */}
+          <div className="mb-5">
+            <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Location</label>
+            <div className="relative flex gap-2 mb-3">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search location..."
+                  className="w-full px-3 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSkipSuggestions(false);
+                  }}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onFocus={() => searchSuggestions.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                />
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                    {searchSuggestions.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSearchQuery(suggestion.place_name);
+                          handleSearch(suggestion.place_name);
+                        }}
+                        className="w-full px-3 py-2 text-left hover:bg-light-bg dark:hover:bg-github-bg transition-colors border-b border-light-border dark:border-github-border last:border-b-0"
+                      >
+                        <div className="text-sm font-medium text-light-text dark:text-github-text">
+                          {suggestion.text}
+                        </div>
+                        <div className="text-xs text-light-text-secondary dark:text-github-text-secondary truncate">
+                          {suggestion.place_name}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={handleSearch}
+                disabled={isSearching}
+                className="px-3 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white font-semibold rounded-lg transition-all duration-200 text-sm disabled:opacity-50"
+              >
+                {isSearching ? '...' : 'Go'}
+              </button>
+            </div>
+            
+            {/* Quick City Buttons */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {commonCities.slice(0, 4).map((city) => (
+                <button
+                  key={city}
+                  onClick={() => {
+                    setShowSuggestions(false);
+                    setSearchSuggestions([]);
+                    handleSearch(city);
+                  }}
+                  className="px-2.5 py-1 text-xs bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+            
+            {/* Active Location Display */}
+            {activeLocation && activeLocation.name && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-light-blue/10 dark:bg-github-blue/10 rounded-lg text-sm">
+                <span className="text-light-blue dark:text-github-blue flex-1 truncate">
+                  📍 {activeLocation.name.split(',')[0]}
+                </span>
+                <button
+                  onClick={() => {
+                    setActiveLocation(null);
+                    setSearchQuery('');
+                    if (userLocation) {
+                      setMapViewport({ latitude: userLocation.latitude, longitude: userLocation.longitude, zoom: 13 });
+                    }
+                  }}
+                  className="text-light-blue dark:text-github-blue hover:text-light-blue-dark font-bold"
+                  title="Reset to my location"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Time Range Filter */}
           <div className="mb-5">
             <label className="block mb-3 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">When</label>
@@ -575,8 +668,10 @@ export function LandingPage() {
                     : 'bg-light-bg dark:bg-github-bg text-light-text-secondary dark:text-github-text-secondary hover:bg-light-blue/10 dark:hover:bg-github-blue/10'
                 }`}
               >
-                {filters.timeRange === 'custom' && filters.customDateStart && filters.customDateEnd
-                  ? `${new Date(filters.customDateStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(filters.customDateEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                {filters.timeRange === 'custom' && filters.customDateStart
+                  ? filters.customDateEnd && filters.customDateEnd !== filters.customDateStart
+                    ? `${new Date(filters.customDateStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(filters.customDateEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                    : new Date(filters.customDateStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                   : 'Pick Dates'
                 }
               </button>
@@ -639,93 +734,137 @@ export function LandingPage() {
 
         {/* Mobile Bottom Sheet */}
         <div 
-          className="md:hidden fixed bottom-0 left-0 right-0 bg-light-card dark:bg-github-card border-t-4 border-light-blue dark:border-github-blue shadow-2xl rounded-t-3xl transition-all duration-300 z-20"
+          className="md:hidden fixed bottom-0 left-0 right-0 bg-light-card dark:bg-github-card shadow-[0_-4px_20px_rgba(0,0,0,0.3)] rounded-t-2xl z-20"
           style={{ height: `${sheetHeight}px` }}
         >
           {/* Drag Handle */}
           <div 
-            className="w-full py-3 flex justify-center cursor-grab active:cursor-grabbing"
+            className="w-full py-2 flex flex-col items-center cursor-grab active:cursor-grabbing select-none"
             onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-            onTouchEnd={handleDragEnd}
             onMouseDown={(e) => handleDragStart(e.clientY)}
-            onMouseMove={(e) => isDragging && handleDragMove(e.clientY)}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
           >
-            <div className="w-12 h-1.5 bg-light-border dark:bg-github-border rounded-full"></div>
+            <div className="w-10 h-1 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
           </div>
 
-          {/* Sheet Content */}
-          <div className="px-4 pb-4 overflow-y-auto" style={{ height: `calc(${sheetHeight}px - 36px)` }}>
-            <h1 className="mb-4 text-light-text dark:text-github-text text-xl font-bold">Find Performances</h1>
+          {/* Sheet Content - Only show when expanded */}
+          {sheetHeight > 100 && (
+            <div 
+              className="px-4 pb-6 overflow-y-scroll mobile-sheet-content" 
+              style={{ 
+                height: `calc(${sheetHeight}px - 50px)`,
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <h2 className="mb-4 text-light-text dark:text-github-text text-lg font-bold">Find Performances</h2>
 
-            {/* Time Range Filter - Mobile Optimized */}
-            <div className="mb-4">
-              <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">When</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setFilters({ ...filters, timeRange: 'today', customDateStart: undefined, customDateEnd: undefined })}
-                  className={`py-2.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                    filters.timeRange === 'today'
-                      ? 'bg-light-blue dark:bg-github-blue text-white shadow-lg'
-                      : 'bg-light-bg dark:bg-github-bg text-light-text-secondary dark:text-github-text-secondary'
-                  }`}
-                >
-                  Today
-                </button>
-                <button
-                  onClick={() => setShowDateModal(true)}
-                  className={`py-2.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                    filters.timeRange === 'custom'
-                      ? 'bg-light-blue dark:bg-github-blue text-white shadow-lg'
-                      : 'bg-light-bg dark:bg-github-bg text-light-text-secondary dark:text-github-text-secondary'
-                  }`}
-                >
-                  {filters.timeRange === 'custom' && filters.customDateStart && filters.customDateEnd
-                    ? `${new Date(filters.customDateStart).getDate()}/${new Date(filters.customDateStart).getMonth()+1}-${new Date(filters.customDateEnd).getDate()}/${new Date(filters.customDateEnd).getMonth()+1}`
-                    : 'Pick Dates'
-                  }
-                </button>
-              </div>
-            </div>
-
-            {/* Category Filter */}
-            <div className="mb-4">
-              <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Category</label>
-              <select
-                className="w-full p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
-                value={filters.category}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value, subcategory: '' })}
-              >
-                <option value="">All Categories</option>
-                {Object.keys(CATEGORIES).map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Distance Filter */}
-            {userLocation && (
+              {/* Location Search */}
               <div className="mb-4">
-                <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">
-                  Max Distance: <span className="text-light-blue dark:text-github-blue font-semibold">{filters.maxDistance} km</span>
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={filters.maxDistance}
-                  onChange={(e) => setFilters({ ...filters, maxDistance: parseInt(e.target.value) })}
-                  className="w-full h-2 bg-light-border dark:bg-github-border rounded-lg appearance-none cursor-pointer accent-light-blue dark:accent-github-blue"
-                />
-                <div className="flex justify-between text-xs text-light-text-muted dark:text-github-text-muted mt-1">
-                  <span>1 km</span>
-                  <span>100 km</span>
+                <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Location</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Search location..."
+                    className="flex-1 px-3 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSkipSuggestions(false);
+                    }}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  />
+                  <button 
+                    onClick={handleSearch}
+                    className="px-4 py-2 bg-light-blue dark:bg-github-blue text-white rounded-lg text-sm font-medium"
+                  >
+                    Go
+                  </button>
+                </div>
+                {/* Quick cities */}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {commonCities.slice(0, 4).map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => handleSearch(city)}
+                      className="px-2 py-1 text-xs bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-light-text-secondary dark:text-github-text-secondary"
+                    >
+                      {city}
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Time Filter */}
+              <div className="mb-4">
+                <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">When</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setFilters({ ...filters, timeRange: 'today', customDateStart: undefined, customDateEnd: undefined })}
+                    className={`py-2.5 text-sm font-medium rounded-lg ${
+                      filters.timeRange === 'today'
+                        ? 'bg-light-blue dark:bg-github-blue text-white'
+                        : 'bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text border border-light-border dark:border-github-border'
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setShowDateModal(true)}
+                    className={`py-2.5 text-sm font-medium rounded-lg ${
+                      filters.timeRange === 'custom'
+                        ? 'bg-light-blue dark:bg-github-blue text-white'
+                        : 'bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text border border-light-border dark:border-github-border'
+                    }`}
+                  >
+                    {filters.timeRange === 'custom' && filters.customDateStart
+                      ? filters.customDateEnd && filters.customDateEnd !== filters.customDateStart
+                        ? `${new Date(filters.customDateStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(filters.customDateEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                        : new Date(filters.customDateStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : 'Pick Dates'
+                    }
+                  </button>
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div className="mb-4">
+                <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Category</label>
+                <select
+                  className="w-full p-2.5 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text"
+                  value={filters.category}
+                  onChange={(e) => setFilters({ ...filters, category: e.target.value, subcategory: '' })}
+                >
+                  <option value="">All Categories</option>
+                  {Object.keys(CATEGORIES).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Distance Filter */}
+              {userLocation && (
+                <div className="mb-4">
+                  <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">
+                    Distance: <span className="text-light-blue dark:text-github-blue font-semibold">{filters.maxDistance} km</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    value={filters.maxDistance}
+                    onChange={(e) => setFilters({ ...filters, maxDistance: parseInt(e.target.value) })}
+                    className="w-full h-2 bg-light-border dark:bg-github-border rounded-lg appearance-none cursor-pointer accent-light-blue"
+                  />
+                </div>
+              )}
+
+              {/* Results count */}
+              <div className="text-center py-4 text-light-text-secondary dark:text-github-text-secondary text-sm">
+                {filteredEvents.length} performances found
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

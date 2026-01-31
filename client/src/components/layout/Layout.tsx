@@ -35,14 +35,15 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-github-bg text-gray-900 dark:text-github-text transition-colors duration-300">
+    <div className="h-[100dvh] flex flex-col bg-white dark:bg-github-bg text-gray-900 dark:text-github-text">
       <Header isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
       
-      <main className="flex-1 py-5 px-0">
+      {/* Spacer for fixed header */}
+      <div className="h-14 md:h-16 flex-shrink-0"></div>
+      
+      <main className="flex-1 relative">
         {children}
       </main>
-      
-      <Footer />
     </div>
   );
 }

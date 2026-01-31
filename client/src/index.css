@@ -24,6 +24,7 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 body {
@@ -165,4 +166,72 @@ option {
 
 .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
   border-top-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Custom Scrollbar Styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Dark mode scrollbar - hide track completely */
+.dark * {
+  scrollbar-color: #444 transparent;
+}
+
+.dark *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background: #444 !important;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}
+
+/* Also target html element for dark mode */
+html.dark,
+html.dark body,
+html.dark *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html.dark *::-webkit-scrollbar-thumb {
+  background: #444 !important;
+}
+
+/* Utility class to hide scrollbar */
+.scrollbar-none,
+.mobile-sheet-content {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.scrollbar-none::-webkit-scrollbar,
+.mobile-sheet-content::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }

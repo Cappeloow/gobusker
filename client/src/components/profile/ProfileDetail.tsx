@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import type { Profile } from '../../types/models';
 import { profileService } from '../../services/profileService';
@@ -12,6 +12,7 @@ import { ShoppingBag, Edit2, Save, X, Plus, ChevronLeft } from 'lucide-react';
 export function ProfileDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,9 +156,27 @@ export function ProfileDetail() {
       {/* Back Button - Fixed to the left */}
       <div className="max-w-5xl mx-auto relative">
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => {
+            const state = location.state as { 
+              returnToEvent?: string; 
+              returnPath?: string;
+              searchContext?: any;
+            } | null;
+            
+            if (state?.returnToEvent && state?.returnPath) {
+              // Navigate back to the landing page with the event and search context in state
+              navigate(state.returnPath, { 
+                state: { 
+                  returnToEvent: state.returnToEvent,
+                  searchContext: state.searchContext
+                } 
+              });
+            } else {
+              navigate('/dashboard');
+            }
+          }}
           className="absolute -left-16 top-0 p-2 rounded-lg hover:bg-light-bg dark:hover:bg-github-bg text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text transition-all duration-200"
-          title="Back to Dashboard"
+          title="Back"
         >
           <ChevronLeft size={24} />
         </button>

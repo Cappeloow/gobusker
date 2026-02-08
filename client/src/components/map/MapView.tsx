@@ -11,6 +11,7 @@ interface EventMarker {
   latitude: number;
   longitude: number;
   title: string;
+  description?: string;
   date: string;
   location?: string;
   profile?: {
@@ -38,6 +39,13 @@ interface MapViewProps {
   onMarkerClick?: (markerId: string) => void;
   onMapClick?: () => void;
   onBoundsChange?: (bounds: { north: number; south: number; east: number; west: number }) => void;
+  // Add current search context for navigation state
+  currentSearchContext?: {
+    filters: any;
+    searchQuery: string;
+    activeLocation: { latitude: number; longitude: number; name?: string } | null;
+    mapViewport: { latitude: number; longitude: number; zoom: number } | null;
+  };
 }
 
 // Generate a circle polygon for the search radius
@@ -70,7 +78,7 @@ function createCirclePolygon(center: [number, number], radiusKm: number, points:
   };
 }
 
-export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange }: MapViewProps) {
+export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange, currentSearchContext }: MapViewProps) {
   const navigate = useNavigate();
   const mapRef = useRef<MapRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -519,41 +527,67 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       {selectedEventMarker && (
         <div className={`absolute top-0 left-0 z-10 bg-light-card/40 dark:bg-github-card/40 backdrop-blur-sm border border-light-border/20 dark:border-github-border/20 shadow-2xl flex flex-col transition-all duration-300 ${isExpanded ? 'w-[450px] max-h-[90vh]' : 'w-[380px]'}`}>
           {/* Header */}
-          <div className={`p-5 flex justify-between items-start ${isExpanded ? 'border-b border-light-border dark:border-github-border' : ''}`}>
+          <div className={`p-4 flex justify-between items-start ${isExpanded ? 'border-b border-light-border dark:border-github-border' : ''}`}>
             <div className="flex-1">
-              {/* Event Creator - Clickable */}
-              {selectedEventMarker.profile && (
-                <div
-                  onClick={() => {
-                    if (selectedEventMarker.profile) {
-                      navigate(`/profile/${selectedEventMarker.profile.id}`);
-                    }
-                  }}
-                  className="mb-3 p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg hover:border-light-blue dark:hover:border-github-blue cursor-pointer transition-all duration-200 flex items-center gap-2 group"
-                >
-                  {selectedEventMarker.profile.avatar_url && (
-                    <img
-                      src={selectedEventMarker.profile.avatar_url}
-                      alt={selectedEventMarker.profile.name}
-                      className="w-8 h-8 rounded-full object-cover border border-light-border dark:border-github-border group-hover:border-light-blue dark:group-hover:border-github-blue transition-colors flex-shrink-0"
-                    />
+              {/* Top row: Profile left, Date/Time right */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  {/* Profile Section - Left aligned */}
+                  {selectedEventMarker.profile && (
+                    <div
+                      onClick={() => {
+                        if (selectedEventMarker.profile) {
+                          navigate(`/profile/${selectedEventMarker.profile.id}`, {
+                            state: { 
+                              returnToEvent: selectedEventMarker.id,
+                              returnPath: '/',
+                              searchContext: currentSearchContext
+                            }
+                          });
+                        }
+                      }}
+                      className="flex items-center gap-2 cursor-pointer group"
+                    >
+                      <img
+                        src={selectedEventMarker.profile.avatar_url}
+                        alt={selectedEventMarker.profile.name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-light-border dark:border-github-border group-hover:border-light-blue dark:group-hover:border-github-blue transition-colors"
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-light-text dark:text-github-text group-hover:text-light-blue dark:group-hover:text-github-blue transition-colors">
+                          {selectedEventMarker.profile.name}
+                        </div>
+                      </div>
+                    </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-light-text-muted dark:text-github-text-muted">By</p>
-                    <p className="text-xs font-semibold text-light-text dark:text-github-text group-hover:text-light-blue dark:group-hover:text-github-blue transition-colors truncate">
-                      {selectedEventMarker.profile.name}
-                    </p>
-                  </div>
-                  <span className="text-light-blue dark:text-github-blue text-sm group-hover:translate-x-1 transition-transform flex-shrink-0">→</span>
                 </div>
-              )}
+                
+                {/* Date/Time Box - Right aligned */}
+                <div className="bg-red-500 text-white rounded-lg p-3 text-center min-w-[70px] shadow-lg">
+                  <div className="text-xs font-medium uppercase tracking-wide">
+                    {new Date(selectedEventMarker.date).toLocaleDateString('en-US', { month: 'short' })}
+                  </div>
+                  <div className="text-lg font-bold">
+                    {new Date(selectedEventMarker.date).getDate()}
+                  </div>
+                  <div className="text-xs font-medium mt-1">
+                    {new Date(selectedEventMarker.date).toLocaleTimeString('en-US', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      hour12: false
+                    })}
+                  </div>
+                </div>
+              </div>
               
-              <h2 className="m-0 mb-3 text-light-text dark:text-github-text text-xl font-bold">
+              {/* Event Title - Left aligned */}
+              <h2 className="m-0 mb-3 text-left text-light-text dark:text-github-text text-xl font-bold">
                 {selectedEventMarker.title}
               </h2>
               
+              {/* Countdown - Left aligned */}
               {countdown && (
-                <div className={`mb-3 p-3 rounded text-sm font-semibold`}
+                <div className={`mb-2 px-3 py-1.5 rounded text-sm font-medium`}
                   style={{
                     backgroundColor: `${countdownColor}20`,
                     borderLeft: `3px solid ${countdownColor}`,
@@ -562,13 +596,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                   ⏱️ {countdown}
                 </div>
               )}
-              
-              <div className="flex flex-col gap-2.5 text-light-text-secondary dark:text-github-text-secondary text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">📅</span>
-                  <span>{new Date(selectedEventMarker.date).toLocaleString()}</span>
-                </div>
-                
+              <div className="flex flex-col gap-2 text-light-text-secondary dark:text-github-text-secondary text-sm">
                 {selectedEventMarker.location && (
                   <div 
                     className="flex items-center gap-2 cursor-pointer hover:text-light-blue dark:hover:text-github-blue"
@@ -600,39 +628,15 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
           {/* Expanded Content */}
           {isExpanded && (
             <div className="p-4 overflow-y-auto flex-1 text-light-text-secondary dark:text-github-text-secondary text-sm leading-relaxed">
-              <p className="m-0 mb-3 text-xs">
-                Additional event details and description would go here. You can add more information about the event such as the organizer, ticket prices, capacity, and other relevant details.
-              </p>
-
-              {/* Travel Time Information */}
-              {travelTimes && userLocation && (
-                <div className="bg-light-bg dark:bg-github-bg p-3 rounded border border-light-border dark:border-github-border mb-3">
-                  <h4 className="m-0 mb-2 text-xs font-semibold text-light-blue dark:text-github-blue">
-                    ⏱️ Travel Time from Your Location
-                  </h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-center p-1.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
-                      <div className="text-sm mb-0.5">🚶</div>
-                      <div className="text-[10px] text-light-text-muted dark:text-github-text-muted">Walk</div>
-                      <div className="font-semibold text-xs text-light-blue dark:text-github-blue">{travelTimes.walk}</div>
-                    </div>
-                    <div className="text-center p-1.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
-                      <div className="text-sm mb-0.5">🚴</div>
-                      <div className="text-[10px] text-light-text-muted dark:text-github-text-muted">Bike</div>
-                      <div className="font-semibold text-xs text-light-blue dark:text-github-blue">{travelTimes.bike}</div>
-                    </div>
-                    <div className="text-center p-1.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
-                      <div className="text-sm mb-0.5">🚗</div>
-                      <div className="text-[10px] text-light-text-muted dark:text-github-text-muted">Drive</div>
-                      <div className="font-semibold text-xs text-light-blue dark:text-github-blue">{travelTimes.car}</div>
-                    </div>
-                  </div>
-                </div>
+              {selectedEventMarker.description ? (
+                <p className="m-0 text-sm">
+                  {selectedEventMarker.description}
+                </p>
+              ) : (
+                <p className="m-0 text-sm text-light-text-muted dark:text-github-text-muted italic">
+                  No additional details provided for this event.
+                </p>
               )}
-
-              <div className="bg-light-bg dark:bg-github-bg p-2 rounded border border-light-border dark:border-github-border mb-2 text-xs">
-                <strong className="text-light-blue dark:text-github-blue">Note:</strong> <span className="text-light-text-secondary dark:text-github-text-secondary">Click on different events to see their routes on the map.</span>
-              </div>
             </div>
           )}
 

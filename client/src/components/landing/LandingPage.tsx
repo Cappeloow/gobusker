@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../styles/datepicker.css';
@@ -61,6 +62,8 @@ export function LandingPage() {
     return saved ? JSON.parse(saved) : false;
   });
   
+  const location = useLocation();
+  const navigate = useNavigate();
   const commonCities = ['Stockholm', 'Göteborg', 'Malmö', 'Uppsala', 'Västerås', 'Örebro', 'Linköping', 'Helsingborg'];
 
   // Save filter panel state
@@ -121,12 +124,16 @@ export function LandingPage() {
             longitude: position.coords.longitude
           };
           setUserLocation(loc);
-          // Center map on user immediately with zoom for 3km radius
-          setMapViewport({
-            latitude: loc.latitude,
-            longitude: loc.longitude,
-            zoom: 12 // Zoom level for 3km radius
-          });
+          
+          // Only center map on user if we're not returning to a specific event
+          const state = location.state as { returnToEvent?: string } | null;
+          if (!state?.returnToEvent) {
+            setMapViewport({
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              zoom: 12 // Zoom level for 3km radius
+            });
+          }
         },
         () => {
           console.log('Location access denied or unavailable');
@@ -248,6 +255,55 @@ export function LandingPage() {
       setClickedMarker(null);
     }
   }, [filteredEvents, selectedMarker]);
+
+  // Handle returning from profile pages with selected event
+  useEffect(() => {
+    const state = location.state as { 
+      returnToEvent?: string; 
+      searchContext?: {
+        filters: any;
+        searchQuery: string;
+        activeLocation: { latitude: number; longitude: number; name?: string } | null;
+        mapViewport: { latitude: number; longitude: number; zoom: number } | null;
+      };
+    } | null;
+    
+    if (state?.returnToEvent && events.length > 0) {
+      const event = events.find(e => e.id === state.returnToEvent);
+      if (event && event.location) {
+        // Restore complete search context
+        if (state.searchContext) {
+          setFilters(state.searchContext.filters);
+          setSearchQuery(state.searchContext.searchQuery || '');
+          setActiveLocation(state.searchContext.activeLocation);
+          
+          if (state.searchContext.mapViewport) {
+            setMapViewport(state.searchContext.mapViewport);
+          } else {
+            setMapViewport({ 
+              latitude: event.location.latitude, 
+              longitude: event.location.longitude, 
+              zoom: 14 
+            });
+          }
+        } else {
+          // Fallback to event location if no context
+          setMapViewport({ 
+            latitude: event.location.latitude, 
+            longitude: event.location.longitude, 
+            zoom: 14 
+          });
+        }
+        
+        setSelectedMarker(state.returnToEvent);
+        setClickedMarker(state.returnToEvent);
+        setFlyToKey(prev => prev + 1);
+        
+        // Clear the state to prevent re-triggering
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [events, location.state, navigate, location.pathname]);
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -540,6 +596,7 @@ export function LandingPage() {
                       latitude: event.location.latitude,
                       longitude: event.location.longitude,
                       title: event.title,
+                      description: event.description,
                       date: event.start_time,
                       location: event.location.place_name,
                       profile: event.profile ? {
@@ -559,6 +616,12 @@ export function LandingPage() {
                 searchCenter={activeLocation || userLocation}
                 searchRadius={filters.maxDistance}
                 flyToKey={flyToKey}
+                currentSearchContext={{
+                  filters,
+                  searchQuery,
+                  activeLocation,
+                  mapViewport
+                }}
                 onMarkerClick={(markerId) => {
                   setClickedMarker(markerId);
                   setSelectedMarker(markerId);

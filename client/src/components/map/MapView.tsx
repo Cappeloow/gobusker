@@ -68,6 +68,7 @@ function createCirclePolygon(center: [number, number], radiusKm: number, points:
 export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange }: MapViewProps) {
   const navigate = useNavigate();
   const mapRef = useRef<MapRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const lastFittedMarkerId = useRef<string | null>(null); // Track which marker we've already zoomed to
   const [routeData, setRouteData] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -97,6 +98,21 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
+  }, []);
+
+  // Resize map when container size changes (e.g., sidebar/filter panel collapse)
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      // Small delay to ensure container has finished resizing
+      setTimeout(() => {
+        mapRef.current?.resize();
+      }, 50);
+    });
+    
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
   }, []);
 
   // Fly to center when flyToKey changes (for "My Location" button)
@@ -304,6 +320,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
   }, [selectedMarkerId, selectedEventMarker, searchCenter, markers]);
 
   return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
     <Map
       ref={mapRef}
       {...viewport}
@@ -630,5 +647,6 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
         </div>
       )}
     </Map>
+    </div>
   );
 }

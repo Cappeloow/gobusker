@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { Header } from './Header';
-import { Footer } from './Footer';
+import { Sidebar } from './Sidebar';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +13,25 @@ export function Layout({ children }: LayoutProps) {
     const saved = localStorage.getItem('gobusker-dark-mode');
     return saved ? JSON.parse(saved) : false;
   });
+  
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+    const saved = localStorage.getItem('gobusker-sidebar-expanded');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  // Listen for sidebar state changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('gobusker-sidebar-expanded');
+      if (saved) {
+        setSidebarExpanded(JSON.parse(saved));
+      }
+    };
+    
+    // Check periodically for changes (storage event doesn't fire in same tab)
+    const interval = setInterval(handleStorageChange, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Save preference to localStorage
@@ -35,15 +54,27 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-white dark:bg-github-bg text-gray-900 dark:text-github-text">
-      <Header isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+    <div className="h-[100dvh] flex bg-white dark:bg-github-bg text-gray-900 dark:text-github-text">
+      {/* Sidebar - Desktop only */}
+      <Sidebar isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
       
-      {/* Spacer for fixed header */}
-      <div className="h-14 md:h-16 flex-shrink-0"></div>
-      
-      <main className="flex-1 relative">
-        {children}
-      </main>
+      {/* Main Content Area */}
+      <div className={`
+        flex-1 flex flex-col
+        transition-all duration-300
+        ${sidebarExpanded ? 'md:ml-56' : 'md:ml-16'}
+      `}>
+        {/* Mobile Header */}
+        <div className="md:hidden">
+          <Header isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+          {/* Spacer for fixed header */}
+          <div className="h-14 flex-shrink-0"></div>
+        </div>
+        
+        <main className="flex-1 relative">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

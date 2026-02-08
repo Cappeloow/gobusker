@@ -52,8 +52,34 @@ export function LandingPage() {
   const [showDateModal, setShowDateModal] = useState(false);
   const [isUserLocationVisible, setIsUserLocationVisible] = useState(true);
   const [currentBounds, setCurrentBounds] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+    const saved = localStorage.getItem('gobusker-sidebar-expanded');
+    return saved ? JSON.parse(saved) : true;
+  });
+  const [filterPanelCollapsed, setFilterPanelCollapsed] = useState(() => {
+    const saved = localStorage.getItem('gobusker-filter-panel-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
   
   const commonCities = ['Stockholm', 'Göteborg', 'Malmö', 'Uppsala', 'Västerås', 'Örebro', 'Linköping', 'Helsingborg'];
+
+  // Save filter panel state
+  useEffect(() => {
+    localStorage.setItem('gobusker-filter-panel-collapsed', JSON.stringify(filterPanelCollapsed));
+  }, [filterPanelCollapsed]);
+
+  // Listen for sidebar state changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('gobusker-sidebar-expanded');
+      if (saved) {
+        setSidebarExpanded(JSON.parse(saved));
+      }
+    };
+    
+    const interval = setInterval(handleStorageChange, 100);
+    return () => clearInterval(interval);
+  }, []);
   
   // Store bounds and check visibility
   const handleBoundsChange = (bounds: { north: number; south: number; east: number; west: number }) => {
@@ -392,7 +418,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="fixed inset-0 top-14 md:top-16 flex flex-col">
+    <div className={`fixed inset-0 top-14 md:top-0 flex flex-col transition-all duration-300 ${sidebarExpanded ? 'md:left-56' : 'md:left-16'}`}>
       
       {/* Date Range Modal with Calendar */}
       {showDateModal && (
@@ -542,8 +568,8 @@ export function LandingPage() {
               
               {/* Event Cards Overlay - Desktop */}
               {filteredEvents.length > 0 && (
-                <div className="hidden md:block absolute bottom-3 left-3 right-3 z-10">
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-light-border dark:scrollbar-thumb-github-border scrollbar-track-transparent">
+                <div className="hidden md:block absolute bottom-0 left-0 z-10">
+                  <div className="flex gap-1 overflow-x-auto scrollbar-none">
                     {filteredEvents.map((event) => {
                       const locationForDistance = activeLocation || userLocation;
                       const distance = locationForDistance && event.location
@@ -572,21 +598,19 @@ export function LandingPage() {
                               setSelectedMarker(null);
                             }
                           }}
-                          className={`min-w-[200px] max-w-[200px] p-2.5 rounded-lg cursor-pointer transition-all duration-200 backdrop-blur-sm ${
+                          className={`min-w-[110px] max-w-[110px] px-2 py-1.5 cursor-pointer transition-all duration-150 backdrop-blur-sm ${
                             selectedMarker === event.id
-                              ? 'bg-light-card/95 dark:bg-github-card/95 border-2 border-light-blue dark:border-github-blue shadow-xl'
-                              : 'bg-light-card/40 dark:bg-github-card/40 hover:bg-light-card/95 hover:dark:bg-github-card/95 border border-light-border/20 dark:border-github-border/20 hover:border-light-blue dark:hover:border-github-blue shadow-lg hover:shadow-xl'
+                              ? 'bg-light-card/95 dark:bg-github-card/95 border-l-2 border-light-blue dark:border-github-blue'
+                              : 'bg-light-card/70 dark:bg-github-card/70 hover:bg-light-card/95 dark:hover:bg-github-card/95 border-l border-light-border/50 dark:border-github-border/50'
                           }`}
                         >
-                          <div className="font-semibold text-light-text dark:text-github-text text-xs leading-tight mb-1 line-clamp-1">{event.title}</div>
-                          <div className="text-[10px] text-light-text-secondary dark:text-github-text-secondary mb-1">
-                            📅 {new Date(event.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          <div className="font-medium text-light-text dark:text-github-text text-[11px] leading-tight line-clamp-1 text-left">{event.title}</div>
+                          <div className="flex items-center gap-1 text-[9px] text-light-text-muted dark:text-github-text-muted">
+                            <span>{new Date(event.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            {distance !== null && (
+                              <span className="text-light-blue dark:text-github-blue">{distance.toFixed(1)}km</span>
+                            )}
                           </div>
-                          {distance !== null && (
-                            <div className="text-[10px] font-medium text-light-blue dark:text-github-blue">
-                              📍 {distance.toFixed(1)} km
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -598,20 +622,40 @@ export function LandingPage() {
         </div>
 
         {/* Filters & Results Panel - Desktop Sidebar */}
-        <div className="hidden md:block md:w-[400px] bg-light-card dark:bg-github-card border-l border-light-border dark:border-github-border shadow-xl p-5 overflow-y-auto">
-          <h1 className="mb-5 text-light-text dark:text-github-text text-2xl font-bold">Find Performances</h1>
+        <div className={`hidden md:flex flex-col bg-light-card dark:bg-github-card border-l border-light-border dark:border-github-border shadow-xl overflow-hidden transition-all duration-300 ${filterPanelCollapsed ? 'w-10' : 'w-[320px]'}`}>
+          {/* Collapse Toggle */}
+          <button
+            onClick={() => setFilterPanelCollapsed(!filterPanelCollapsed)}
+            className="p-2 flex-shrink-0 flex justify-end"
+            title={filterPanelCollapsed ? 'Expand filters' : 'Collapse filters'}
+          >
+            {filterPanelCollapsed ? (
+              <svg className="w-5 h-5 mx-auto p-0.5 rounded text-light-text-muted dark:text-github-text-muted hover:text-light-text dark:hover:text-github-text hover:bg-light-bg dark:hover:bg-github-bg transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 p-0.5 rounded text-light-text-muted dark:text-github-text-muted hover:text-light-text dark:hover:text-github-text hover:bg-light-bg dark:hover:bg-github-bg transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </button>
+          
+          {/* Content - hidden when collapsed */}
+          {!filterPanelCollapsed && (
+            <div className="flex-1 p-4 overflow-y-auto">
+              <h1 className="mb-3 text-light-text dark:text-github-text text-lg font-bold">Find Performances</h1>
 
-          {/* Location Search */}
-          <div className="mb-5">
-            <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Location</label>
-            <div className="relative flex gap-2 mb-3">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Search location..."
-                  className="w-full px-3 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
-                  value={searchQuery}
-                  onChange={(e) => {
+              {/* Location Search */}
+              <div className="mb-4">
+                <label className="block mb-1.5 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Location</label>
+                <div className="relative flex gap-2 mb-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search location..."
+                      className="w-full px-3 py-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-sm text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
+                      value={searchQuery}
+                      onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setSkipSuggestions(false);
                   }}
@@ -642,7 +686,7 @@ export function LandingPage() {
                 )}
               </div>
               <button 
-                onClick={handleSearch}
+                onClick={() => handleSearch()}
                 disabled={isSearching}
                 className="px-3 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white font-semibold rounded-lg transition-all duration-200 text-sm disabled:opacity-50"
               >
@@ -709,8 +753,8 @@ export function LandingPage() {
           </div>
 
           {/* Time Range Filter */}
-          <div className="mb-5">
-            <label className="block mb-3 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">When</label>
+          <div className="mb-4">
+            <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">When</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setFilters({ ...filters, timeRange: 'today', customDateStart: undefined, customDateEnd: undefined })}
@@ -741,8 +785,8 @@ export function LandingPage() {
           </div>
 
           {/* Category Filter */}
-          <div className="mb-5">
-            <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">Category</label>
+          <div className="mb-4">
+            <label className="block mb-1.5 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Category</label>
             <select
               className="w-full p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
               value={filters.category}
@@ -757,8 +801,8 @@ export function LandingPage() {
 
           {/* Subcategory Filter */}
           {filters.category && CATEGORIES[filters.category]?.length > 0 && (
-            <div className="mb-5">
-              <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">Subcategory</label>
+            <div className="mb-4">
+              <label className="block mb-1.5 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">Subcategory</label>
               <select
                 className="w-full p-2 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg text-light-text dark:text-github-text focus:outline-none focus:border-light-blue dark:focus:border-github-blue"
                 value={filters.subcategory}
@@ -774,8 +818,8 @@ export function LandingPage() {
 
           {/* Distance Filter */}
           {userLocation && (
-            <div className="mb-5">
-              <label className="block mb-2 text-light-text-secondary dark:text-github-text-secondary font-medium">
+            <div className="mb-4">
+              <label className="block mb-1.5 text-light-text-secondary dark:text-github-text-secondary font-medium text-sm">
                 Max Distance: <span className="text-light-blue dark:text-github-blue font-semibold">{filters.maxDistance} km</span>
               </label>
               <input
@@ -802,6 +846,8 @@ export function LandingPage() {
                 <span>1 km</span>
                 <span>50 km</span>
               </div>
+            </div>
+          )}
             </div>
           )}
         </div>
@@ -849,7 +895,7 @@ export function LandingPage() {
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   <button 
-                    onClick={handleSearch}
+                    onClick={() => handleSearch()}
                     className="px-4 py-2 bg-light-blue dark:bg-github-blue text-white rounded-lg text-sm font-medium"
                   >
                     Go

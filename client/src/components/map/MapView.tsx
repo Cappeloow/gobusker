@@ -19,6 +19,11 @@ interface EventMarker {
     avatar_url?: string;
     profile_type?: 'individual' | 'band';
   };
+  // Event type and request info
+  event_type?: 'solo_performance' | 'open_mic' | 'venue_booking';
+  accepting_requests?: boolean;
+  max_performers?: number;
+  accepted_requests_count?: number;
 }
 
 interface MapViewProps {
@@ -631,11 +636,32 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             </div>
           )}
 
+          {/* Slot Info & Actions */}
+          {selectedEventMarker.event_type && selectedEventMarker.event_type !== 'solo_performance' && (
+            <div className="px-3 py-2 border-t border-light-border dark:border-github-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded ${selectedEventMarker.event_type === 'open_mic' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                    {selectedEventMarker.event_type === 'open_mic' ? '🎤 Open Mic' : '🏢 Venue'}
+                  </span>
+                  {selectedEventMarker.max_performers && (
+                    <span className="text-xs text-light-text-muted dark:text-github-text-muted">
+                      {selectedEventMarker.accepted_requests_count || 0}/{selectedEventMarker.max_performers} slots
+                    </span>
+                  )}
+                </div>
+                {selectedEventMarker.accepting_requests && selectedEventMarker.max_performers && (selectedEventMarker.accepted_requests_count || 0) < selectedEventMarker.max_performers && (
+                  <span className="text-[10px] text-green-400 font-medium">Open for requests</span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Read More Button */}
           <div className="p-3 border-t border-light-border dark:border-github-border flex gap-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`flex-1 px-3 py-2 rounded text-sm font-semibold transition-all duration-200 ${
+              className={`${selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' ? 'flex-1' : 'flex-1'} px-3 py-2 rounded text-sm font-semibold transition-all duration-200 ${
                 isExpanded 
                   ? 'bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text hover:bg-light-card dark:hover:bg-github-card border border-light-border dark:border-github-border' 
                   : 'bg-red-600 text-white hover:bg-red-700'
@@ -643,6 +669,14 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             >
               {isExpanded ? '← Collapse' : 'Read More →'}
             </button>
+            {selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' && (
+              <button
+                onClick={() => navigate(`/event/${selectedEventMarker.id}`)}
+                className="flex-1 px-3 py-2 rounded text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-all duration-200"
+              >
+                Request to Join
+              </button>
+            )}
           </div>
         </div>
       )}

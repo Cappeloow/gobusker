@@ -547,7 +547,11 @@ export function LandingPage() {
                         name: event.profile.name,
                         avatar_url: event.profile.avatar_url,
                         profile_type: event.profile.profile_type
-                      } : undefined
+                      } : undefined,
+                      event_type: event.event_type,
+                      accepting_requests: event.accepting_requests,
+                      max_performers: event.max_performers,
+                      accepted_requests_count: event.accepted_requests_count
                     }))
                 ]}
                 selectedMarkerId={selectedMarker}
@@ -611,6 +615,21 @@ export function LandingPage() {
                               <span className="text-light-blue dark:text-github-blue">{distance.toFixed(1)}km</span>
                             )}
                           </div>
+                          {/* Slot availability for open_mic and venue_booking */}
+                          {event.event_type !== 'solo_performance' && event.max_performers && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className={`text-[8px] px-1 py-0.5 rounded ${
+                                event.event_type === 'open_mic' 
+                                  ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                                  : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                              }`}>
+                                {event.event_type === 'open_mic' ? '🎤' : '🏢'} {(event.accepted_requests_count || 0)}/{event.max_performers}
+                              </span>
+                              {event.accepting_requests && (event.accepted_requests_count || 0) < event.max_performers && (
+                                <span className="text-[7px] text-green-600 dark:text-green-400">open</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })}

@@ -80,7 +80,42 @@ export interface Event {
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   category?: string;
   subcategory?: string;
+  
+  // Event type and performer slots
+  event_type: 'solo_performance' | 'open_mic' | 'venue_booking';
+  max_performers?: number; // For open_mic/venue_booking: how many slots available
+  accepting_requests?: boolean; // Whether the event is accepting performer requests
+  accepted_requests_count?: number; // Count of accepted performer requests
+  
   profile?: Profile;
+  created_at: string;
+  updated_at: string;
+}
+
+// Performer requests to join an event (open mic, venue booking)
+export interface EventRequest {
+  id: string;
+  event_id: string;
+  requester_profile_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  message?: string; // Optional message from the requester
+  requester_profile?: Profile;
+  event?: Event;
+  created_at: string;
+  updated_at: string;
+}
+
+// Event owner invites a performer to join their event
+export interface EventInvite {
+  id: string;
+  event_id: string;
+  invited_profile_id: string;
+  inviter_profile_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  message?: string; // Optional message from the inviter
+  invited_profile?: Profile;
+  inviter_profile?: Profile;
+  event?: Event;
   created_at: string;
   updated_at: string;
 }

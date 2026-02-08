@@ -5,6 +5,7 @@ import { profileService } from '../../services/profileService';
 import { supabase } from '../../lib/supabase';
 import { ProfileQRCode } from './ProfileQRCode';
 import { TipWall } from './TipWall';
+import { ProfileEvents } from './ProfileEvents';
 import { BandMembersManager } from '../BandMembersManager';
 import { ShoppingBag, Edit2, Save, X, Plus, ChevronLeft } from 'lucide-react';
 
@@ -19,7 +20,7 @@ export function ProfileDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ bio: '', avatar_url: '' });
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'about' | 'members' | 'tips'>('about');
+  const [activeTab, setActiveTab] = useState<'about' | 'events' | 'members' | 'tips'>('about');
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
 
@@ -308,6 +309,18 @@ export function ProfileDetail() {
             >
               📋 About
             </button>
+            {(profile.role === 'busker' || profile.role === 'eventmaker') && (
+              <button
+                onClick={() => setActiveTab('events')}
+                className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                  activeTab === 'events'
+                    ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
+                    : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
+                }`}
+              >
+                📅 Events
+              </button>
+            )}
             {profile.role === 'busker' && (
               <>
                 <button
@@ -408,6 +421,11 @@ export function ProfileDetail() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Events Tab */}
+            {activeTab === 'events' && (profile.role === 'busker' || profile.role === 'eventmaker') && id && (
+              <ProfileEvents profileId={id} isOwner={isOwner} />
             )}
 
             {/* Band Members Tab */}

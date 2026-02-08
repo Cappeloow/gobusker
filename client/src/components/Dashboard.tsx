@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/models';
 import { profileService } from '../services/profileService';
+import { eventService } from '../services/eventService';
 import { Wallet } from './Wallet';
-import { Mail, Plus } from 'lucide-react';
+import { Mail, Plus, Check, X, Calendar, MapPin } from 'lucide-react';
 
 interface PendingInvite {
   id: string;
@@ -23,13 +24,41 @@ interface PendingInvite {
   };
 }
 
+interface PendingEventRequest {
+  id: string;
+  event_id: string;
+  requester_profile_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  message?: string;
+  created_at: string;
+  requester_profile: {
+    id: string;
+    name: string;
+    avatar_url?: string;
+    role?: string;
+    bio?: string;
+    performance_type?: string;
+    genres?: string[];
+  };
+  event: {
+    id: string;
+    title: string;
+    event_type: 'solo_performance' | 'open_mic' | 'venue_booking';
+    start_time: string;
+    location: {
+      place_name: string;
+    };
+  };
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userProfiles, setUserProfiles] = useState<Profile[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingEventRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'profiles' | 'wallet'>('profiles');
+  const [activeTab, setActiveTab] = useState<'profiles' | 'wallet' | 'requests'>('profiles');
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const createMenuRef = useRef<HTMLDivElement>(null);
 
@@ -74,6 +103,28 @@ export function Dashboard() {
     }
   };
 
+  const fetchPendingRequests = async () => {
+    if (userProfiles.length === 0) return;
+    
+    try {
+      const profileIds = userProfiles.map(p => p.id);
+      const requests = await eventService.getAllUserEventRequests(profileIds);
+      setPendingRequests(requests);
+    } catch (err) {
+      console.error('Error fetching pending requests:', err);
+    }
+  };
+
+  const handleRequestResponse = async (requestId: string, status: 'accepted' | 'rejected') => {
+    try {
+      await eventService.updateEventRequestStatus(requestId, status);
+      // Remove the request from the list
+      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch (err) {
+      console.error('Error updating request status:', err);
+    }
+  };
+
   useEffect(() => {
     const getUser = async () => {
       // Get the current session
@@ -95,6 +146,7 @@ export function Dashboard() {
         const profiles = await profileService.getCurrentUserProfiles();
         setUserProfiles(profiles);
         await fetchPendingInvites();
+        // Skip pending requests if we don't have profiles yet
       } catch (err) {
         // If there's an error fetching profiles, we'll just show empty state
         console.error('Error loading profiles:', err);
@@ -226,6 +278,21 @@ export function Dashboard() {
           >
             💰 Wallet
           </button>
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 flex items-center gap-2 ${
+              activeTab === 'requests'
+                ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
+                : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
+            }`}
+          >
+            📥 Requests
+            {pendingRequests.length > 0 && (
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -294,8 +361,134 @@ export function Dashboard() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : activeTab === 'wallet' ? (
             <Wallet userProfiles={userProfiles} />
+          ) : (
+            // Pending Requests Tab
+            <div>
+              {pendingRequests.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-light-text-secondary dark:text-github-text-secondary mb-4 text-lg">
+                    No pending performer requests.
+                  </p>
+                  <p className="text-light-text-muted dark:text-github-text-muted text-sm">
+                    When people request to join your open mic or venue events, they'll appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold text-light-text dark:text-github-text mb-6">
+                    Pending Performer Requests ({pendingRequests.length})
+                  </h2>
+                  {pendingRequests.map(request => (
+                    <div key={request.id} className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4 flex-1">
+                          {/* Requester Info */}
+                          <div className="flex-shrink-0">
+                            <img
+                              src={request.requester_profile.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image'}
+                              alt={request.requester_profile.name}
+                              className="w-12 h-12 rounded-full object-cover border border-light-border dark:border-github-border"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 
+                                  className="text-lg font-semibold text-light-text dark:text-github-text hover:text-light-blue dark:hover:text-github-blue cursor-pointer transition-colors"
+                                  onClick={() => navigate(`/profile/${request.requester_profile.id}`)}
+                                >
+                                  {request.requester_profile.name}
+                                </h3>
+                                <p className="text-sm text-light-text-secondary dark:text-github-text-secondary capitalize">
+                                  {request.requester_profile.role} • {request.requester_profile.performance_type}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Event Info */}
+                            <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-3 mb-3">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Calendar className="w-4 h-4 text-light-blue dark:text-github-blue" />
+                                <span className="font-medium text-light-text dark:text-github-text">{request.event.title}</span>
+                                <span className={`text-xs px-2 py-1 rounded ${request.event.event_type === 'open_mic' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                  {request.event.event_type === 'open_mic' ? '🎤 Open Mic' : '🏢 Venue'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-light-text-muted dark:text-github-text-muted">
+                                <span>{new Date(request.event.start_time).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric', 
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}</span>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{request.event.location.place_name}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Message */}
+                            {request.message && (
+                              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 mb-3">
+                                <p className="text-sm text-blue-800 dark:text-blue-200 italic">"'{request.message}"</p>
+                              </div>
+                            )}
+
+                            {/* Genres */}
+                            {request.requester_profile.genres && request.requester_profile.genres.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-3">
+                                {request.requester_profile.genres.slice(0, 4).map((genre, idx) => (
+                                  <span key={idx} className="text-xs px-2 py-1 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-full text-light-text-muted dark:text-github-text-muted">
+                                    {genre}
+                                  </span>
+                                ))}
+                                {request.requester_profile.genres.length > 4 && (
+                                  <span className="text-xs px-2 py-1 text-light-text-muted dark:text-github-text-muted">
+                                    +{request.requester_profile.genres.length - 4} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-light-text-muted dark:text-github-text-muted">
+                              Requested {new Date(request.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={() => navigate(`/profile/${request.requester_profile.id}`)}
+                            className="px-3 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border text-light-text dark:text-github-text hover:border-light-blue dark:hover:border-github-blue rounded-lg transition-colors text-sm"
+                          >
+                            View Profile
+                          </button>
+                          <button
+                            onClick={() => handleRequestResponse(request.id, 'accepted')}
+                            className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center"
+                            title="Accept Request"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleRequestResponse(request.id, 'rejected')}
+                            className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center"
+                            title="Reject Request"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

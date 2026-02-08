@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ViewStateChangeEvent } from 'react-map-gl';
 import { Map, Marker } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -73,6 +73,17 @@ export function LocationSelectMap({ onLocationSelect, initialLocation, onPlaceNa
     zoom: 11
   });
 
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+
+  // Listen for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   const handleMapClick = async (event: { lngLat: { lat: number; lng: number } }) => {
     const { lat, lng } = event.lngLat;
     setMarkerPosition({ latitude: lat, longitude: lng });
@@ -81,13 +92,13 @@ export function LocationSelectMap({ onLocationSelect, initialLocation, onPlaceNa
   };
 
   return (
-    <div style={{ width: '100%', height: '300px', position: 'relative' }}>
+    <div className="w-full h-[300px] relative rounded-lg overflow-hidden border border-light-border dark:border-github-border">
       <Map
         {...viewport}
         onClick={handleMapClick}
         onMove={(evt: ViewStateChangeEvent) => setViewport(evt.viewState)}
         style={{ width: '100%', height: '100%' }}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapStyle={isDarkMode ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12"}
         mapboxAccessToken={MAPBOX_TOKEN}
       >
         <Marker
@@ -100,49 +111,18 @@ export function LocationSelectMap({ onLocationSelect, initialLocation, onPlaceNa
             onLocationSelect({ latitude: lat, longitude: lng });
           }}
         >
-          <div style={{
-            width: '24px',
-            height: '24px',
-            backgroundColor: '#4CAF50',
-            border: '2px solid white',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-          }} />
+          <div className="w-6 h-6 bg-green-500 border-2 border-white rounded-full cursor-pointer shadow-lg" />
         </Marker>
       </Map>
-      <div style={{
-        position: 'absolute',
-        bottom: '10px',
-        left: '10px',
-        right: '10px',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: '12px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        backdropFilter: 'blur(4px)'
-      }}>
+      <div className="absolute bottom-2.5 left-2.5 right-2.5 bg-light-card/95 dark:bg-github-card/95 backdrop-blur-sm p-3 rounded-lg border border-light-border dark:border-github-border shadow-lg">
         <input
           type="text"
           value={placeName}
           onChange={(e) => onPlaceNameChange?.(e.target.value)}
           placeholder="Location name"
-          style={{
-            width: '100%',
-            padding: '8px',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            fontSize: '14px',
-            fontFamily: 'inherit',
-            boxSizing: 'border-box',
-            marginBottom: '4px'
-          }}
+          className="w-full px-3 py-2 rounded-lg border border-light-border dark:border-github-border bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text placeholder-light-text-muted dark:placeholder-github-text-muted text-sm mb-1.5"
         />
-        <div style={{
-          fontSize: '12px',
-          color: '#666',
-          lineHeight: '1.4'
-        }}>
+        <div className="text-xs text-light-text-secondary dark:text-github-text-secondary">
           💡 Click on the map to place a marker or drag the marker to select location
         </div>
       </div>

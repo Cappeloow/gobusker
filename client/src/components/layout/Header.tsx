@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { AuthModal } from '../AuthModal';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -11,6 +12,14 @@ export function Header({ isDarkMode, onToggleDarkMode }: HeaderProps) {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const openAuthModal = (mode: 'login' | 'register') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+    setMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -76,20 +85,12 @@ export function Header({ isDarkMode, onToggleDarkMode }: HeaderProps) {
                 </button>
               </>
             ) : (
-              <>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="font-medium text-light-text dark:text-github-text hover:text-light-blue dark:hover:text-github-blue transition-colors duration-300"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => navigate('/signup')}
-                  className="bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
-                >
-                  Sign Up
-                </button>
-              </>
+              <button
+                onClick={() => openAuthModal('login')}
+                className="bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
+              >
+                Sign In
+              </button>
             )}
           </nav>
         </div>
@@ -139,24 +140,23 @@ export function Header({ isDarkMode, onToggleDarkMode }: HeaderProps) {
                 </button>
               </>
             ) : (
-              <>
-                <button
-                  onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
-                  className="w-full text-left py-2 font-medium text-light-text dark:text-github-text"
-                >
-                  🔑 Login
-                </button>
-                <button
-                  onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }}
-                  className="w-full py-2 bg-light-blue dark:bg-github-blue text-white rounded-lg font-medium text-center"
-                >
-                  Sign Up
-                </button>
-              </>
+              <button
+                onClick={() => openAuthModal('login')}
+                className="w-full py-2 bg-light-blue dark:bg-github-blue text-white rounded-lg font-medium text-center"
+              >
+                Sign In
+              </button>
             )}
           </nav>
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authModalMode}
+      />
     </header>
   );
 }

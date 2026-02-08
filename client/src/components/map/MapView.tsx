@@ -27,7 +27,7 @@ interface MapViewProps {
   markers?: EventMarker[];
   selectedMarkerId?: string | null;
   userLocation?: { latitude: number; longitude: number } | null;
-  searchCenter?: { latitude: number; longitude: number } | null; // Center for search radius (activeLocation or userLocation)
+  searchCenter?: { latitude: number; longitude: number; name?: string } | null; // Center for search radius (activeLocation or userLocation)
   searchRadius?: number; // in kilometers
   flyToKey?: number; // Change this to trigger a flyTo animation to center
   onMarkerClick?: (markerId: string) => void;
@@ -74,6 +74,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
   const [countdown, setCountdown] = useState<string>('');
   const [countdownColor, setCountdownColor] = useState<string>('#666');
   const [travelTimes, setTravelTimes] = useState<{ walk: string; bike: string; car: string } | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [viewport, setViewport] = useState({
     latitude: center[1],
     longitude: center[0],
@@ -88,6 +89,15 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       zoom: zoom
     });
   }, [center[0], center[1], zoom]);
+
+  // Listen for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Fly to center when flyToKey changes (for "My Location" button)
   useEffect(() => {
@@ -328,7 +338,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       }}
       onClick={() => onMapClick?.()}
       style={{ width: '100%', height: '100%' }}
-      mapStyle="mapbox://styles/mapbox/dark-v11"
+      mapStyle={isDarkMode ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12"}
       mapboxAccessToken={MAPBOX_TOKEN}
     >
       <NavigationControl position="top-right" />
@@ -379,6 +389,39 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             }}
           />
         </Source>
+      )}
+
+      {/* Search Location Pin Marker - shown when searching a location different from user location */}
+      {searchCenter && (
+        !userLocation || 
+        searchCenter.latitude !== userLocation.latitude || 
+        searchCenter.longitude !== userLocation.longitude
+      ) && (
+        <Marker
+          latitude={searchCenter.latitude}
+          longitude={searchCenter.longitude}
+          anchor="bottom"
+        >
+          <div 
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+            title={searchCenter.name || 'Search location'}
+          >
+            {/* Location pin */}
+            <svg width="32" height="42" viewBox="0 0 32 42" fill="none">
+              {/* Pin body */}
+              <path 
+                d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16z" 
+                fill="#c18654"
+              />
+              {/* Inner circle */}
+              <circle cx="16" cy="16" r="6" fill="white" />
+            </svg>
+          </div>
+        </Marker>
       )}
       
       {markers.map((marker) => {
@@ -534,48 +577,48 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
           {/* Expanded Content */}
           {isExpanded && (
-            <div className="p-5 overflow-y-auto flex-1 text-light-text-secondary dark:text-github-text-secondary text-sm leading-relaxed">
-              <p className="m-0 mb-4">
+            <div className="p-4 overflow-y-auto flex-1 text-light-text-secondary dark:text-github-text-secondary text-sm leading-relaxed">
+              <p className="m-0 mb-3 text-xs">
                 Additional event details and description would go here. You can add more information about the event such as the organizer, ticket prices, capacity, and other relevant details.
               </p>
 
               {/* Travel Time Information */}
               {travelTimes && userLocation && (
-                <div className="bg-light-bg dark:bg-github-bg p-4 rounded border border-light-border dark:border-github-border mb-4">
-                  <h4 className="m-0 mb-3 text-xs font-semibold text-light-blue dark:text-github-blue">
+                <div className="bg-light-bg dark:bg-github-bg p-3 rounded border border-light-border dark:border-github-border mb-3">
+                  <h4 className="m-0 mb-2 text-xs font-semibold text-light-blue dark:text-github-blue">
                     ⏱️ Travel Time from Your Location
                   </h4>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="text-center p-2.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
-                      <div className="text-xl mb-1.5">🚶</div>
-                      <div className="text-xs text-light-text-muted dark:text-github-text-muted mb-1.5">Walk</div>
-                      <div className="font-semibold text-light-blue dark:text-github-blue">{travelTimes.walk}</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center p-1.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
+                      <div className="text-sm mb-0.5">🚶</div>
+                      <div className="text-[10px] text-light-text-muted dark:text-github-text-muted">Walk</div>
+                      <div className="font-semibold text-xs text-light-blue dark:text-github-blue">{travelTimes.walk}</div>
                     </div>
-                    <div className="text-center p-2.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
-                      <div className="text-xl mb-1.5">🚴</div>
-                      <div className="text-xs text-light-text-muted dark:text-github-text-muted mb-1.5">Bike</div>
-                      <div className="font-semibold text-light-blue dark:text-github-blue">{travelTimes.bike}</div>
+                    <div className="text-center p-1.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
+                      <div className="text-sm mb-0.5">🚴</div>
+                      <div className="text-[10px] text-light-text-muted dark:text-github-text-muted">Bike</div>
+                      <div className="font-semibold text-xs text-light-blue dark:text-github-blue">{travelTimes.bike}</div>
                     </div>
-                    <div className="text-center p-2.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
-                      <div className="text-xl mb-1.5">🚗</div>
-                      <div className="text-xs text-light-text-muted dark:text-github-text-muted mb-1.5">Drive</div>
-                      <div className="font-semibold text-light-blue dark:text-github-blue">{travelTimes.car}</div>
+                    <div className="text-center p-1.5 bg-light-card dark:bg-github-card rounded border border-light-border dark:border-github-border">
+                      <div className="text-sm mb-0.5">🚗</div>
+                      <div className="text-[10px] text-light-text-muted dark:text-github-text-muted">Drive</div>
+                      <div className="font-semibold text-xs text-light-blue dark:text-github-blue">{travelTimes.car}</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="bg-light-bg dark:bg-github-bg p-3 rounded border border-light-border dark:border-github-border mb-3">
+              <div className="bg-light-bg dark:bg-github-bg p-2 rounded border border-light-border dark:border-github-border mb-2 text-xs">
                 <strong className="text-light-blue dark:text-github-blue">Note:</strong> <span className="text-light-text-secondary dark:text-github-text-secondary">Click on different events to see their routes on the map.</span>
               </div>
             </div>
           )}
 
           {/* Read More Button */}
-          <div className="p-4 border-t border-light-border dark:border-github-border flex gap-2">
+          <div className="p-3 border-t border-light-border dark:border-github-border flex gap-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`flex-1 px-4 py-2.5 rounded text-sm font-semibold transition-all duration-200 ${
+              className={`flex-1 px-3 py-2 rounded text-sm font-semibold transition-all duration-200 ${
                 isExpanded 
                   ? 'bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text hover:bg-light-card dark:hover:bg-github-card border border-light-border dark:border-github-border' 
                   : 'bg-red-600 text-white hover:bg-red-700'

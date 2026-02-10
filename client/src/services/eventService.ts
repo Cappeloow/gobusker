@@ -519,6 +519,55 @@ export const eventService = {
       console.error('Error fetching user event requests:', err);
       return [];
     }
+  },
+
+  // Get all events where the profile is participating (accepted invites/requests)
+  async getProfileParticipatingEvents(profileId: string) {
+    const participatingEvents: Event[] = [];
+
+    try {
+      // Get events where profile accepted an invite 
+      const { data: acceptedInvites, error: inviteError } = await supabase
+        .from('event_invites')
+        .select(`
+          event:events(
+            *,
+            profile:profiles(id, name, avatar_url)
+          )
+        `)
+        .eq('invited_profile_id', profileId)
+        .eq('status', 'accepted');
+
+      if (acceptedInvites && !inviteError) {
+        participatingEvents.push(...(acceptedInvites.map(invite => invite.event).filter(Boolean) as Event[]));
+      }
+
+      // Get events where profile's request was accepted
+      const { data: acceptedRequests, error: requestError } = await supabase
+        .from('event_requests')
+        .select(`
+          event:events(
+            *,
+            profile:profiles(id, name, avatar_url)
+          )
+        `)
+        .eq('requester_profile_id', profileId)
+        .eq('status', 'accepted');
+
+      if (acceptedRequests && !requestError) {
+        participatingEvents.push(...(acceptedRequests.map(request => request.event).filter(Boolean) as Event[]));
+      }
+
+      // Remove duplicates and return
+      const uniqueEvents = participatingEvents.filter((event, index, self) => 
+        index === self.findIndex(e => e.id === event.id)
+      );
+
+      return uniqueEvents;
+    } catch (err) {
+      console.error('Error getting participating events:', err);
+      return [];
+    }
   }
 };
 

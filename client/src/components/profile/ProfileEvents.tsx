@@ -19,8 +19,21 @@ export function ProfileEvents({ profileId, isOwner }: ProfileEventsProps) {
     const loadEvents = async () => {
       setIsLoading(true);
       try {
-        const data = await eventService.getProfileEvents(profileId);
-        setEvents(data);
+        // Get events created by this profile
+        const createdEvents = await eventService.getProfileEvents(profileId);
+        
+        // Get events this profile is participating in (accepted invites/requests)
+        const participatingEvents = await eventService.getProfileParticipatingEvents(profileId);
+        
+        // Combine and remove duplicates
+        const allEvents = [...createdEvents, ...participatingEvents].filter((event, index, self) => 
+          index === self.findIndex(e => e.id === event.id)
+        );
+
+        // Sort by start time
+        allEvents.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+        
+        setEvents(allEvents);
       } catch (err) {
         console.error('Error loading events:', err);
       } finally {
@@ -157,6 +170,17 @@ export function ProfileEvents({ profileId, isOwner }: ProfileEventsProps) {
                       }`}>
                         {typeInfo.icon} {typeInfo.label}
                       </span>
+                      {/* Show role indicator */}
+                      {event.profile_id !== profileId && (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                          🎵 Performing
+                        </span>
+                      )}
+                      {event.profile_id === profileId && (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                          📋 Organizing
+                        </span>
+                      )}
                       {isPast && (
                         <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                           Past

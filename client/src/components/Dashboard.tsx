@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import type { Profile } from '../types/models';
+import type { Profile, EventInvite } from '../types/models';
 import { profileService } from '../services/profileService';
 import { eventService } from '../services/eventService';
 import { Wallet } from './Wallet';
@@ -56,9 +56,10 @@ export function Dashboard() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userProfiles, setUserProfiles] = useState<Profile[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  const [pendingEventInvites, setPendingEventInvites] = useState<EventInvite[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingEventRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'profiles' | 'wallet' | 'requests'>('profiles');
+  const [activeTab, setActiveTab] = useState<'profiles' | 'wallet' | 'requests' | 'invites'>('profiles');
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const createMenuRef = useRef<HTMLDivElement>(null);
 
@@ -115,6 +116,23 @@ export function Dashboard() {
     }
   };
 
+  const fetchPendingEventInvites = async () => {
+    if (userProfiles.length === 0) return;
+    
+    try {
+      // Fetch event invites for all user profiles
+      const allInvites = await Promise.all(
+        userProfiles.map(profile => eventService.getMyEventInvites(profile.id))
+      );
+      
+      // Flatten the results and filter for pending invites only
+      const invites = allInvites.flat().filter(invite => invite.status === 'pending');
+      setPendingEventInvites(invites);
+    } catch (err) {
+      console.error('Error fetching pending event invites:', err);
+    }
+  };
+
   const handleRequestResponse = async (requestId: string, status: 'accepted' | 'rejected') => {
     try {
       await eventService.updateEventRequestStatus(requestId, status);
@@ -122,6 +140,16 @@ export function Dashboard() {
       setPendingRequests(prev => prev.filter(r => r.id !== requestId));
     } catch (err) {
       console.error('Error updating request status:', err);
+    }
+  };
+
+  const handleEventInviteResponse = async (inviteId: string, status: 'accepted' | 'rejected') => {
+    try {
+      await eventService.updateEventInviteStatus(inviteId, status);
+      // Remove the invite from the list
+      setPendingEventInvites(prev => prev.filter(i => i.id !== inviteId));
+    } catch (err) {
+      console.error('Error updating event invite status:', err);
     }
   };
 
@@ -171,6 +199,14 @@ export function Dashboard() {
       subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Fetch requests and event invites when user profiles are loaded
+  useEffect(() => {
+    if (userProfiles.length > 0) {
+      fetchPendingRequests();
+      fetchPendingEventInvites();
+    }
+  }, [userProfiles]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -293,6 +329,21 @@ export function Dashboard() {
               </span>
             )}
           </button>
+          <button
+            onClick={() => setActiveTab('invites')}
+            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 flex items-center gap-2 ${
+              activeTab === 'invites'
+                ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
+                : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
+            }`}
+          >
+            🎵 Event Invites
+            {pendingEventInvites.length > 0 && (
+              <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {pendingEventInvites.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -363,7 +414,7 @@ export function Dashboard() {
             </div>
           ) : activeTab === 'wallet' ? (
             <Wallet userProfiles={userProfiles} />
-          ) : (
+          ) : activeTab === 'requests' ? (
             // Pending Requests Tab
             <div>
               {pendingRequests.length === 0 ? (
@@ -479,6 +530,129 @@ export function Dashboard() {
                             onClick={() => handleRequestResponse(request.id, 'rejected')}
                             className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center"
                             title="Reject Request"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Event Invites Tab
+            <div>
+              {pendingEventInvites.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-light-text-secondary dark:text-github-text-secondary mb-4 text-lg">
+                    No pending event invites.
+                  </p>
+                  <p className="text-light-text-muted dark:text-github-text-muted text-sm">
+                    Event organizers can invite you to perform at their events. Invités will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold text-light-text dark:text-github-text mb-6">
+                    Event Invites ({pendingEventInvites.length})
+                  </h2>
+                  {pendingEventInvites.map(invite => (
+                    <div key={invite.id} className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4 flex-1">
+                          {/* Event Info */}
+                          <div className="flex-shrink-0">
+                            <Calendar className="w-12 h-12 text-green-500" />
+                          </div>
+                          
+                          <div className="flex-1">
+                            {/* Event Details */}
+                            <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-3 mb-3">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Calendar className="w-4 h-4 text-light-blue dark:text-github-blue" />
+                                <span className="font-medium text-light-text dark:text-github-text">{invite.event?.title}</span>
+                                <span className={`text-xs px-2 py-1 rounded ${invite.event?.event_type === 'open_mic' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                  {invite.event?.event_type === 'open_mic' ? '🎤 Open Mic' : '🏢 Venue'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-light-text-muted dark:text-github-text-muted">
+                                <span>{invite.event?.start_time ? new Date(invite.event.start_time).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric', 
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : 'TBD'}</span>
+                                {invite.event?.location && (
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>{invite.event.location.place_name}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Inviter Info */}
+                            <div className="flex items-center gap-3 mb-3">
+                              {invite.inviter_profile?.avatar_url ? (
+                                <img 
+                                  src={invite.inviter_profile.avatar_url} 
+                                  alt="" 
+                                  className="w-8 h-8 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 bg-gray-300 dark:bg-GitHub-border rounded-full flex items-center justify-center">
+                                  <span className="text-xs text-gray-600 dark:text-gray-400">📋</span>
+                                </div>
+                              )}
+                              <div>
+                                <h3 
+                                  className="text-lg font-semibold text-light-text dark:text-github-text hover:text-light-blue dark:hover:text-github-blue cursor-pointer transition-colors"
+                                  onClick={() => invite.inviter_profile && navigate(`/profile/${invite.inviter_profile.id}`)}
+                                >
+                                  {invite.inviter_profile?.name || 'Unknown'}
+                                </h3>
+                                <p className="text-sm text-light-text-secondary dark:text-github-text-secondary">
+                                  invited you to perform
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Message */}
+                            {invite.message && (
+                              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/30 rounded-lg p-3 mb-2">
+                                <p className="text-sm text-blue-800 dark:text-blue-200">
+                                  "{invite.message}"
+                                </p>
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-light-text-muted dark:text-github-text-muted">
+                              Invited {new Date(invite.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Actions */}
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={() => invite.event && navigate(`/event/${invite.event.id}`)}
+                            className="px-3 py-2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border text-light-text dark:text-github-text hover:border-light-blue dark:hover:border-github-blue rounded-lg transition-colors text-sm"
+                          >
+                            View Event
+                          </button>
+                          <button
+                            onClick={() => handleEventInviteResponse(invite.id, 'accepted')}
+                            className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center"
+                            title="Accept Invite"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEventInviteResponse(invite.id, 'rejected')}
+                            className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center"
+                            title="Decline Invite"
                           >
                             <X className="w-4 h-4" />
                           </button>

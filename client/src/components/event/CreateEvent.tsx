@@ -162,6 +162,12 @@ export function CreateEvent() {
 
       const eventPayload = {
         ...form,
+        // Flatten location fields to match database schema
+        latitude: form.location.latitude,
+        longitude: form.location.longitude,
+        place_name: form.location.place_name,
+        // Remove the nested location object
+        location: undefined,
         profile_id: profileId,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),

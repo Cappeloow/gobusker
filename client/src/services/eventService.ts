@@ -50,8 +50,6 @@ export const eventService = {
   },
 
   async getEvent(eventId: string) {
-    console.log('Fetching event with ID:', eventId);
-
     // Just get the event and its profile for now
     const { data: eventData, error: eventError } = await supabase
       .from('events')
@@ -83,7 +81,6 @@ export const eventService = {
       collaborators: []
     };
 
-    console.log('Final event data:', result);
     return result;
   },
 
@@ -198,7 +195,6 @@ export const eventService = {
   // Event Requests - for open mics and venue bookings
   async createEventRequest(eventId: string, requesterProfileId: string, message?: string) {
     try {
-      console.log('Creating event request:', { eventId, requesterProfileId, message });
       const { data, error } = await supabase
         .from('event_requests')
         .insert([{
@@ -223,7 +219,6 @@ export const eventService = {
         console.error('Supabase error creating request:', error);
         throw error;
       }
-      console.log('Request created successfully:', data);
       return data;
     } catch (err) {
       console.error('Error in createEventRequest:', err);

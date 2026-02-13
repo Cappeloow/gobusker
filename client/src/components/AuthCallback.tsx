@@ -11,6 +11,11 @@ export function AuthCallback() {
         // Get the current URL parameters
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
+        
+        // Get the redirect location from localStorage
+        const redirectTo = localStorage.getItem('redirectAfterAuth') || '/dashboard';
+        localStorage.removeItem('redirectAfterAuth'); // Clean up
+        
         // Try to exchange the code for a session
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -18,7 +23,7 @@ export function AuthCallback() {
           if (error) throw error;
           
           if (data.session) {
-            navigate('/dashboard');
+            navigate(redirectTo);
             return;
           }
         }
@@ -29,7 +34,7 @@ export function AuthCallback() {
         if (error) throw error;
 
         if (session) {
-          navigate('/dashboard');
+          navigate(redirectTo);
         } else {
           navigate('/');
         }

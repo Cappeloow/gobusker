@@ -1,8 +1,15 @@
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export function Login() {
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || '/dashboard';
+
   const handleGoogleLogin = async () => {
     try {
+      // Store the redirect location in localStorage for AuthCallback to use
+      localStorage.setItem('redirectAfterAuth', from);
+      
       const redirectUrl = `${window.location.origin}/auth/callback`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

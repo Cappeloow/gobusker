@@ -172,17 +172,13 @@ export function EventDetail() {
   }, [user, event]);
 
   const handleSubmitRequest = async () => {
-    console.log('handleSubmitRequest called', { event: event?.id, selectedProfileId, requestMessage });
     if (!event || !selectedProfileId) {
-      console.log('Missing event or selectedProfileId', { event: !!event, selectedProfileId });
       return;
     }
 
     setIsSubmittingRequest(true);
     try {
-      console.log('Creating event request...');
       await eventService.createEventRequest(event.id, selectedProfileId, requestMessage || undefined);
-      console.log('Request created successfully');
       setExistingRequest({ id: '', status: 'pending' });
       setShowRequestForm(false);
       setRequestMessage('');

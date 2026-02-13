@@ -12,6 +12,7 @@ import { Success } from './components/payment/Success';
 import { WithdrawalAdmin } from './components/admin/WithdrawalAdmin';
 import { InvitePage } from './pages/InvitePage';
 import { Layout } from './components/layout/Layout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 
 export default function App() {
@@ -22,15 +23,39 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create-profile" element={<CreateProfile />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/create-profile" element={
+            <ProtectedRoute>
+              <CreateProfile />
+            </ProtectedRoute>
+          } />
           <Route path="/profile/:id" element={<ProfileDetail />} />
           <Route path="/profile/:id/shop" element={<ProfileShop />} />
-          <Route path="/create-event" element={<CreateEvent />} />
+          <Route path="/create-event" element={
+            <ProtectedRoute>
+              <CreateEvent />
+            </ProtectedRoute>
+          } />
           <Route path="/event/:id" element={<EventDetail />} />
-          <Route path="/payment/success" element={<Success />} />
-          <Route path="/admin/withdrawals" element={<WithdrawalAdmin />} />
-          <Route path="/invite/:token" element={<InvitePage />} />
+          <Route path="/payment/success" element={
+            <ProtectedRoute>
+              <Success />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/withdrawals" element={
+            <ProtectedRoute>
+              <WithdrawalAdmin />
+            </ProtectedRoute>
+          } />
+          <Route path="/invite/:token" element={
+            <ProtectedRoute>
+              <InvitePage />
+            </ProtectedRoute>
+          } />
         </Routes>
       </Layout>
     </Router>

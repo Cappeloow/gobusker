@@ -43,12 +43,11 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
   const [showInviteForm, setShowInviteForm] = useState(false);
 
   useEffect(() => {
-    console.log('BandMembersManager mounted - isOwner:', isOwner, 'profileId:', profileId);
+    // Component mounted
   }, [isOwner, profileId]);
 
   const fetchMembers = useCallback(async () => {
     try {
-      console.log('fetchMembers called for profileId:', profileId);
       const { data, error } = await supabase
         .from('profile_members')
         .select(`
@@ -64,17 +63,13 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
         `)
         .eq('profile_id', profileId)
         .order('created_at', { ascending: false });
-
-      console.log('Supabase response - data:', data, 'error:', error);
       
       if (error) {
         console.error('Error fetching members - RLS/Query error:', error);
         setMembers([]);
       } else if (data) {
-        console.log('Fetched members count:', data.length, 'members:', data);
         setMembers(data);
       } else {
-        console.log('No data and no error');
         setMembers([]);
       }
     } catch (err) {

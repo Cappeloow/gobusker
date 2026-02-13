@@ -166,8 +166,6 @@ export function LocationSearchMap({ onLocationSelect, initialLocation, onPlaceNa
         if (onPlaceNameChange) {
           onPlaceNameChange(feature.place_name);
         }
-        
-        console.log(`Found: ${feature.place_name} at [${latitude}, ${longitude}] with zoom ${zoom}`);
       } else {
         alert(`No location found for "${query}". Try being more specific or use a different spelling.`);
       }

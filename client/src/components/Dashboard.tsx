@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import type { Profile, EventInvite } from '../types/models';
 import { profileService } from '../services/profileService';
 import { eventService } from '../services/eventService';
+import { createUserFriendlyError } from '../lib/errorHandling';
+import { ErrorMessage, LoadingMessage } from './ui/ErrorMessage';
 import { Wallet } from './Wallet';
 import { Mail, Plus, Check, X, Calendar, MapPin } from 'lucide-react';
 
@@ -59,6 +61,9 @@ export function Dashboard() {
   const [pendingEventInvites, setPendingEventInvites] = useState<EventInvite[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingEventRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [invitesError, setInvitesError] = useState<string | null>(null);
+  const [requestsError, setRequestsError] = useState<string | null>(null);
+  const [profilesError, setProfilesError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'profiles' | 'wallet' | 'requests' | 'invites'>('profiles');
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const createMenuRef = useRef<HTMLDivElement>(null);
@@ -77,30 +82,29 @@ export function Dashboard() {
 
   const fetchPendingInvites = async () => {
     try {
-      console.log('Fetching pending invites...');
+      setInvitesError(null);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        console.log('No session token');
         return;
       }
 
-      console.log('User email:', session.user?.email);
       const response = await fetch('http://localhost:3000/api/invites/me', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
       });
 
-      console.log('Invites response status:', response.status);
       if (response.ok) {
         const invites = await response.json();
-        console.log('Fetched invites:', invites);
         setPendingInvites(invites);
       } else {
-        console.error('Failed to fetch invites:', await response.text());
+        const errorText = await response.text();
+        const friendlyError = createUserFriendlyError({ message: `Failed to fetch invites: ${errorText}` });
+        setInvitesError(friendlyError.message);
       }
     } catch (err) {
-      console.error('Error fetching invites:', err);
+      const friendlyError = createUserFriendlyError(err);
+      setInvitesError(friendlyError.message);
     }
   };
 
@@ -108,11 +112,13 @@ export function Dashboard() {
     if (userProfiles.length === 0) return;
     
     try {
+      setRequestsError(null);
       const profileIds = userProfiles.map(p => p.id);
       const requests = await eventService.getAllUserEventRequests(profileIds);
       setPendingRequests(requests);
     } catch (err) {
-      console.error('Error fetching pending requests:', err);
+      const friendlyError = createUserFriendlyError(err);
+      setRequestsError(friendlyError.message);
     }
   };
 
@@ -120,6 +126,7 @@ export function Dashboard() {
     if (userProfiles.length === 0) return;
     
     try {
+      setRequestsError(null);
       // Fetch event invites for all user profiles
       const allInvites = await Promise.all(
         userProfiles.map(profile => eventService.getMyEventInvites(profile.id))
@@ -129,7 +136,8 @@ export function Dashboard() {
       const invites = allInvites.flat().filter(invite => invite.status === 'pending');
       setPendingEventInvites(invites);
     } catch (err) {
-      console.error('Error fetching pending event invites:', err);
+      const friendlyError = createUserFriendlyError(err);
+      setRequestsError(friendlyError.message);
     }
   };
 
@@ -171,13 +179,15 @@ export function Dashboard() {
       setUserEmail(session.user?.email ?? 'User');
 
       try {
+        setProfilesError(null);
         const profiles = await profileService.getCurrentUserProfiles();
         setUserProfiles(profiles);
         await fetchPendingInvites();
         // Skip pending requests if we don't have profiles yet
       } catch (err) {
         // If there's an error fetching profiles, we'll just show empty state
-        console.error('Error loading profiles:', err);
+        const friendlyError = createUserFriendlyError(err);
+        setProfilesError(friendlyError.message);
         setUserProfiles([]);
       } finally {
         setIsLoading(false);
@@ -215,8 +225,10 @@ export function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
+      <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
+        <div className="max-w-5xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
+          <LoadingMessage message="Loading your dashboard..." />
+        </div>
       </div>
     );
   }
@@ -350,7 +362,22 @@ export function Dashboard() {
         <div>
           {activeTab === 'profiles' ? (
             <div>
-              {userProfiles.length === 0 ? (
+              {profilesError && (
+                <ErrorMessage 
+                  error={profilesError}
+                  title="Failed to load profiles"
+                  action={
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="px-4 py-2 bg-tan-dark text-white rounded-md hover:bg-tan-darker transition-colors text-sm"
+                    >
+                      Refresh Page
+                    </button>
+                  }
+                  className="mb-6"
+                />
+              )}
+              {!profilesError && userProfiles.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-light-text-secondary dark:text-github-text-secondary mb-6 text-lg">You haven't created any profiles yet.</p>
                   <button

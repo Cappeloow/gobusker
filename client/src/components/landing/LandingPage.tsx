@@ -137,7 +137,7 @@ export function LandingPage() {
           }
         },
         () => {
-          console.log('Location access denied or unavailable');
+          // Location access denied or unavailable
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
@@ -467,8 +467,6 @@ export function LandingPage() {
       );
       const data = await response.json();
       
-      console.log('Geocoding response:', data); // Debug log
-      
       if (data.features && data.features.length > 0) {
         const feature = data.features[0];
         const [longitude, latitude] = feature.center;
@@ -513,7 +511,6 @@ export function LandingPage() {
         // Reset distance to 3km when selecting a new location
         setFilters(prev => ({ ...prev, maxDistance: 3 }));
         setFlyToKey(prev => prev + 1); // Force map to update
-        console.log(`Found: ${feature.place_name} at [${latitude}, ${longitude}] with zoom ${radiusZoom}`);
       } else {
         console.warn('No results found for:', query);
         alert(`No location found for "${query}". Try being more specific or use a different spelling.`);

@@ -467,7 +467,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       
       {markers.map((marker) => {
         const isUserLocation = marker.id === 'user-location';
-        const markerColor = isUserLocation ? '#2563EB' : '#4CAF50'; // Blue for user, green for events
+        const markerColor = isUserLocation ? '#D2B48C' : '#4CAF50'; // Tan pearl for user, green for events
         
         return (
           <Marker
@@ -706,7 +706,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                 <div className="flex flex-wrap gap-2 mb-2">
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
                     selectedEventMarker.event_type === 'solo_performance' 
-                      ? 'bg-blue-500/20 text-blue-400'
+                      ? 'bg-[#D2B48C]/20 text-[#D2B48C]'
                       : selectedEventMarker.event_type === 'open_mic'
                       ? 'bg-purple-500/20 text-purple-400'
                       : 'bg-green-500/20 text-green-400'
@@ -765,7 +765,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
                   {/* Location */}
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-[#D2B48C] rounded-lg flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                       </svg>

@@ -274,7 +274,7 @@ export function InvitePage() {
         {/* Header */}
         <div className="bg-gradient-to-r from-github-blue to-purple-600 px-8 py-12 text-center">
           <h1 className="text-3xl font-bold text-white mb-2">You're Invited! 🎵</h1>
-          <p className="text-blue-100">Join {invite.profiles.name} on Gobusker</p>
+          <p className="text-[#D2B48C]">Join {invite.profiles.name} on Gobusker</p>
         </div>
 
         {/* Content */}
@@ -390,19 +390,19 @@ export function InvitePage() {
                   ? 'bg-green-900/20 border border-green-700'
                   : message.type === 'error'
                   ? 'bg-red-900/20 border border-red-700'
-                  : 'bg-blue-900/20 border border-blue-700'
+                  : 'bg-[#D2B48C]/20 border border-[#B8956F]'
               }`}
             >
               {message.type === 'success' && <CheckCircle className="text-green-400 flex-shrink-0" size={20} />}
               {message.type === 'error' && <AlertCircle className="text-red-400 flex-shrink-0" size={20} />}
-              {message.type === 'info' && <AlertCircle className="text-blue-400 flex-shrink-0" size={20} />}
+              {message.type === 'info' && <AlertCircle className="text-[#D2B48C] flex-shrink-0" size={20} />}
               <p
                 className={
                   message.type === 'success'
                     ? 'text-green-300'
                     : message.type === 'error'
                     ? 'text-red-300'
-                    : 'text-blue-300'
+                    : 'text-[#D2B48C]'
                 }
               >
                 {message.text}

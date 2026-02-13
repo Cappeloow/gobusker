@@ -13,11 +13,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #D2B48C;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #B8956F;
 }
 
 html, body, #root {
@@ -57,7 +57,7 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #D2B48C;
 }
 button:focus,
 button:focus-visible {
@@ -70,7 +70,7 @@ button:focus-visible {
     background-color: #F6F8FA;
   }
   a:hover {
-    color: #0969DA;
+    color: #D2B48C;
   }
   button {
     background-color: #F6F8FA;
@@ -89,7 +89,7 @@ input, textarea, select {
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #0969DA;
+  border-color: #D2B48C;
   box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
 }
 

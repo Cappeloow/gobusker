@@ -195,7 +195,7 @@ export function Wallet({ userProfiles }: WalletProps) {
       case 'tip':
         return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700';
       case 'order':
-        return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700';
+        return 'text-[#B8956F] dark:text-[#D2B48C] bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 border-[#D2B48C]/30 dark:border-[#B8956F]';
       case 'withdrawal':
         return 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700';
       default:

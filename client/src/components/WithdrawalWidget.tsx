@@ -150,7 +150,7 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
       case 'pending':
         return <Clock size={16} className="text-yellow-400" />;
       case 'approved':
-        return <CheckCircle size={16} className="text-blue-400" />;
+        return <CheckCircle size={16} className="text-[#D2B48C]" />;
       case 'completed':
         return <CheckCircle size={16} className="text-green-400" />;
       case 'rejected':
@@ -165,7 +165,7 @@ export function WithdrawalWidget({ userProfiles }: WithdrawalWidgetProps) {
       case 'pending':
         return 'bg-yellow-900/20 border-yellow-700 text-yellow-300';
       case 'approved':
-        return 'bg-blue-900/20 border-blue-700 text-blue-300';
+        return 'bg-[#D2B48C]/20 border-[#B8956F] text-[#D2B48C]';
       case 'completed':
         return 'bg-green-900/20 border-green-700 text-green-300';
       case 'rejected':

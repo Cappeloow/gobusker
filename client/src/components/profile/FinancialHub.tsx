@@ -133,7 +133,7 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
       case 'tip':
         return 'text-yellow-400 bg-yellow-900/20 border-yellow-700';
       case 'order':
-        return 'text-blue-400 bg-blue-900/20 border-blue-700';
+        return 'text-[#D2B48C] bg-[#D2B48C]/20 border-[#B8956F]';
       case 'withdrawal':
         return 'text-purple-400 bg-purple-900/20 border-purple-700';
       default:
@@ -166,7 +166,7 @@ export function FinancialHub({ profileId, currentSaldo }: FinancialHubProps) {
             <span className="text-github-text-secondary text-sm font-medium">Total Earnings</span>
             <span className="text-2xl">📈</span>
           </div>
-          <p className="text-3xl font-bold text-blue-400">${totalEarnings.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-[#D2B48C]">${totalEarnings.toFixed(2)}</p>
           <p className="text-github-text-secondary text-xs mt-2">All time</p>
         </div>
 

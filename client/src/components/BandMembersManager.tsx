@@ -255,7 +255,7 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                       </p>
                       <span className={`inline-block px-2 py-1 text-xs rounded font-medium ${
                         member.role === 'owner' ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' :
-                        member.role === 'admin' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                        member.role === 'admin' ? 'bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 text-[#B8956F] dark:text-[#D2B48C]' :
                         'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300'
                       }`}>
                         {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
@@ -398,9 +398,9 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
       )}
 
       {/* Info Box */}
-      <div className="p-4 bg-blue-100 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
-        <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">💡 How Revenue Distribution Works</h4>
-        <ul className="text-sm text-blue-600 dark:text-blue-200 space-y-1">
+      <div className="p-4 bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 border border-[#D2B48C]/30 dark:border-[#B8956F] rounded-lg">
+        <h4 className="font-semibold text-[#B8956F] dark:text-[#D2B48C] mb-2">💡 How Revenue Distribution Works</h4>
+        <ul className="text-sm text-[#B8956F] dark:text-[#D2B48C] space-y-1">
           <li>• When someone sends a tip, it's automatically split among all band members</li>
           <li>• Each member receives their percentage of the tip based on their revenue share</li>
           <li>• Example: If you set a member to 30%, they get 30% of every tip to this profile</li>

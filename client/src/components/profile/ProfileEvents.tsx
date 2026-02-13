@@ -166,7 +166,7 @@ export function ProfileEvents({ profileId, isOwner }: ProfileEventsProps) {
                           ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' 
                           : typeInfo.color === 'green'
                             ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                            : 'bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 text-[#B8956F] dark:text-[#D2B48C]'
                       }`}>
                         {typeInfo.icon} {typeInfo.label}
                       </span>

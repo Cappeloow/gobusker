@@ -734,6 +734,16 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
 
             {/* Content */}
             <div className="p-6 space-y-6">
+              {/* Description */}
+              {selectedEventMarker.description && (
+                <div>
+                  <h3 className="font-semibold text-light-text dark:text-github-text mb-2">Description</h3>
+                  <p className="text-light-text-secondary dark:text-github-text-secondary">
+                    {selectedEventMarker.description}
+                  </p>
+                </div>
+              )}
+
               {/* Event Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
@@ -835,25 +845,9 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                 </div>
               </div>
 
-              {/* Description */}
-              {selectedEventMarker.description && (
-                <div>
-                  <h3 className="font-semibold text-light-text dark:text-github-text mb-2">Description</h3>
-                  <p className="text-light-text-secondary dark:text-github-text-secondary">
-                    {selectedEventMarker.description}
-                  </p>
-                </div>
-              )}
-
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-light-border dark:border-github-border">
-                <button
-                  onClick={() => setShowEventDetailsOverlay(false)}
-                  className="flex-1 py-3 px-4 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg font-semibold text-light-text dark:text-github-text hover:bg-light-card dark:hover:bg-github-card transition-all"
-                >
-                  Close
-                </button>
-                {selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' && (
+              {selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' && (
+                <div className="flex gap-3 pt-4 border-t border-light-border dark:border-github-border">
                   <button
                     onClick={() => {
                       setShowEventDetailsOverlay(false);
@@ -863,8 +857,8 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                   >
                     Request to Join
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

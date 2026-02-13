@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { eventService } from '../../services/eventService';
 import { supabase } from '../../lib/supabase';
 import type { Profile } from '../../types/models';
-import { LocationSelectMap } from '../map/LocationSelectMap';
+import { LocationSearchMap } from '../map/LocationSearchMap';
 import { Search, UserPlus, X, Users, Calendar, Clock } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -568,7 +568,7 @@ export function CreateEvent() {
           <label className="font-medium text-gray-900 dark:text-github-text">Location</label>
         </div>
         <div className="col-span-3">
-          <LocationSelectMap
+          <LocationSearchMap
             onLocationSelect={(location) => {
               setForm(prev => ({
                 ...prev,

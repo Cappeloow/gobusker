@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { eventService } from '../../services/eventService';
 import { profileService } from '../../services/profileService';
 import { useAuth } from '../../context/useAuth';
@@ -50,6 +50,7 @@ const EVENT_TYPE_CONFIG = {
 export function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [event, setEvent] = useState<EventWithCollaborators | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -249,7 +250,25 @@ export function EventDetail() {
         <div className="absolute inset-0 bg-gradient-to-r from-github-blue/20 to-purple-600/20 opacity-50"></div>
         <div className="relative max-w-4xl mx-auto px-4 pt-8 pb-12">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              // Check if we have mapState to restore
+              const state = location.state as { 
+                returnTo?: string; 
+                mapState?: {
+                  selectedEventId: string;
+                  viewport: { latitude: number; longitude: number; zoom: number };
+                  searchContext?: any;
+                };
+              } | null;
+              
+              if (state?.mapState && state.returnTo) {
+                // Navigate back to the return path with the mapState
+                navigate(state.returnTo, { state: { mapState: state.mapState } });
+              } else {
+                // Fallback to standard back navigation
+                navigate(-1);
+              }
+            }}
             className="mb-6 px-4 py-2 bg-black/40 backdrop-blur-sm border border-white/20 text-white hover:bg-black/60 rounded-lg transition-all"
           >
             ← Back

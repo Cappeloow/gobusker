@@ -61,6 +61,7 @@ export function LandingPage() {
     const saved = localStorage.getItem('gobusker-filter-panel-collapsed');
     return saved ? JSON.parse(saved) : false;
   });
+  const [popupInitiallyExpanded, setPopupInitiallyExpanded] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -256,7 +257,7 @@ export function LandingPage() {
     }
   }, [filteredEvents, selectedMarker]);
 
-  // Handle returning from profile pages with selected event
+  // Handle returning from profile/event pages with selected event
   useEffect(() => {
     const state = location.state as { 
       returnToEvent?: string; 
@@ -266,8 +267,61 @@ export function LandingPage() {
         activeLocation: { latitude: number; longitude: number; name?: string } | null;
         mapViewport: { latitude: number; longitude: number; zoom: number } | null;
       };
+      mapState?: {
+        selectedEventId: string;
+        viewport: { latitude: number; longitude: number; zoom: number };
+        searchContext?: {
+          filters: any;
+          searchQuery: string;
+          activeLocation: { latitude: number; longitude: number; name?: string } | null;
+          mapViewport: { latitude: number; longitude: number; zoom: number } | null;
+        };
+        isExpanded?: boolean;
+      };
     } | null;
     
+    if (!state?.mapState && !state?.returnToEvent) {
+      return; // No state to restore
+    }
+    
+    // Handle new mapState structure (from event details page)
+    if (state?.mapState && events.length > 0) {
+      const event = events.find(e => e.id === state.mapState!.selectedEventId);
+      
+      if (event) {
+        // Restore complete search context from mapState
+        if (state.mapState.searchContext) {
+          setFilters(state.mapState.searchContext.filters);
+          setSearchQuery(state.mapState.searchContext.searchQuery || '');
+          setActiveLocation(state.mapState.searchContext.activeLocation);
+          
+          if (state.mapState.searchContext.mapViewport) {
+            setMapViewport(state.mapState.searchContext.mapViewport);
+          } else {
+            setMapViewport(state.mapState.viewport);
+          }
+        } else {
+          // Use the viewport from mapState
+          setMapViewport(state.mapState.viewport);
+        }
+        
+        // Set the selected marker and expanded state
+        setSelectedMarker(state.mapState.selectedEventId);
+        setClickedMarker(state.mapState.selectedEventId);
+        setPopupInitiallyExpanded(state.mapState.isExpanded || false);
+        
+        // Trigger fly to animation
+        setTimeout(() => {
+          setFlyToKey(prev => prev + 1);
+        }, 100);
+        
+        // Clear the state to prevent re-triggering
+        navigate(location.pathname, { replace: true, state: {} });
+        return;
+      }
+    }
+    
+    // Handle legacy structure (from profile pages)  
     if (state?.returnToEvent && events.length > 0) {
       const event = events.find(e => e.id === state.returnToEvent);
       if (event && event.location) {
@@ -298,6 +352,7 @@ export function LandingPage() {
         setSelectedMarker(state.returnToEvent);
         setClickedMarker(state.returnToEvent);
         setFlyToKey(prev => prev + 1);
+        setPopupInitiallyExpanded(false); // Profile navigation doesn't expand
         
         // Clear the state to prevent re-triggering
         navigate(location.pathname, { replace: true, state: {} });
@@ -616,6 +671,7 @@ export function LandingPage() {
                 searchCenter={activeLocation || userLocation}
                 searchRadius={filters.maxDistance}
                 flyToKey={flyToKey}
+                initialExpanded={popupInitiallyExpanded}
                 currentSearchContext={{
                   filters,
                   searchQuery,
@@ -625,10 +681,12 @@ export function LandingPage() {
                 onMarkerClick={(markerId) => {
                   setClickedMarker(markerId);
                   setSelectedMarker(markerId);
+                  setPopupInitiallyExpanded(false); // Reset to collapsed when clicking new marker
                 }}
                 onMapClick={() => {
                   setClickedMarker(null);
                   setSelectedMarker(null);
+                  setPopupInitiallyExpanded(false); // Reset when clearing selection
                 }}
                 onBoundsChange={handleBoundsChange}
               />

@@ -39,6 +39,7 @@ interface MapViewProps {
   onMarkerClick?: (markerId: string) => void;
   onMapClick?: () => void;
   onBoundsChange?: (bounds: { north: number; south: number; east: number; west: number }) => void;
+  initialExpanded?: boolean; // Whether the event popup should start expanded
   // Add current search context for navigation state
   currentSearchContext?: {
     filters: any;
@@ -78,22 +79,32 @@ function createCirclePolygon(center: [number, number], radiusKm: number, points:
   };
 }
 
-export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange, currentSearchContext }: MapViewProps) {
+export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], selectedMarkerId, userLocation, searchCenter, searchRadius, flyToKey, onMarkerClick, onMapClick, onBoundsChange, currentSearchContext, initialExpanded = false }: MapViewProps) {
   const navigate = useNavigate();
   const mapRef = useRef<MapRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastFittedMarkerId = useRef<string | null>(null); // Track which marker we've already zoomed to
   const [routeData, setRouteData] = useState<any>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [countdown, setCountdown] = useState<string>('');
   const [countdownColor, setCountdownColor] = useState<string>('#666');
   const [travelTimes, setTravelTimes] = useState<{ walk: string; bike: string; car: string } | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+  const [showEventDetailsOverlay, setShowEventDetailsOverlay] = useState(false);
   const [viewport, setViewport] = useState({
     latitude: center[1],
     longitude: center[0],
     zoom: zoom
   });
+
+  // Reset expanded state when selectedMarkerId changes (new event selected)
+  useEffect(() => {
+    if (selectedMarkerId) {
+      setIsExpanded(true); // Always start expanded
+    } else {
+      setIsExpanded(false);
+    }
+  }, [selectedMarkerId]);
 
   // Update viewport when center or zoom props change (for search functionality)
   useEffect(() => {
@@ -523,10 +534,10 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
         );
       })}
 
-      {/* Event Details Card at Top-Left Corner */}
+      {/* Event Info Popup */}
       {selectedEventMarker && (
         <div className={`absolute top-0 left-0 z-10 bg-light-card/40 dark:bg-github-card/40 backdrop-blur-sm border border-light-border/20 dark:border-github-border/20 shadow-2xl flex flex-col transition-all duration-300 ${isExpanded ? 'w-[450px] max-h-[90vh]' : 'w-[380px]'}`}>
-          {/* Header */}
+          
           <div className={`p-4 flex justify-between items-start ${isExpanded ? 'border-b border-light-border dark:border-github-border' : ''}`}>
             <div className="flex-1">
               {/* Top row: Profile left, Date/Time right */}
@@ -548,100 +559,89 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                       }}
                       className="flex items-center gap-2 cursor-pointer group"
                     >
-                      <img
-                        src={selectedEventMarker.profile.avatar_url}
-                        alt={selectedEventMarker.profile.name}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-light-border dark:border-github-border group-hover:border-light-blue dark:group-hover:border-github-blue transition-colors"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-light-text dark:text-github-text group-hover:text-light-blue dark:group-hover:text-github-blue transition-colors">
-                          {selectedEventMarker.profile.name}
+                      {selectedEventMarker.profile.avatar_url ? (
+                        <img 
+                          src={selectedEventMarker.profile.avatar_url} 
+                          alt={selectedEventMarker.profile.name} 
+                          className="w-8 h-8 rounded-full object-cover group-hover:ring-2 group-hover:ring-light-blue dark:group-hover:ring-github-blue transition-all"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-light-blue dark:bg-github-blue flex items-center justify-center text-white text-xs font-semibold group-hover:ring-2 group-hover:ring-light-blue dark:group-hover:ring-github-blue transition-all">
+                          {selectedEventMarker.profile.name?.charAt(0).toUpperCase() || '?'}
                         </div>
-                      </div>
+                      )}
+                      <span className="text-sm font-semibold text-light-text dark:text-github-text group-hover:text-light-blue dark:group-hover:text-github-blue transition-colors">
+                        {selectedEventMarker.profile.name}
+                      </span>
                     </div>
                   )}
                 </div>
                 
-                {/* Date/Time Box - Right aligned */}
-                <div className="bg-red-500 text-white rounded-lg p-3 text-center min-w-[70px] shadow-lg">
-                  <div className="text-xs font-medium uppercase tracking-wide">
-                    {new Date(selectedEventMarker.date).toLocaleDateString('en-US', { month: 'short' })}
-                  </div>
-                  <div className="text-lg font-bold">
-                    {new Date(selectedEventMarker.date).getDate()}
-                  </div>
-                  <div className="text-xs font-medium mt-1">
-                    {new Date(selectedEventMarker.date).toLocaleTimeString('en-US', { 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      hour12: false
-                    })}
+                {/* Date/Time - Right aligned */}
+                <div className="text-right ml-3">
+                  <div className="flex flex-col items-end">
+                    <div className="text-sm font-semibold text-light-text dark:text-github-text">
+                      {new Date(selectedEventMarker.date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    <div className="text-xs text-light-text-muted dark:text-github-text-muted">
+                      {new Date(selectedEventMarker.date).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
               
-              {/* Event Title - Left aligned */}
-              <h2 className="m-0 mb-3 text-left text-light-text dark:text-github-text text-xl font-bold">
+              {/* Event Title */}
+              <h3 className="text-lg font-bold text-light-text dark:text-github-text mb-2">
                 {selectedEventMarker.title}
-              </h2>
+              </h3>
               
-              {/* Countdown - Left aligned */}
-              {countdown && (
-                <div className={`mb-2 px-3 py-1.5 rounded text-sm font-medium`}
-                  style={{
-                    backgroundColor: `${countdownColor}20`,
-                    borderLeft: `3px solid ${countdownColor}`,
-                    color: countdownColor
-                  }}>
-                  ⏱️ {countdown}
+              {/* Location */}
+              <div className="flex items-center gap-1 text-sm text-light-text-muted dark:text-github-text-muted mb-3">
+                <svg className="w-[14px] h-[14px]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                <span className="truncate">{selectedEventMarker.location}</span>
+              </div>
+    
+              {/* Countdown Timer - Only show if expanded */}
+              {isExpanded && countdown && (
+                <div className="mb-3 p-2 bg-light-bg/60 dark:bg-github-bg/60 rounded text-center">
+                  <div className="text-xs text-light-text-muted dark:text-github-text-muted mb-1">Event Status</div>
+                  <div className={`text-sm font-bold`} style={{ color: countdownColor }}>
+                    {countdown}
+                  </div>
                 </div>
               )}
-              <div className="flex flex-col gap-2 text-light-text-secondary dark:text-github-text-secondary text-sm">
-                {selectedEventMarker.location && (
-                  <div 
-                    className="flex items-center gap-2 cursor-pointer hover:text-light-blue dark:hover:text-github-blue"
-                    onClick={() => {
-                      if (selectedEventMarker.location) {
-                        const address = encodeURIComponent(selectedEventMarker.location);
-                        window.open(`https://www.google.com/maps/search/${address}`, '_blank');
-                      }
-                    }}
-                    title="Open in Google Maps"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF6B6B" className="min-w-4">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                    </svg>
-                    <span className="underline">{selectedEventMarker.location}</span>
-                  </div>
-                )}
-              </div>
+
+              {/* Description - Only show if expanded */}
+              {isExpanded && selectedEventMarker.description && (
+                <div className="mb-3 p-3 bg-light-bg/60 dark:bg-github-bg/60 rounded">
+                  <p className="text-sm text-light-text-secondary dark:text-github-text-secondary">
+                    {selectedEventMarker.description}
+                  </p>
+                </div>
+              )}
             </div>
             
+            {/* Close Button */}
             <button
               onClick={() => onMapClick?.()}
-              className="bg-transparent border-none text-2xl cursor-pointer p-1 ml-3 text-light-text-muted dark:text-github-text-muted hover:text-light-text dark:hover:text-github-text flex items-center justify-center transition-colors duration-200"
+              className="p-1 hover:bg-light-bg dark:hover:bg-github-bg rounded transition-colors flex-shrink-0"
             >
-              ✕
+              <svg className="w-5 h-5 text-light-text-muted dark:text-github-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 
-          {/* Expanded Content */}
-          {isExpanded && (
-            <div className="p-4 overflow-y-auto flex-1 text-light-text-secondary dark:text-github-text-secondary text-sm leading-relaxed">
-              {selectedEventMarker.description ? (
-                <p className="m-0 text-sm">
-                  {selectedEventMarker.description}
-                </p>
-              ) : (
-                <p className="m-0 text-sm text-light-text-muted dark:text-github-text-muted italic">
-                  No additional details provided for this event.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Slot Info & Actions */}
-          {selectedEventMarker.event_type && selectedEventMarker.event_type !== 'solo_performance' && (
+          {/* Slot Info & Actions - Only show if expanded */}
+          {isExpanded && selectedEventMarker.event_type && selectedEventMarker.event_type !== 'solo_performance' && (
             <div className="px-3 py-2 border-t border-light-border dark:border-github-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -661,26 +661,211 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
             </div>
           )}
 
-          {/* Read More Button */}
+          {/* Action Buttons */}
           <div className="p-3 border-t border-light-border dark:border-github-border flex gap-2">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className={`${selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' ? 'flex-1' : 'flex-1'} px-3 py-2 rounded text-sm font-semibold transition-all duration-200 ${
-                isExpanded 
-                  ? 'bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text hover:bg-light-card dark:hover:bg-github-card border border-light-border dark:border-github-border' 
-                  : 'bg-red-600 text-white hover:bg-red-700'
-              }`}
+              onClick={() => {
+                const lat = selectedEventMarker.latitude || 59.3293;
+                const lng = selectedEventMarker.longitude || 18.0649;
+                const url = `https://www.google.com/maps?q=${lat},${lng}`;
+                window.open(url, '_blank');
+              }}
+              className="px-3 py-2 rounded text-sm font-semibold transition-all duration-200 bg-green-600 text-white hover:bg-green-700"
+              title="Get directions to event location"
             >
-              {isExpanded ? '← Collapse' : 'Read More →'}
+              📍 Directions
+            </button>
+            <button
+              onClick={() => setShowEventDetailsOverlay(true)}
+              className={`${selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' ? 'flex-1' : 'flex-1'} px-3 py-2 rounded text-sm font-semibold transition-all duration-200 bg-light-blue dark:bg-github-blue text-white hover:bg-light-blue-dark dark:hover:bg-github-blue-dark`}
+            >
+              View Event Details →
             </button>
             {selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' && (
               <button
-                onClick={() => navigate(`/event/${selectedEventMarker.id}`)}
-                className="flex-1 px-3 py-2 rounded text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-all duration-200"
+                onClick={() => setShowEventDetailsOverlay(true)}
+                className="flex-1 px-3 py-2 rounded text-sm font-semibold bg-orange-600 text-white hover:bg-orange-700 transition-all duration-200"
               >
                 Request to Join
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Full Event Details Overlay */}
+      {selectedEventMarker && showEventDetailsOverlay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-light-card/95 dark:bg-github-card/95 backdrop-blur-md border border-light-border dark:border-github-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header with close button */}
+            <div className="sticky top-0 bg-light-card/95 dark:bg-github-card/95 backdrop-blur-md p-6 border-b border-light-border dark:border-github-border flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-light-text dark:text-github-text mb-2">
+                  {selectedEventMarker.title}
+                </h2>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                    selectedEventMarker.event_type === 'solo_performance' 
+                      ? 'bg-blue-500/20 text-blue-400'
+                      : selectedEventMarker.event_type === 'open_mic'
+                      ? 'bg-purple-500/20 text-purple-400'
+                      : 'bg-green-500/20 text-green-400'
+                  }`}>
+                    {selectedEventMarker.event_type === 'solo_performance' && '🎵 Solo Performance'}
+                    {selectedEventMarker.event_type === 'open_mic' && '🎤 Open Mic'}
+                    {selectedEventMarker.event_type === 'venue_booking' && '🏢 Venue Booking'}
+                  </span>
+                  {selectedEventMarker.accepting_requests && (
+                    <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
+                      🟢 Open for requests
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEventDetailsOverlay(false)}
+                className="p-2 hover:bg-light-bg dark:hover:bg-github-bg rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6 text-light-text-secondary dark:text-github-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Event Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  {/* Date and Time */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-light-text dark:text-github-text">
+                        {new Date(selectedEventMarker.date).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                      <div className="text-sm text-light-text-secondary dark:text-github-text-secondary">
+                        {new Date(selectedEventMarker.date).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-light-text dark:text-github-text">Location</div>
+                      <div className="text-sm text-light-text-secondary dark:text-github-text-secondary">
+                        {selectedEventMarker.location}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Profile */}
+                  {selectedEventMarker.profile && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div
+                        onClick={() => {
+                          if (selectedEventMarker.profile) {
+                            setShowEventDetailsOverlay(false);
+                            navigate(`/profile/${selectedEventMarker.profile.id}`);
+                          }
+                        }}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        <div className="font-semibold text-light-text dark:text-github-text">
+                          {selectedEventMarker.profile.name}
+                        </div>
+                        <div className="text-sm text-light-text-secondary dark:text-github-text-secondary">
+                          {selectedEventMarker.profile.profile_type === 'band' ? 'Band' : 'Individual Performer'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  {/* Countdown if applicable */}
+                  {countdown && (
+                    <div className="p-4 bg-light-bg dark:bg-github-bg rounded-lg">
+                      <div className="font-semibold text-light-text dark:text-github-text mb-1">Event Status</div>
+                      <div className={`text-lg font-bold`} style={{ color: countdownColor }}>
+                        {countdown}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Slot Information */}
+                  {selectedEventMarker.event_type !== 'solo_performance' && selectedEventMarker.max_performers && (
+                    <div className="p-4 bg-light-bg dark:bg-github-bg rounded-lg">
+                      <div className="font-semibold text-light-text dark:text-github-text mb-2">Available Slots</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-2xl font-bold text-light-text dark:text-github-text">
+                          {(selectedEventMarker.max_performers || 0) - (selectedEventMarker.accepted_requests_count || 0)} / {selectedEventMarker.max_performers}
+                        </div>
+                        <div className="text-sm text-light-text-secondary dark:text-github-text-secondary">
+                          slots remaining
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedEventMarker.description && (
+                <div>
+                  <h3 className="font-semibold text-light-text dark:text-github-text mb-2">Description</h3>
+                  <p className="text-light-text-secondary dark:text-github-text-secondary">
+                    {selectedEventMarker.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-light-border dark:border-github-border">
+                <button
+                  onClick={() => setShowEventDetailsOverlay(false)}
+                  className="flex-1 py-3 px-4 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg font-semibold text-light-text dark:text-github-text hover:bg-light-card dark:hover:bg-github-card transition-all"
+                >
+                  Close
+                </button>
+                {selectedEventMarker.accepting_requests && selectedEventMarker.event_type !== 'solo_performance' && (
+                  <button
+                    onClick={() => {
+                      setShowEventDetailsOverlay(false);
+                      navigate(`/event/${selectedEventMarker.id}`);
+                    }}
+                    className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all"
+                  >
+                    Request to Join
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

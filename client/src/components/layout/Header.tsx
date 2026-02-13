@@ -52,8 +52,7 @@ export function Header({ isDarkMode, onToggleDarkMode }: HeaderProps) {
           onClick={() => navigate('/')}
           className="text-xl font-bold cursor-pointer flex items-center gap-2 text-light-text dark:text-github-text hover:text-light-blue dark:hover:text-github-blue"
         >
-          <span className="text-2xl">🎵</span>
-          <span>Busker</span>
+          <span style={{ fontFamily: '"Tan Pearl", serif', color: '#D2B48C', letterSpacing:'4px' }}>BUSKER</span>
         </div>
 
         {/* Mobile: Dark mode + Hamburger */}

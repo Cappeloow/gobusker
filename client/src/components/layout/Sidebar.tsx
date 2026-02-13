@@ -131,10 +131,12 @@ export function Sidebar({ isDarkMode, onToggleDarkMode }: SidebarProps) {
           `}
           onClick={() => navigate('/')}
         >
-          <span className="text-2xl">🎵</span>
           {isExpanded && (
-            <span className="text-lg font-bold text-light-text dark:text-github-text">
-              Busker
+            <span 
+              className="text-lg font-bold"
+              style={{ fontFamily: '"Tan Pearl", serif', color: '#D2B48C', letterSpacing:'3px' }}
+            >
+              BUSKER
             </span>
           )}
         </div>
@@ -271,59 +273,49 @@ export function Sidebar({ isDarkMode, onToggleDarkMode }: SidebarProps) {
           )}
 
           {/* Dashboard & Create Event - auth required */}
-          <button
-            onClick={() => {
-              if (!isLoggedIn) {
-                setAuthModalOpen(true);
-                return;
-              }
-              navigate('/dashboard');
-            }}
-            className={`
-              w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm
-              transition-all duration-200 mb-0.5
-              ${isExpanded ? 'justify-start' : 'justify-center'}
-              ${location.pathname === '/dashboard'
-                ? 'bg-light-blue/10 dark:bg-github-blue/10 text-light-blue dark:text-github-blue font-semibold hover:bg-light-blue/20 dark:hover:bg-github-blue/20'
-                : !isLoggedIn
-                  ? 'text-light-text-muted dark:text-github-text-muted opacity-50 cursor-not-allowed'
-                  : 'text-light-text-secondary dark:text-github-text-secondary hover:bg-light-bg dark:hover:bg-github-bg hover:text-light-text dark:hover:text-github-text'
-              }
-            `}
-            title={!isExpanded ? 'Dashboard' : undefined}
-          >
-            <LayoutDashboard size={20} />
-            {isExpanded && <span>Dashboard</span>}
-          </button>
+          {isLoggedIn && (
+            <>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className={`
+                  w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm
+                  transition-all duration-200 mb-0.5
+                  ${isExpanded ? 'justify-start' : 'justify-center'}
+                  ${location.pathname === '/dashboard'
+                    ? 'bg-light-blue/10 dark:bg-github-blue/10 text-light-blue dark:text-github-blue font-semibold hover:bg-light-blue/20 dark:hover:bg-github-blue/20'
+                    : 'text-light-text-secondary dark:text-github-text-secondary hover:bg-light-bg dark:hover:bg-github-bg hover:text-light-text dark:hover:text-github-text'
+                  }
+                `}
+                title={!isExpanded ? 'Dashboard' : undefined}
+              >
+                <LayoutDashboard size={20} />
+                {isExpanded && <span>Dashboard</span>}
+              </button>
 
-          <button
-            onClick={() => {
-              if (!isLoggedIn) {
-                setAuthModalOpen(true);
-                return;
-              }
-              if (activeProfile) {
-                navigate(`/create-event?profile=${activeProfile.id}`);
-              } else {
-                navigate('/create-event');
-              }
-            }}
-            className={`
-              w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm
-              transition-all duration-200 mb-0.5
-              ${isExpanded ? 'justify-start' : 'justify-center'}
-              ${location.pathname === '/create-event'
-                ? 'bg-light-blue/10 dark:bg-github-blue/10 text-light-blue dark:text-github-blue font-semibold hover:bg-light-blue/20 dark:hover:bg-github-blue/20'
-                : !isLoggedIn
-                  ? 'text-light-text-muted dark:text-github-text-muted opacity-50 cursor-not-allowed'
-                  : 'text-light-text-secondary dark:text-github-text-secondary hover:bg-light-bg dark:hover:bg-github-bg hover:text-light-text dark:hover:text-github-text'
-              }
-            `}
-            title={!isExpanded ? 'Create Event' : undefined}
-          >
-            <Calendar size={20} />
-            {isExpanded && <span>Create Event</span>}
-          </button>
+              <button
+                onClick={() => {
+                  if (activeProfile) {
+                    navigate(`/create-event?profile=${activeProfile.id}`);
+                  } else {
+                    navigate('/create-event');
+                  }
+                }}
+                className={`
+                  w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm
+                  transition-all duration-200 mb-0.5
+                  ${isExpanded ? 'justify-start' : 'justify-center'}
+                  ${location.pathname === '/create-event'
+                    ? 'bg-light-blue/10 dark:bg-github-blue/10 text-light-blue dark:text-github-blue font-semibold hover:bg-light-blue/20 dark:hover:bg-github-blue/20'
+                    : 'text-light-text-secondary dark:text-github-text-secondary hover:bg-light-bg dark:hover:bg-github-bg hover:text-light-text dark:hover:text-github-text'
+                  }
+                `}
+                title={!isExpanded ? 'Create Event' : undefined}
+              >
+                <Calendar size={20} />
+                {isExpanded && <span>Create Event</span>}
+              </button>
+            </>
+          )}
         </nav>
 
         {/* Bottom Section */}

@@ -5,6 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../../styles/datepicker.css';
 import { MapView } from '../map/MapView';
 import { eventService } from '../../services/eventService';
+import { MapSkeleton } from '../ui/SpecificSkeletons';
 import type { Event } from '../../types/models';
 
 interface MapFilters {
@@ -622,8 +623,8 @@ export function LandingPage() {
         {/* Map Section */}
         <div className="flex-1 bg-light-bg dark:bg-github-bg relative">
           {loading ? (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border p-5 rounded-lg shadow-xl z-10 text-light-text dark:text-github-text">
-              Loading events...
+            <div className="w-full h-full p-4">
+              <MapSkeleton />
             </div>
           ) : (
             <>

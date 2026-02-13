@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { eventService } from '../../services/eventService';
+import { EventCardSkeleton } from '../ui/SpecificSkeletons';
 import type { Event } from '../../types/models';
 import { Calendar, MapPin, Clock, Users, ChevronRight } from 'lucide-react';
 
@@ -69,8 +70,10 @@ export function ProfileEvents({ profileId, isOwner }: ProfileEventsProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-light-blue dark:border-github-blue border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-4">
+        {Array.from({ length: 3 }, (_, i) => (
+          <EventCardSkeleton key={i} />
+        ))}
       </div>
     );
   }

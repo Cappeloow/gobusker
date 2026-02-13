@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
+import { Skeleton } from './ui/Skeleton';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,10 +15,15 @@ export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRou
   // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-tan-pearl to-sage-green">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tan-dark mx-auto mb-4"></div>
-          <p className="text-tan-dark">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-tan-pearl to-sage-green flex items-center justify-center">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-8 shadow-xl max-w-sm w-full mx-4">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <Skeleton className="w-12 h-12 rounded-full" />
+            </div>
+            <Skeleton className="h-6 w-48 mx-auto mb-2" />
+            <Skeleton className="h-4 w-32 mx-auto" />
+          </div>
         </div>
       </div>
     );

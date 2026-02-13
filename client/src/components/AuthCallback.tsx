@@ -47,13 +47,14 @@ export function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh' 
-    }}>
-      <div>Processing login...</div>
+    <div className="min-h-screen bg-gradient-to-br from-tan-pearl to-sage-green flex items-center justify-center">
+      <div className="bg-white/90 backdrop-blur-sm rounded-lg p-8 shadow-xl max-w-sm w-full mx-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tan-dark mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-tan-dark mb-2">Signing you in...</h2>
+          <p className="text-tan-darker">Please wait while we process your authentication.</p>
+        </div>
+      </div>
     </div>
   );
 }

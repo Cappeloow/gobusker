@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Skeleton } from './Skeleton';
 
 interface ErrorMessageProps {
   error?: string | Error | null;
@@ -73,7 +74,23 @@ export function ErrorMessage({
   );
 }
 
-export function LoadingMessage({ message = "Loading..." }: { message?: string }) {
+export function LoadingMessage({ 
+  message = "Loading...",
+  showSkeleton = false 
+}: { 
+  message?: string;
+  showSkeleton?: boolean;
+}) {
+  if (showSkeleton) {
+    return (
+      <div className="space-y-3 p-4">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center p-4">
       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tan-dark mr-3"></div>

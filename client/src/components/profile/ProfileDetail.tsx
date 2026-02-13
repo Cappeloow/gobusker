@@ -7,6 +7,7 @@ import { ProfileQRCode } from './ProfileQRCode';
 import { TipWall } from './TipWall';
 import { ProfileEvents } from './ProfileEvents';
 import { BandMembersManager } from '../BandMembersManager';
+import { ProfileDetailSkeleton } from '../ui/SpecificSkeletons';
 import { ShoppingBag, Edit2, Save, X, Plus, ChevronLeft } from 'lucide-react';
 
 export function ProfileDetail() {
@@ -127,11 +128,7 @@ export function ProfileDetail() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card flex items-center justify-center">
-        <div className="text-github-text-secondary text-xl">Loading...</div>
-      </div>
-    );
+    return <ProfileDetailSkeleton />;
   }
 
   if (error || !profile) {

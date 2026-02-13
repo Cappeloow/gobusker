@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { DollarSign, History } from 'lucide-react';
+import { TransactionSkeleton } from './ui/SpecificSkeletons';
 import type { Profile } from '../types/models';
 import { WithdrawalWidget } from './WithdrawalWidget';
 
@@ -246,8 +247,10 @@ export function Wallet({ userProfiles }: WalletProps) {
       {/* Transactions List */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="text-center py-8 text-light-text-secondary dark:text-github-text-secondary">
-            Loading transactions...
+          <div className="space-y-3">
+            {Array.from({ length: 4 }, (_, i) => (
+              <TransactionSkeleton key={i} />
+            ))}
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="text-center py-8 text-light-text-secondary dark:text-github-text-secondary">

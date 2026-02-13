@@ -6,6 +6,7 @@ import { profileService } from '../services/profileService';
 import { eventService } from '../services/eventService';
 import { createUserFriendlyError } from '../lib/errorHandling';
 import { ErrorMessage, LoadingMessage } from './ui/ErrorMessage';
+import { DashboardSkeleton } from './ui/SpecificSkeletons';
 import { Wallet } from './Wallet';
 import { Mail, Plus, Check, X, Calendar, MapPin } from 'lucide-react';
 
@@ -224,13 +225,7 @@ export function Dashboard() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
-        <div className="max-w-5xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
-          <LoadingMessage message="Loading your dashboard..." />
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

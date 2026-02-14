@@ -206,31 +206,31 @@ export function Wallet({ userProfiles }: WalletProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-light-text dark:text-github-text mb-6 flex items-center gap-3">
-        <DollarSign size={28} />
+      <h2 className="text-xl sm:text-2xl font-bold text-light-text dark:text-github-text mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+        <DollarSign size={24} className="sm:w-7 sm:h-7" />
         Financial Overview
       </h2>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-8">
+      <div className="grid grid-cols-1 gap-4 mb-6 sm:mb-8">
         {/* Total Saldo */}
-        <div className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-6">
+        <div className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-light-text-secondary dark:text-github-text-secondary text-sm font-medium">Total Saldo</span>
-            <span className="text-2xl">💰</span>
+            <span className="text-xl sm:text-2xl">💰</span>
           </div>
-          <p className="text-4xl font-bold text-green-600 dark:text-green-400">${totalSaldo.toFixed(2)}</p>
+          <p className="text-2xl sm:text-4xl font-bold text-green-600 dark:text-green-400">${totalSaldo.toFixed(2)}</p>
           <p className="text-light-text-secondary dark:text-github-text-secondary text-xs mt-2">Available balance from tips</p>
         </div>
       </div>
 
       {/* Filter Buttons */}
-      <div className="mb-6 flex gap-2 flex-wrap">
+      <div className="mb-4 sm:mb-6 flex gap-2 flex-wrap">
         {(['all', 'tip', 'order', 'withdrawal'] as const).map((filterType) => (
           <button
             key={filterType}
             onClick={() => setFilter(filterType)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base touch-target ${
               filter === filterType
                 ? 'bg-light-blue dark:bg-github-blue text-white dark:text-github-text border border-light-blue dark:border-github-blue'
                 : 'bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border text-light-text-secondary dark:text-github-text-secondary hover:border-light-blue dark:hover:border-github-blue'
@@ -261,38 +261,42 @@ export function Wallet({ userProfiles }: WalletProps) {
           filteredTransactions.map((tx) => (
             <div
               key={tx.id}
-              className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-4 flex items-center justify-between hover:border-light-blue dark:hover:border-github-blue transition-all duration-200"
+              className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-3 sm:p-4 hover:border-light-blue dark:hover:border-github-blue transition-all duration-200"
             >
-              <div className="flex items-center gap-4 flex-1">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl border ${getTransactionColor(tx.type)}`}>
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-lg sm:text-xl border ${getTransactionColor(tx.type)} flex-shrink-0`}>
                   {getTransactionIcon(tx.type)}
                 </div>
-                <div className="flex-1">
-                  <p className="text-light-text dark:text-github-text font-medium">{tx.description}</p>
-                  <p className="text-light-text-secondary dark:text-github-text-secondary text-xs">
-                    {tx.profile_name} • {new Date(tx.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-light-text dark:text-github-text font-medium text-sm sm:text-base line-clamp-1">{tx.description}</p>
+                      <p className="text-light-text-secondary dark:text-github-text-secondary text-xs">
+                        {tx.profile_name} • {new Date(tx.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-light-text dark:text-github-text font-bold text-sm sm:text-lg ${
+                        tx.amount < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                      }`}>
+                        {tx.amount < 0 ? '−$' : '+$'}{Math.abs(tx.amount).toFixed(2)}
+                      </p>
+                      <p className={`text-xs font-semibold ${
+                        tx.status === 'completed' ? 'text-green-600 dark:text-green-400' :
+                        tx.status === 'pending' ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-red-600 dark:text-red-400'
+                      }`}>
+                        {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <p className={`text-light-text dark:text-github-text font-bold text-lg ${
-                  tx.amount < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
-                }`}>
-                  {tx.amount < 0 ? '−$' : '+$'}{Math.abs(tx.amount).toFixed(2)}
-                </p>
-                <p className={`text-xs font-semibold ${
-                  tx.status === 'completed' ? 'text-green-600 dark:text-green-400' :
-                  tx.status === 'pending' ? 'text-yellow-600 dark:text-yellow-400' :
-                  'text-red-600 dark:text-red-400'
-                }`}>
-                  {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-                </p>
               </div>
             </div>
           ))

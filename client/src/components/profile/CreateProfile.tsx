@@ -150,34 +150,34 @@ export function CreateProfile() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {/* Eventmaker */}
             <button
               onClick={() => handleRoleSelect('eventmaker')}
-              className="p-6 border-2 border-github-border rounded-lg hover:border-github-blue transition text-left hover:bg-github-bg/50"
+              className="p-4 sm:p-6 border-2 border-github-border rounded-lg hover:border-github-blue transition text-left hover:bg-github-bg/50 touch-target"
             >
-              <div className="text-3xl mb-2">📋</div>
-              <h3 className="text-xl font-bold text-github-text">Eventmaker</h3>
+              <div className="text-2xl sm:text-3xl mb-2">📋</div>
+              <h3 className="text-lg sm:text-xl font-bold text-github-text">Eventmaker</h3>
               <p className="text-github-text-secondary text-sm mt-2">Organize and host events</p>
             </button>
 
             {/* Busker */}
             <button
               onClick={() => handleRoleSelect('busker')}
-              className="p-6 border-2 border-github-border rounded-lg hover:border-github-blue transition text-left hover:bg-github-bg/50"
+              className="p-4 sm:p-6 border-2 border-github-border rounded-lg hover:border-github-blue transition text-left hover:bg-github-bg/50 touch-target"
             >
-              <div className="text-3xl mb-2">🎵</div>
-              <h3 className="text-xl font-bold text-github-text">Busker</h3>
+              <div className="text-2xl sm:text-3xl mb-2">🎵</div>
+              <h3 className="text-lg sm:text-xl font-bold text-github-text">Busker</h3>
               <p className="text-github-text-secondary text-sm mt-2">Musician, performer, artist</p>
             </button>
 
             {/* Viewer */}
             <button
               onClick={() => handleRoleSelect('viewer')}
-              className="p-6 border-2 border-github-border rounded-lg hover:border-github-blue transition text-left hover:bg-github-bg/50"
+              className="p-4 sm:p-6 border-2 border-github-border rounded-lg hover:border-github-blue transition text-left hover:bg-github-bg/50 touch-target"
             >
-              <div className="text-3xl mb-2">👁️</div>
-              <h3 className="text-xl font-bold text-github-text">Viewer</h3>
+              <div className="text-2xl sm:text-3xl mb-2">👁️</div>
+              <h3 className="text-lg sm:text-xl font-bold text-github-text">Viewer</h3>
               <p className="text-github-text-secondary text-sm mt-2">Browse and enjoy events</p>
             </button>
           </div>
@@ -190,9 +190,9 @@ export function CreateProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-github-bg to-github-card p-4">
       <div className="max-w-3xl mx-auto bg-github-card border border-github-border rounded-lg p-8 shadow-xl">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-github-text">Create Your Profile</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-github-text">Create Your Profile</h2>
             <p className="text-github-text-secondary text-sm mt-1 capitalize">Step 2: {form.role} details</p>
           </div>
           <button
@@ -200,7 +200,7 @@ export function CreateProfile() {
               setStep('role');
               setForm(prev => ({ ...prev, role: '' as ProfileRole | '' }));
             }}
-            className="text-github-text-secondary hover:text-github-text text-sm"
+            className="text-github-text-secondary hover:text-github-text text-sm sm:text-base touch-target px-3 py-2 -mx-3 -my-2 rounded-lg hover:bg-github-bg transition-colors"
           >
             ← Change Role
           </button>
@@ -309,7 +309,7 @@ export function CreateProfile() {
                   Event Types You Host
                 </label>
                 {form.event_types.map((eventType, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
+                  <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                     <input
                       type="text"
                       value={eventType}
@@ -321,7 +321,7 @@ export function CreateProfile() {
                       <button
                         type="button"
                         onClick={() => removeEventType(index)}
-                        className="px-3 py-2 bg-red-900/20 border border-red-700 rounded-lg text-red-300 hover:bg-red-900/40"
+                        className="px-3 py-2 bg-red-900/20 border border-red-700 rounded-lg text-red-300 hover:bg-red-900/40 touch-target text-sm sm:text-base whitespace-nowrap"
                       >
                         Remove
                       </button>
@@ -437,7 +437,7 @@ export function CreateProfile() {
                       Genres
                     </label>
                     {form.genres.map((genre, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
+                      <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                         <input
                           type="text"
                           value={genre}
@@ -449,7 +449,7 @@ export function CreateProfile() {
                           <button
                             type="button"
                             onClick={() => removeGenre(index)}
-                            className="px-3 py-2 bg-red-900/20 border border-red-700 rounded-lg text-red-300 hover:bg-red-900/40"
+                            className="px-3 py-2 bg-red-900/20 border border-red-700 rounded-lg text-red-300 hover:bg-red-900/40 touch-target text-sm sm:text-base whitespace-nowrap"
                           >
                             Remove
                           </button>
@@ -470,7 +470,7 @@ export function CreateProfile() {
                       Instruments
                     </label>
                     {form.instruments.map((instrument, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
+                      <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                         <input
                           type="text"
                           value={instrument}
@@ -482,7 +482,7 @@ export function CreateProfile() {
                           <button
                             type="button"
                             onClick={() => removeInstrument(index)}
-                            className="px-3 py-2 bg-red-900/20 border border-red-700 rounded-lg text-red-300 hover:bg-red-900/40"
+                            className="px-3 py-2 bg-red-900/20 border border-red-700 rounded-lg text-red-300 hover:bg-red-900/40 touch-target text-sm sm:text-base whitespace-nowrap"
                           >
                             Remove
                           </button>

@@ -229,30 +229,30 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
-      <div className="max-w-5xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-8 shadow-xl">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-light-text dark:text-github-text mb-2">Your Dashboard</h1>
-            <p className="text-light-text-secondary dark:text-github-text-secondary">Logged in as: <span className="text-light-blue dark:text-github-blue">{userEmail}</span></p>
+    <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-2 sm:p-4">
+      <div className="max-w-5xl mx-auto bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-4 sm:p-8 shadow-xl">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-4xl font-bold text-light-text dark:text-github-text mb-2 truncate">Your Dashboard</h1>
+            <p className="text-sm sm:text-base text-light-text-secondary dark:text-github-text-secondary truncate">Logged in as: <span className="text-light-blue dark:text-github-blue">{userEmail}</span></p>
           </div>
           {/* Create Profile Button */}
-          <div className="relative" ref={createMenuRef}>
+          <div className="relative flex-shrink-0" ref={createMenuRef}>
             <button
               onClick={() => setShowCreateMenu(!showCreateMenu)}
-              className="p-3 rounded-lg bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white transition-all duration-200"
+              className="p-2 sm:p-3 rounded-lg bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white transition-all duration-200 w-full sm:w-auto"
               title="Create Profile"
             >
               <Plus size={20} />
             </button>
             {showCreateMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg shadow-xl z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg shadow-xl z-50 overflow-hidden">
                 <button
                   onClick={() => {
                     navigate('/create-profile');
                     setShowCreateMenu(false);
                   }}
-                  className="w-full px-4 py-3 text-left text-sm text-light-text dark:text-github-text hover:bg-light-bg dark:hover:bg-github-bg transition-colors flex items-center gap-2"
+                  className="w-full px-3 sm:px-4 py-3 text-left text-sm text-light-text dark:text-github-text hover:bg-light-bg dark:hover:bg-github-bg transition-colors flex items-center gap-2"
                 >
                   <span>🎵</span>
                   <span>Create New Profile</span>
@@ -300,10 +300,10 @@ export function Dashboard() {
         )}
         
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-light-border dark:border-github-border mb-8">
+        <div className="flex gap-1 sm:gap-2 border-b border-light-border dark:border-github-border mb-6 sm:mb-8 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300">
           <button
             onClick={() => setActiveTab('profiles')}
-            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+            className={`px-3 sm:px-6 py-3 font-semibold transition-all duration-200 border-b-2 whitespace-nowrap text-sm sm:text-base ${
               activeTab === 'profiles'
                 ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
                 : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
@@ -313,7 +313,7 @@ export function Dashboard() {
           </button>
           <button
             onClick={() => setActiveTab('wallet')}
-            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+            className={`px-3 sm:px-6 py-3 font-semibold transition-all duration-200 border-b-2 whitespace-nowrap text-sm sm:text-base ${
               activeTab === 'wallet'
                 ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
                 : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
@@ -323,7 +323,7 @@ export function Dashboard() {
           </button>
           <button
             onClick={() => setActiveTab('requests')}
-            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 flex items-center gap-2 ${
+            className={`px-3 sm:px-6 py-3 font-semibold transition-all duration-200 border-b-2 flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
               activeTab === 'requests'
                 ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
                 : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
@@ -331,14 +331,14 @@ export function Dashboard() {
           >
             📥 Requests
             {pendingRequests.length > 0 && (
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-red-500 text-white text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
                 {pendingRequests.length}
               </span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('invites')}
-            className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 flex items-center gap-2 ${
+            className={`px-3 sm:px-6 py-3 font-semibold transition-all duration-200 border-b-2 flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
               activeTab === 'invites'
                 ? 'text-light-blue dark:text-github-blue border-light-blue dark:border-github-blue'
                 : 'text-light-text-secondary dark:text-github-text-secondary border-transparent hover:text-light-text dark:hover:text-github-text'
@@ -346,7 +346,7 @@ export function Dashboard() {
           >
             🎵 Event Invites
             {pendingEventInvites.length > 0 && (
-              <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-green-500 text-white text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
                 {pendingEventInvites.length}
               </span>
             )}

@@ -205,11 +205,11 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-github-text flex items-center gap-2 mb-2">
-          <Users size={24} />
+        <h2 className="text-xl sm:text-2xl font-bold text-github-text flex items-center gap-2 mb-2">
+          <Users size={20} className="sm:w-6 sm:h-6" />
           Band Members
         </h2>
-        <p className="text-github-text-secondary">Manage who has access to this profile and revenue splits</p>
+        <p className="text-sm sm:text-base text-github-text-secondary">Manage who has access to this profile and revenue splits</p>
       </div>
 
       {/* Messages */}
@@ -233,22 +233,22 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
       )}
 
       {/* Current Members */}
-      <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-light-text dark:text-github-text mb-4">Current Members ({members.length})</h3>
+      <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-light-text dark:text-github-text mb-4">Current Members ({members.length})</h3>
         {members.length === 0 ? (
-          <p className="text-light-text-secondary dark:text-github-text-secondary">No members yet. Invite someone to get started!</p>
+          <p className="text-sm sm:text-base text-light-text-secondary dark:text-github-text-secondary">No members yet. Invite someone to get started!</p>
         ) : (
           <div className="space-y-3">
             {members.map(member => (
-              <div key={member.id} className="p-4 bg-light-bg dark:bg-github-bg rounded-lg border border-light-border dark:border-github-border">
+              <div key={member.id} className="p-3 sm:p-4 bg-light-bg dark:bg-github-bg rounded-lg border border-light-border dark:border-github-border">
                 {isOwner ? (
                   // Full details for members/owners
                   <>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-light-text dark:text-github-text font-medium">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                      <p className="text-sm sm:text-base text-light-text dark:text-github-text font-medium">
                         {member.alias || (member.role === 'owner' ? '👤 Profile Owner' : 'Band Member')}
                       </p>
-                      <span className={`inline-block px-2 py-1 text-xs rounded font-medium ${
+                      <span className={`inline-block px-2 py-1 text-xs rounded font-medium self-start sm:self-auto ${
                         member.role === 'owner' ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' :
                         member.role === 'admin' ? 'bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 text-[#B8956F] dark:text-[#D2B48C]' :
                         'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300'
@@ -262,8 +262,8 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                     {member.description && (
                       <p className="text-sm text-light-text-secondary dark:text-github-text-secondary mb-2">{member.description}</p>
                     )}
-                    <div className="flex items-center justify-between text-xs text-light-text-secondary dark:text-github-text-secondary pt-2 border-t border-light-border dark:border-github-border">
-                      <span>ID: {member.user_id.substring(0, 8)}...</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-light-text-secondary dark:text-github-text-secondary pt-2 border-t border-light-border dark:border-github-border">
+                      <span className="break-all sm:break-normal">ID: {member.user_id.substring(0, 8)}...</span>
                       <span className="font-medium text-light-text dark:text-github-text">Revenue: {member.revenue_share.toFixed(1)}%</span>
                     </div>
                   </>
@@ -292,20 +292,20 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
 
       {/* Pending Invites */}
       {invites.length > 0 && (
-        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-light-text dark:text-github-text mb-4">Pending Invites ({invites.length})</h3>
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-light-text dark:text-github-text mb-4">Pending Invites ({invites.length})</h3>
           <div className="space-y-2">
             {invites.map(invite => (
-              <div key={invite.id} className="flex items-center justify-between p-3 bg-light-bg dark:bg-github-bg rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Mail size={16} className="text-yellow-400" />
-                    <p className="text-github-text font-medium">{invite.invitee_email}</p>
-                    <span className="text-xs bg-yellow-900/30 text-yellow-300 px-2 py-1 rounded">
+              <div key={invite.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-light-bg dark:bg-github-bg rounded-lg">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Mail size={16} className="text-yellow-400 flex-shrink-0" />
+                    <p className="text-sm sm:text-base text-github-text font-medium truncate">{invite.invitee_email}</p>
+                    <span className="text-xs bg-yellow-900/30 text-yellow-300 px-2 py-1 rounded flex-shrink-0">
                       Pending
                     </span>
                   </div>
-                  <p className="text-sm text-github-text-secondary mt-1">
+                  <p className="text-sm text-github-text-secondary">
                     Revenue Share: {invite.revenue_share.toFixed(1)}%
                   </p>
                 </div>
@@ -313,7 +313,7 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                 {isOwner && (
                   <button
                     onClick={() => handleCancelInvite(invite.id)}
-                    className="ml-2 p-2 hover:bg-red-900/20 rounded-lg transition-colors text-red-400"
+                    className="self-start sm:self-center p-2 hover:bg-red-900/20 rounded-lg transition-colors text-red-400 touch-target"
                     title="Cancel invitation"
                   >
                     <Trash2 size={18} />
@@ -327,17 +327,17 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
 
       {/* Send Invite Form */}
       {isOwner && (
-        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-4 sm:p-6">
           {!showInviteForm ? (
             <button
               onClick={() => setShowInviteForm(true)}
-              className="w-full px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-medium rounded-lg transition-colors"
+              className="w-full px-4 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark text-white dark:text-github-text font-medium rounded-lg transition-colors touch-target"
             >
               + Invite Band Member
             </button>
           ) : (
             <form onSubmit={handleSendInvite} className="space-y-4">
-              <h3 className="text-lg font-semibold text-light-text dark:text-github-text">Invite a New Member</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-light-text dark:text-github-text">Invite a New Member</h3>
 
               <div>
                 <label className="block text-sm font-medium text-light-text-secondary dark:text-github-text-secondary mb-2">
@@ -371,18 +371,18 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark disabled:opacity-50 text-white dark:text-github-text font-medium rounded-lg transition-colors"
+                  className="w-full sm:flex-1 px-4 py-3 bg-light-blue dark:bg-github-blue hover:bg-light-blue-dark dark:hover:bg-github-blue-dark disabled:opacity-50 text-white dark:text-github-text font-medium rounded-lg transition-colors touch-target"
                 >
                   {isLoading ? 'Sending...' : 'Send Invite'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowInviteForm(false)}
-                  className="flex-1 px-4 py-2 bg-light-border dark:bg-github-border hover:bg-light-bg dark:hover:bg-github-bg text-light-text dark:text-github-text font-medium rounded-lg transition-colors"
+                  className="w-full sm:flex-1 px-4 py-3 bg-light-border dark:bg-github-border hover:bg-light-bg dark:hover:bg-github-bg text-light-text dark:text-github-text font-medium rounded-lg transition-colors touch-target"
                 >
                   Cancel
                 </button>
@@ -393,9 +393,9 @@ export function BandMembersManager({ profileId, isOwner }: BandMembersManagerPro
       )}
 
       {/* Info Box */}
-      <div className="p-4 bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 border border-[#D2B48C]/30 dark:border-[#B8956F] rounded-lg">
-        <h4 className="font-semibold text-[#B8956F] dark:text-[#D2B48C] mb-2">💡 How Revenue Distribution Works</h4>
-        <ul className="text-sm text-[#B8956F] dark:text-[#D2B48C] space-y-1">
+      <div className="p-3 sm:p-4 bg-[#D2B48C]/10 dark:bg-[#D2B48C]/20 border border-[#D2B48C]/30 dark:border-[#B8956F] rounded-lg">
+        <h4 className="font-semibold text-[#B8956F] dark:text-[#D2B48C] mb-2 text-sm sm:text-base">💡 How Revenue Distribution Works</h4>
+        <ul className="text-xs sm:text-sm text-[#B8956F] dark:text-[#D2B48C] space-y-1">
           <li>• When someone sends a tip, it's automatically split among all band members</li>
           <li>• Each member receives their percentage of the tip based on their revenue share</li>
           <li>• Example: If you set a member to 30%, they get 30% of every tip to this profile</li>

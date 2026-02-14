@@ -527,7 +527,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className={`fixed inset-0 top-14 md:top-0 flex flex-col transition-all duration-300 ${sidebarExpanded ? 'md:left-56' : 'md:left-16'}`}>
+    <div className={`fixed inset-0 top-14 md:top-0 flex flex-col transition-all duration-300 ${sidebarExpanded ? 'md:left-56' : 'md:left-16'} safe-area-top safe-area-bottom`}>
       
       {/* Date Range Modal with Calendar */}
       {showDateModal && (
@@ -1148,9 +1148,78 @@ export function LandingPage() {
                 </div>
               )}
 
-              {/* Results count */}
-              <div className="text-center py-4 text-light-text-secondary dark:text-github-text-secondary text-sm">
-                {filteredEvents.length} performances found
+              {/* Results and Event Cards */}
+              <div className="space-y-3">
+                <div className="text-center py-2 text-light-text-secondary dark:text-github-text-secondary text-sm font-medium">
+                  {filteredEvents.length} performances found
+                </div>
+                
+                {/* Mobile Event Cards */}
+                {filteredEvents.length > 0 && (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {filteredEvents.slice(0, 20).map((event) => {
+                      const locationForDistance = activeLocation || userLocation;
+                      const distance = locationForDistance && event.location
+                        ? calculateDistance(
+                            locationForDistance.latitude,
+                            locationForDistance.longitude,
+                            event.location.latitude,
+                            event.location.longitude
+                          )
+                        : null;
+
+                      return (
+                        <div
+                          key={event.id}
+                          onClick={() => {
+                            setClickedMarker(event.id);
+                            setSelectedMarker(event.id);
+                            setPopupInitiallyExpanded(true);
+                            setSheetHeight(32); // Collapse sheet to show map
+                          }}
+                          className="bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-lg p-3 cursor-pointer hover:border-light-blue dark:hover:border-github-blue transition-all touch-target"
+                        >
+                          <div className="flex items-start gap-3">
+                            <img 
+                              src={event.profile?.avatar_url || 'https://via.placeholder.com/40/2d3748/e2e8f0?text=?'}
+                              alt={`${event.profile?.name || 'Unknown'}`}
+                              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-light-text dark:text-github-text text-sm line-clamp-1">
+                                {event.title}
+                              </h3>
+                              <p className="text-xs text-light-text-secondary dark:text-github-text-secondary mb-2 line-clamp-1">
+                                {event.profile?.name || 'Unknown Artist'}
+                              </p>
+                              <div className="flex items-center justify-between text-xs text-light-text-secondary dark:text-github-text-secondary">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <span className="flex items-center gap-1">
+                                    📅 {new Date(event.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    ⏰ {new Date(event.start_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                  </span>
+                                </div>
+                                {distance !== null && (
+                                  <span className="text-light-blue dark:text-github-blue font-medium flex-shrink-0 ml-2">
+                                    {distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)}km`}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {filteredEvents.length > 20 && (
+                      <div className="text-center py-2 text-light-text-secondary dark:text-github-text-secondary text-xs">
+                        Showing first 20 results. Use filters to narrow down.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

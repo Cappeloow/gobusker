@@ -149,9 +149,9 @@ export function ProfileDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-4">
-      {/* Back Button - Fixed to the left */}
-      <div className="max-w-5xl mx-auto relative">
+    <div className="min-h-screen bg-gradient-to-br from-light-bg to-light-card dark:from-github-bg dark:to-github-card p-2 sm:p-4">
+      {/* Mobile Back Button - Always visible on mobile */}
+      <div className="max-w-5xl mx-auto mb-4 sm:mb-0">
         <button
           onClick={() => {
             const state = location.state as { 
@@ -172,24 +172,25 @@ export function ProfileDetail() {
               navigate('/dashboard');
             }
           }}
-          className="absolute -left-16 top-0 p-2 rounded-lg hover:bg-light-bg dark:hover:bg-github-bg text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text transition-all duration-200"
+          className="sm:absolute sm:-left-16 sm:top-0 p-2 rounded-lg hover:bg-light-bg dark:hover:bg-github-bg text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text transition-all duration-200 flex items-center gap-2 sm:gap-0"
           title="Back"
         >
           <ChevronLeft size={24} />
+          <span className="sm:hidden text-sm font-medium">Back</span>
         </button>
       </div>
 
       <div className="max-w-5xl mx-auto">
         {/* Header Card - Fixed at top */}
-        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-6 mb-6 shadow-xl">
-          <div className="flex items-center justify-between">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* Avatar and Name */}
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="relative flex-shrink-0 self-start sm:self-auto">
                 <img 
                   src={isEditing ? editForm.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image' : profile.avatar_url || 'https://via.placeholder.com/150/2d3748/e2e8f0?text=No+Image'}
                   alt={`${profile.name}'s avatar`}
-                  className="w-20 h-20 rounded-full object-cover border-4 border-light-border dark:border-github-border shadow-lg bg-light-bg dark:bg-github-bg"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-light-border dark:border-github-border shadow-lg bg-light-bg dark:bg-github-bg"
                 />
                 {isEditing && isOwner && (
                   <label className="absolute bottom-0 right-0 p-1.5 bg-light-blue dark:bg-github-blue rounded-full cursor-pointer hover:bg-light-blue-dark dark:hover:bg-github-blue-dark transition-colors shadow-lg">
@@ -206,14 +207,14 @@ export function ProfileDetail() {
                   </label>
                 )}
               </div>
-              <div className="flex-1 max-w-2xl">
-                <h1 className="text-3xl font-bold text-light-text dark:text-github-text mb-2">{profile.name}</h1>
-                <div className="flex items-center gap-3 flex-wrap mb-2">
-                  <span className="px-3 py-1 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-xs font-semibold text-light-text-secondary dark:text-github-text-secondary capitalize">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-3xl font-bold text-light-text dark:text-github-text mb-2 break-words">{profile.name}</h1>
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap mb-2">
+                  <span className="px-2 sm:px-3 py-1 bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border rounded-full text-xs font-semibold text-light-text-secondary dark:text-github-text-secondary capitalize">
                     {profile.role === 'busker' ? '🎵 Busker' : profile.role === 'eventmaker' ? '📋 Event Maker' : '👁️ Viewer'}
                   </span>
                   {profile.role !== 'viewer' && profile.saldo !== undefined && profile.saldo > 0 && (
-                    <span className="px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-full text-xs font-semibold text-green-700 dark:text-green-400 flex items-center gap-1.5">
+                    <span className="px-2 sm:px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-full text-xs font-semibold text-green-700 dark:text-green-400 flex items-center gap-1.5">
                       <span>💰</span>
                       <span>${profile.saldo.toFixed(2)}</span>
                     </span>
@@ -221,7 +222,7 @@ export function ProfileDetail() {
                 </div>
                 {/* Bio Preview */}
                 {!isEditing && profile.bio && (
-                  <p className="text-sm text-light-text-secondary dark:text-github-text-secondary line-clamp-2 leading-relaxed">
+                  <p className="text-sm text-light-text-secondary dark:text-github-text-secondary line-clamp-2 leading-relaxed break-words">
                     {profile.bio}
                   </p>
                 )}
@@ -238,11 +239,11 @@ export function ProfileDetail() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-shrink-0 self-start sm:self-auto">
               {isOwner && !isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-2.5 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200"
+                  className="p-2.5 rounded-lg bg-light-bg dark:bg-github-bg border border-light-border dark:border-github-border hover:border-light-blue dark:hover:border-github-blue text-light-text-secondary dark:text-github-text-secondary hover:text-light-blue dark:hover:text-github-blue transition-all duration-200 touch-target"
                   title="Edit Profile"
                 >
                   <Edit2 size={18} />
@@ -313,11 +314,11 @@ export function ProfileDetail() {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg mb-6 shadow-xl">
-          <div className="flex border-b border-light-border dark:border-github-border">
+        <div className="bg-light-card dark:bg-github-card border border-light-border dark:border-github-border rounded-lg mb-4 sm:mb-6 shadow-xl">
+          <div className="flex border-b border-light-border dark:border-github-border overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300">
             <button
               onClick={() => setActiveTab('about')}
-              className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+              className={`flex-shrink-0 px-3 sm:px-6 py-4 text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'about'
                   ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
                   : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
@@ -328,7 +329,7 @@ export function ProfileDetail() {
             {(profile.role === 'busker' || profile.role === 'eventmaker') && (
               <button
                 onClick={() => setActiveTab('events')}
-                className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                className={`flex-shrink-0 px-3 sm:px-6 py-4 text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'events'
                     ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
                     : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
@@ -341,30 +342,30 @@ export function ProfileDetail() {
               <>
                 <button
                   onClick={() => setActiveTab('members')}
-                  className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                  className={`flex-shrink-0 px-3 sm:px-6 py-4 text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
                     activeTab === 'members'
                       ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
                       : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
                   }`}
                 >
-                  👥 Band Members
+                  👥 <span className="hidden sm:inline">Band </span>Members
                 </button>
                 <button
                   onClick={() => setActiveTab('tips')}
-                  className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
+                  className={`flex-shrink-0 px-3 sm:px-6 py-4 text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
                     activeTab === 'tips'
                       ? 'text-light-blue dark:text-github-blue border-b-2 border-light-blue dark:border-github-blue bg-light-bg/50 dark:bg-github-bg/50'
                       : 'text-light-text-secondary dark:text-github-text-secondary hover:text-light-text dark:hover:text-github-text hover:bg-light-bg/30 dark:hover:bg-github-bg/30'
                   }`}
                 >
-                  💝 Tip Wall
+                  💝 <span className="hidden sm:inline">Tip </span>Wall
                 </button>
               </>
             )}
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* About Tab */}
             {activeTab === 'about' && (
               <div className="space-y-6">

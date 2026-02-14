@@ -285,8 +285,8 @@ export function CreateEvent() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto my-10 px-5 py-5 bg-white dark:bg-github-card rounded-lg shadow-md border dark:border-github-border">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-github-text mb-5">Create New Event</h2>
+    <div className="max-w-2xl mx-auto my-4 sm:my-10 px-4 sm:px-5 py-4 sm:py-5 bg-white dark:bg-github-card rounded-lg shadow-md border dark:border-github-border">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-github-text mb-4 sm:mb-5">Create New Event</h2>
 
       {/* Date & Time Modal */}
       {showDateModal && (
@@ -423,7 +423,7 @@ export function CreateEvent() {
                   accepting_requests: type.id !== 'solo_performance',
                   max_performers: type.id === 'solo_performance' ? 1 : prev.max_performers
                 }))}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all touch-target ${
                   form.event_type === type.id
                     ? 'border-light-blue dark:border-github-blue bg-light-blue/10 dark:bg-github-blue/10'
                     : 'border-gray-200 dark:border-github-border hover:border-gray-300 dark:hover:border-github-border'
@@ -431,13 +431,13 @@ export function CreateEvent() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xl">{type.icon}</span>
-                  <span className={`font-semibold ${
+                  <span className={`text-sm sm:text-base font-semibold ${
                     form.event_type === type.id 
                       ? 'text-light-blue dark:text-github-blue' 
                       : 'text-gray-900 dark:text-github-text'
                   }`}>{type.label}</span>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-github-text-secondary">{type.description}</p>
+                <p className="text-xs text-gray-600 dark:text-github-text-secondary line-clamp-2">{type.description}</p>
               </button>
             ))}
           </div>
@@ -519,7 +519,7 @@ export function CreateEvent() {
           <button
             type="button"
             onClick={openDateModal}
-            className="w-full p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-github-border hover:border-light-blue dark:hover:border-github-blue bg-light-bg/50 dark:bg-github-bg/50 transition-all group"
+            className="w-full p-3 sm:p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-github-border hover:border-light-blue dark:hover:border-github-blue bg-light-bg/50 dark:bg-github-bg/50 transition-all group touch-target"
           >
             {form.start_time && form.end_time ? (
               <div className="flex items-center gap-4">
@@ -795,18 +795,18 @@ export function CreateEvent() {
 
         {/* Buttons */}
         <div className="col-span-4">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex-1 px-3 py-3 bg-gray-100 dark:bg-github-border text-gray-800 dark:text-github-text rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-github-border dark:hover:brightness-125 transition-colors"
+              className="w-full sm:w-auto px-4 py-3 bg-gray-100 dark:bg-github-border text-gray-800 dark:text-github-text rounded-lg hover:bg-gray-200 dark:hover:bg-github-border dark:hover:brightness-125 transition-colors touch-target"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-[2] px-3 py-3 bg-blue-500 dark:bg-github-blue text-white rounded-lg cursor-pointer hover:bg-blue-600 dark:hover:bg-github-blue-dark disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:flex-1 px-4 py-3 bg-blue-500 dark:bg-github-blue text-white rounded-lg hover:bg-blue-600 dark:hover:bg-github-blue-dark disabled:opacity-70 disabled:cursor-not-allowed transition-colors touch-target"
             >
               {isLoading ? 'Creating...' : 'Create Event'}
             </button>

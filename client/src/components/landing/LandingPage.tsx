@@ -564,16 +564,24 @@ export function LandingPage() {
                 selected={filters.customDateStart ? new Date(filters.customDateStart) : null}
                 onChange={(dates) => {
                   const [start, end] = dates as [Date | null, Date | null];
+                  const formatLocalDate = (date: Date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                  };
+                  
                   setFilters({
                     ...filters,
-                    customDateStart: start ? start.toISOString().split('T')[0] : undefined,
-                    customDateEnd: end ? end.toISOString().split('T')[0] : undefined
+                    customDateStart: start ? formatLocalDate(start) : undefined,
+                    customDateEnd: end ? formatLocalDate(end) : undefined
                   });
                 }}
                 startDate={filters.customDateStart ? new Date(filters.customDateStart) : null}
                 endDate={filters.customDateEnd ? new Date(filters.customDateEnd) : null}
                 selectsRange
                 inline
+                minDate={new Date()}
                 monthsShown={1}
                 calendarClassName="!bg-light-bg dark:!bg-github-bg !border-light-border dark:!border-github-border"
               />

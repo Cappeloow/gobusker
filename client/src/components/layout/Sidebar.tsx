@@ -74,10 +74,31 @@ export function Sidebar({ isDarkMode, onToggleDarkMode }: SidebarProps) {
       }
     });
 
+    // Listen for profile updates
+    const handleProfileUpdate = async (event: Event) => {
+      if (isLoggedIn) {
+        await fetchProfiles();
+        
+        // If this is a new profile creation event, set the new profile as active
+        if (event instanceof CustomEvent && event.detail?.newProfileId) {
+          const newProfileId = event.detail.newProfileId;
+          const userProfiles = await profileService.getCurrentUserProfiles();
+          const newProfile = userProfiles?.find(p => p.id === newProfileId);
+          if (newProfile) {
+            setActiveProfile(newProfile);
+            localStorage.setItem('gobusker-active-profile', newProfile.id);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('profilesUpdated', handleProfileUpdate);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('profilesUpdated', handleProfileUpdate);
     };
-  }, []);
+  }, [isLoggedIn]);
 
   const fetchProfiles = async () => {
     try {

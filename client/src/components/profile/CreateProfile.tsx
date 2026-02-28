@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { profileService } from '../../services/profileService';
+import { useToast } from '../../hooks/useToast';
+import { useNavigate } from 'react-router-dom';
 
 type ProfileRole = 'eventmaker' | 'busker' | 'viewer';
 type ProfileType = 'individual' | 'band';
@@ -30,10 +32,9 @@ const INITIAL_FORM_STATE = {
   owner_description: ''
 };
 
-import { useNavigate } from 'react-router-dom';
-
 export function CreateProfile() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState(INITIAL_FORM_STATE);
   const [step, setStep] = useState<'role' | 'details'>('role');
   const [isLoading, setIsLoading] = useState(false);
@@ -85,8 +86,23 @@ export function CreateProfile() {
         await profileService.updateProfile(profile.id, { avatar_url: newAvatarUrl });
       }
 
-      // After successful profile creation, navigate to dashboard
-      navigate('/dashboard');
+      // Notify sidebar to refresh profiles list and set this profile as active
+      window.dispatchEvent(new CustomEvent('profilesUpdated', { 
+        detail: { newProfileId: profile.id } 
+      }));
+
+      // Show success toast immediately
+      showToast({
+        type: 'success',
+        title: 'Profile Created Successfully! 🎉',
+        message: `Welcome to GoBusker, ${profile.name}! Your profile is ready to go.`,
+        duration: 5000
+      });
+      
+      // Wait 1000ms then navigate to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create profile');
     } finally {

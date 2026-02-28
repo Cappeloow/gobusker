@@ -33,6 +33,43 @@ export const profileService = {
       throw new Error('User not authenticated');
     }
 
+    // Check for name uniqueness and generate suggestions if needed
+    const { data: existingProfiles, error: nameCheckError } = await supabase
+      .from('profiles')
+      .select('name')
+      .ilike('name', profile.name);
+
+    if (nameCheckError) {
+      throw new Error('Unable to check name availability. Please try again.');
+    }
+
+    // Find exact match
+    const exactMatch = existingProfiles?.find(p => 
+      p.name.toLowerCase() === profile.name.toLowerCase()
+    );
+
+    if (exactMatch) {
+      // Generate suggestions
+      const nameSuggestions = [];
+      const baseName = profile.name;
+      
+      // Try with random numbers
+      for (let i = 0; i < 4; i++) {
+        let suggestion;
+        if (i < 2) {
+          // First two suggestions: simple incrementing numbers
+          suggestion = `${baseName}${Math.floor(Math.random() * 99) + 1}`;
+        } else {
+          // Last two suggestions: longer random numbers
+          suggestion = `${baseName}${Math.floor(Math.random() * 9999) + 1000}`;
+        }
+        nameSuggestions.push(suggestion);
+      }
+
+      const suggestionsText = nameSuggestions.join(', ');
+      throw new Error(`This name is already taken. Try: ${suggestionsText}`);
+    }
+
     // Extract owner member info
     const { owner_alias, owner_specialty, owner_description, ...profileData } = profile;
 

@@ -32,7 +32,16 @@ export const eventService = {
       .order('start_time', { ascending: true });
 
     if (error) throw error;
-    return data;
+    
+    // Transform location data to match frontend interface  
+    return data?.map(event => ({
+      ...event,
+      location: {
+        latitude: event.latitude,
+        longitude: event.longitude,
+        place_name: event.place_name
+      }
+    })) || [];
   },
 
   async getProfileEvents(profileId: string) {
@@ -46,7 +55,16 @@ export const eventService = {
       .order('start_time', { ascending: false });
 
     if (error) throw error;
-    return data as Event[];
+    
+    // Transform location data to match frontend interface
+    return data?.map(event => ({
+      ...event,
+      location: {
+        latitude: event.latitude,
+        longitude: event.longitude,
+        place_name: event.place_name
+      }
+    })) as Event[] || [];
   },
 
   async getEvent(eventId: string) {
@@ -75,9 +93,14 @@ export const eventService = {
       throw new Error('Event not found');
     }
 
-    // Return event data with empty collaborators array for now
+    // Return event data with empty collaborators array and proper location format
     const result = {
       ...eventData,
+      location: {
+        latitude: eventData.latitude,
+        longitude: eventData.longitude,
+        place_name: eventData.place_name
+      },
       collaborators: []
     };
 
@@ -143,9 +166,14 @@ export const eventService = {
           countMap[r.event_id] = (countMap[r.event_id] || 0) + 1;
         });
         
-        // Add count to each event
+        // Add count to each event and transform location data
         return events?.map(event => ({
           ...event,
+          location: {
+            latitude: event.latitude,
+            longitude: event.longitude,
+            place_name: event.place_name
+          },
           accepted_requests_count: countMap[event.id] || 0
         })) || [];
       }
@@ -155,6 +183,11 @@ export const eventService = {
     
     return events?.map(event => ({
       ...event,
+      location: {
+        latitude: event.latitude,
+        longitude: event.longitude,
+        place_name: event.place_name
+      },
       accepted_requests_count: 0
     })) || [];
   },
@@ -179,8 +212,17 @@ export const eventService = {
 
     if (error) throw error;
     
-    // Simple client-side distance filtering
-    return data.filter(event => {
+    // Transform location data and do client-side distance filtering
+    const transformedEvents = data?.map(event => ({
+      ...event,
+      location: {
+        latitude: event.latitude,
+        longitude: event.longitude,
+        place_name: event.place_name
+      }
+    })) || [];
+    
+    return transformedEvents.filter(event => {
       if (!event.location) return false;
       const distance = calculateDistance(
         latitude,
@@ -534,7 +576,18 @@ export const eventService = {
         .eq('status', 'accepted');
 
       if (acceptedInvites && !inviteError) {
-        participatingEvents.push(...(acceptedInvites.map(invite => invite.event).filter(Boolean) as Event[]));
+        const transformedEvents = acceptedInvites
+          .map(invite => invite.event)
+          .filter(Boolean)
+          .map(event => ({
+            ...event,
+            location: {
+              latitude: event.latitude,
+              longitude: event.longitude,
+              place_name: event.place_name
+            }
+          }));
+        participatingEvents.push(...transformedEvents as Event[]);
       }
 
       // Get events where profile's request was accepted
@@ -550,7 +603,18 @@ export const eventService = {
         .eq('status', 'accepted');
 
       if (acceptedRequests && !requestError) {
-        participatingEvents.push(...(acceptedRequests.map(request => request.event).filter(Boolean) as Event[]));
+        const transformedEvents = acceptedRequests
+          .map(request => request.event)
+          .filter(Boolean)
+          .map(event => ({
+            ...event,
+            location: {
+              latitude: event.latitude,
+              longitude: event.longitude,
+              place_name: event.place_name
+            }
+          }));
+        participatingEvents.push(...transformedEvents as Event[]);
       }
 
       // Remove duplicates and return

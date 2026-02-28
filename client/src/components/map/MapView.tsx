@@ -4,6 +4,33 @@ import type { ViewStateChangeEvent, MapRef } from 'react-map-gl';
 import { Map, Marker, NavigationControl, Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
+// Add CSS keyframes for marker animation
+const markerAnimationStyles = `
+  @keyframes markerAppear {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    60% {
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+`;
+
+// Inject the styles
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = markerAnimationStyles;
+  if (!document.head.querySelector('style[data-marker-animation]')) {
+    styleElement.setAttribute('data-marker-animation', 'true');
+    document.head.appendChild(styleElement);
+  }
+}
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 interface EventMarker {
@@ -91,6 +118,7 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
   const [travelTimes, setTravelTimes] = useState<{ walk: string; bike: string; car: string } | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [showEventDetailsOverlay, setShowEventDetailsOverlay] = useState(false);
+  const [markersAnimated, setMarkersAnimated] = useState(false); // Track animation state
   const [viewport, setViewport] = useState({
     latitude: center[1],
     longitude: center[0],
@@ -149,6 +177,19 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
       });
     }
   }, [flyToKey]);
+
+  // Trigger staggered marker animation when markers change
+  useEffect(() => {
+    const eventMarkers = markers.filter(m => m.id !== 'user-location');
+    if (eventMarkers.length > 0) {
+      setMarkersAnimated(false);
+      // Small delay to ensure re-render, then start animation
+      const timer = setTimeout(() => {
+        setMarkersAnimated(true);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [markers.filter(m => m.id !== 'user-location').map(m => m.id).join(',')]);
 
   // Calculate travel time based on distance and mode of transport
   const calculateTravelTime = (distance: number, mode: 'walk' | 'bike' | 'car') => {
@@ -465,9 +506,14 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
         </Marker>
       )}
       
-      {markers.map((marker) => {
+      {markers.map((marker, index) => {
         const isUserLocation = marker.id === 'user-location';
         const markerColor = isUserLocation ? '#D2B48C' : '#4CAF50'; // Tan pearl for user, green for events
+        
+        // Calculate staggered animation delay (skip user location, count only event markers before this one)
+        const eventMarkersBeforeThis = markers.slice(0, index).filter(m => m.id !== 'user-location').length;
+        const animationDelay = isUserLocation ? 0 : eventMarkersBeforeThis * 80; // 80ms delay between each event marker
+        const shouldAnimate = markersAnimated && !isUserLocation;
         
         return (
           <Marker
@@ -484,11 +530,20 @@ export function MapView({ center = [18.0649, 59.3293], zoom = 11, markers = [], 
                 borderRadius: '50%',
                 cursor: 'pointer',
                 boxShadow: `0 2px 8px ${isUserLocation ? 'rgba(37, 99, 235, 0.4)' : 'rgba(0,0,0,0.3)'}`,
-                transition: 'transform 0.2s',
+                transition: 'transform 0.2s, opacity 0.4s ease-out, scale 0.4s ease-out',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                // Animation properties
+                opacity: isUserLocation || !shouldAnimate ? 1 : (markersAnimated ? 1 : 0),
+                transform: isUserLocation || !shouldAnimate ? 'scale(1)' : (markersAnimated ? 'scale(1)' : 'scale(0.3)'),
+                animationDelay: `${animationDelay}ms`,
+                animation: shouldAnimate ? 'markerAppear 0.5s ease-out forwards' : 'none',
+                ...(shouldAnimate && !markersAnimated ? {
+                  opacity: 0,
+                  transform: 'scale(0.3)'
+                } : {})
               }}
               onClick={(e) => {
                 e.stopPropagation();

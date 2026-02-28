@@ -131,12 +131,24 @@ export function Sidebar({ isDarkMode, onToggleDarkMode }: SidebarProps) {
           `}
           onClick={() => navigate('/')}
         >
-          {isExpanded && (
+          {isExpanded ? (
             <span 
               className="text-lg font-bold"
               style={{ fontFamily: '"Tan Pearl", serif', color: '#D2B48C', letterSpacing:'3px' }}
             >
               BUSKER
+            </span>
+          ) : (
+            <span 
+              className="text-2xl font-bold transition-all duration-300 hover:scale-110"
+              style={{ 
+                fontFamily: '"Tan Pearl", serif', 
+                color: '#D2B48C', 
+                textShadow: '1px 1px 2px rgba(210, 180, 140, 0.3)',
+                letterSpacing: '1px'
+              }}
+            >
+              B
             </span>
           )}
         </div>

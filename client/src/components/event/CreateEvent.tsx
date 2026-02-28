@@ -89,6 +89,51 @@ export function CreateEvent() {
   const [selectedPerformers, setSelectedPerformers] = useState<PerformerInvite[]>([]);
   const [isSearchingPerformers, setIsSearchingPerformers] = useState(false);
 
+  // Smart time validation function
+  const validateAndUpdateTime = (newTime: string, isEndTime: boolean) => {
+    if (isEndTime) {
+      setTempEndTime(newTime);
+      
+      // Check if same day event
+      if (tempStartDate && tempEndDate && 
+          tempStartDate.toDateString() === tempEndDate.toDateString()) {
+        
+        const [startHour, startMinute] = tempStartTime.split(':').map(Number);
+        const [endHour, endMinute] = newTime.split(':').map(Number);
+        const startTotalMinutes = startHour * 60 + startMinute;
+        const endTotalMinutes = endHour * 60 + endMinute;
+        
+        if (endTotalMinutes <= startTotalMinutes) {
+          setError('End time must be after start time on the same day');
+        } else {
+          setError('');
+        }
+      }
+    } else {
+      setTempStartTime(newTime);
+      
+      // Check if same day event and auto-adjust end time if needed
+      if (tempStartDate && tempEndDate && 
+          tempStartDate.toDateString() === tempEndDate.toDateString()) {
+        
+        const [startHour, startMinute] = newTime.split(':').map(Number);
+        const [endHour, endMinute] = tempEndTime.split(':').map(Number);
+        const startTotalMinutes = startHour * 60 + startMinute;
+        const endTotalMinutes = endHour * 60 + endMinute;
+        
+        if (endTotalMinutes <= startTotalMinutes) {
+          // Auto-adjust end time to be 1 hour after new start time
+          const newEndMinutes = startTotalMinutes + 60;
+          const newEndHour = Math.floor(newEndMinutes / 60) % 24;
+          const newEndMin = newEndMinutes % 60;
+          const autoEndTime = `${String(newEndHour).padStart(2, '0')}:${String(newEndMin).padStart(2, '0')}`;
+          setTempEndTime(autoEndTime);
+        }
+        setError('');
+      }
+    }
+  };
+
   // Initialize temp dates from form when opening modal
   const openDateModal = () => {
     if (form.start_time) {
@@ -121,12 +166,34 @@ export function CreateEvent() {
       
       const startDateStr = formatLocalDate(tempStartDate);
       const endDateStr = formatLocalDate(tempEndDate);
+      
+      // Validate times if it's the same day
+      if (startDateStr === endDateStr) {
+        const [startHour, startMinute] = tempStartTime.split(':').map(Number);
+        const [endHour, endMinute] = tempEndTime.split(':').map(Number);
+        const startTotalMinutes = startHour * 60 + startMinute;
+        const endTotalMinutes = endHour * 60 + endMinute;
+        
+        if (endTotalMinutes <= startTotalMinutes) {
+          // Auto-fix: Set end time to 1 hour after start time
+          const newEndMinutes = startTotalMinutes + 60;
+          const newEndHour = Math.floor(newEndMinutes / 60) % 24;
+          const newEndMin = newEndMinutes % 60;
+          const newEndTime = `${String(newEndHour).padStart(2, '0')}:${String(newEndMin).padStart(2, '0')}`;
+          setTempEndTime(newEndTime);
+          setError('End time was automatically adjusted to be after start time');
+          setTimeout(() => setError(''), 3000);
+          return;
+        }
+      }
+      
       setForm(prev => ({
         ...prev,
         start_time: `${startDateStr}T${tempStartTime}`,
         end_time: `${endDateStr}T${tempEndTime}`
       }));
       setShowDateModal(false);
+      setError('');
     }
   };
 
@@ -362,7 +429,7 @@ export function CreateEvent() {
                 <input
                   type="time"
                   value={tempStartTime}
-                  onChange={e => setTempStartTime(e.target.value)}
+                  onChange={e => validateAndUpdateTime(e.target.value, false)}
                   className="w-full px-3 py-2 rounded-lg border border-light-border dark:border-github-border bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text"
                 />
               </div>
@@ -374,11 +441,22 @@ export function CreateEvent() {
                 <input
                   type="time"
                   value={tempEndTime}
-                  onChange={e => setTempEndTime(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-light-border dark:border-github-border bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text"
+                  onChange={e => validateAndUpdateTime(e.target.value, true)}
+                  className={`w-full px-3 py-2 rounded-lg border bg-light-bg dark:bg-github-bg text-light-text dark:text-github-text ${
+                    error && error.includes('End time must be after') 
+                      ? 'border-red-500 dark:border-red-400 focus:ring-red-500' 
+                      : 'border-light-border dark:border-github-border'
+                  }`}
                 />
               </div>
             </div>
+
+            {/* Time validation error */}
+            {error && error.includes('time') && (
+              <div className="mb-4 p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs rounded-lg border border-red-200 dark:border-red-800">
+                {error}
+              </div>
+            )}
 
             <p className="text-xs text-light-text-secondary dark:text-github-text-secondary mb-4 text-center">
               {!tempStartDate 

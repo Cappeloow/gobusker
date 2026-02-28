@@ -699,8 +699,16 @@ export function LandingPage() {
               
               {/* Event Cards Overlay - Desktop */}
               {filteredEvents.length > 0 && (
-                <div className="hidden md:block absolute bottom-0 left-0 z-10">
-                  <div className="flex gap-1 overflow-x-auto scrollbar-none">
+                <div className="hidden md:block absolute bottom-0 left-0 right-0 z-10 px-2">
+                  <div className="flex gap-1 overflow-x-auto scrollbar-none pb-2" style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}>
+                    <style jsx>{`
+                      div::-webkit-scrollbar {
+                        display: none;
+                      }
+                    `}</style>
                     {filteredEvents.map((event) => {
                       const locationForDistance = activeLocation || userLocation;
                       const distance = locationForDistance && event.location
